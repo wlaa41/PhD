@@ -142,6 +142,37 @@
   .flowN.par{border-style:dashed}
   .flowN i{display:block;font-style:normal;font-size:10px;color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
 
+  /* dashboard */
+  :root{--s-one:#8b5cf6;--s-zero:#16a34a;--s-semi:#d97706}
+  .kpiRow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 18px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px 16px;transition:.15s}
+  .kpi:hover{border-color:var(--acc)}
+  .kpi .kl{font-size:12px;color:var(--dim)}
+  .kpi .kv{font-size:27px;font-weight:650;color:#fff;line-height:1.2;margin:2px 0}
+  .kpi .kn{font-size:11px;color:var(--faint)}
+  .vizGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+  .vizCard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+  .vizCard.wide{grid-column:1/-1}
+  .vizCard h3{font-size:14px;color:#fff;margin-bottom:2px}
+  .vizCard .vs{font-size:11.5px;color:var(--faint);margin-bottom:12px}
+  .vLegend{display:flex;gap:14px;font-size:12px;color:var(--dim);margin-bottom:10px}
+  .vLegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .colPlot{display:flex;align-items:flex-end;gap:26px;height:180px;border-bottom:1px solid var(--line);padding:0 8px}
+  .colGroup{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+  .colCap{font-size:12px;color:var(--txt);margin-bottom:4px;font-variant-numeric:tabular-nums}
+  .colStack{width:100%;max-width:24px;display:flex;flex-direction:column;justify-content:flex-end}
+  .colSeg{width:100%}
+  .colSeg:first-child{border-radius:4px 4px 0 0}
+  .colSeg + .colSeg{margin-top:2px}
+  .colX{display:flex;gap:26px;padding:6px 8px 0}
+  .colX div{flex:1;text-align:center;font-size:11.5px;color:var(--faint)}
+  .hRow{display:grid;grid-template-columns:130px 1fr 34px;align-items:center;gap:10px;margin:7px 0}
+  .hRow .hl{font-size:12.5px;color:var(--dim);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hTrack{position:relative;height:15px}
+  .hBar{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--s-one);transition:.15s}
+  .hBar:hover{filter:brightness(1.25)}
+  .hRow .hv{font-size:12px;color:var(--txt);font-variant-numeric:tabular-nums}
+
   /* pipeline */
   .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0}
   .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;transition:.15s;min-width:96px}
@@ -364,6 +395,28 @@
   </div></div>
 </section>
 
+<section id="dash">
+  <div class="kicker">Live metrics</div>
+  <h2>Corpus dashboard</h2>
+  <p class="lead">Computed at load time from the 40 ranked rows in the corpus table below (the full manifest holds
+    70 with reserves). When the registry exists, the React dashboard takes over this job at full fidelity; this row
+    keeps the hub honest meanwhile. Hover any mark for its values.</p>
+  <div class="kpiRow" id="kpiRow"></div>
+  <div class="vizGrid">
+    <div class="vizCard wide"><h3>Papers by year and zero-shot status</h3>
+      <div class="vs">recency rule at work: 2022+ only, weighted to 2024-26 · totals on the caps, segment values on hover</div>
+      <div class="vLegend"><span><i style="background:var(--s-zero)"></i>zero-shot</span><span><i style="background:var(--s-semi)"></i>semi-zero-shot</span></div>
+      <div class="colPlot" id="yearPlot"></div><div class="colX" id="yearX"></div></div>
+    <div class="vizCard"><h3>Platform mix</h3>
+      <div class="vs">drone-first, anchors for the cross-platform claim</div><div id="platBars"></div></div>
+    <div class="vizCard"><h3>Institutions with 2+ papers</h3>
+      <div class="vs">the LAB signal, counted · singletons fold into Other</div><div id="instBars"></div></div>
+    <div class="vizCard"><h3>Triage score distribution</h3>
+      <div class="vs">R+H+Z+V+A totals across the ranked 40</div>
+      <div class="colPlot" id="scorePlot" style="gap:14px"></div><div class="colX" id="scoreX" style="gap:14px"></div></div>
+  </div>
+</section>
+
 <section id="skills">
   <div class="kicker">Capability</div>
   <h2>Skills and agents: installed vs pending</h2>
@@ -446,7 +499,7 @@
    Markup and renderers below this block never change.
    ================================================================ */
 const SITE_DATA = {
-  meta:{ version:"1.4.0", updated:"2026-07-07",
+  meta:{ version:"1.5.0", updated:"2026-07-07",
     sources:"docs/phd-architecture.md · phd-pipeline.md · phd-implementation.md · phd-agents.md · phd-transfer-report.md · sim2real-litreview-command.md · corpus-candidates.md · corpus-acquisition.md" },
 
   heroChips:[
@@ -745,6 +798,7 @@ const SITE_DATA = {
     ["#tools","Tools","six tool lanes and their contracts"],
     ["#pipeline","Pipeline","S1-S9 contracts, paper states, I1-I3, flight ladder"],
     ["#gantt","Gantt","12-week programme, three lanes, three gates"],
+    ["#dash","Dash","KPI tiles + corpus charts computed live from the table"],
     ["#skills","Skills","installed vs Phase 0 vs external, agents roster"],
     ["#graph","Graph","force-directed map of the whole system"],
     ["#corpus","Corpus","47 seeded candidates with verification status"],
@@ -961,6 +1015,63 @@ $("#corpusTable").addEventListener("click",e=>{
      <div class="dRow"><b>Strength beyond citations</b><ul>${sig}</ul></div>
      <div class="dRow"><b>Citations</b>Fetched at S2 by the acquisition module (Semantic Scholar, raw/influential). For 2025-26 papers low counts are expected and never reduce the score: lab, venue and hardware evidence carry that weight (FRESH rule).</div>
      <div class="dRow"><b>Get it</b><a href="${corpusLink(p[4])}" target="_blank" rel="noopener">${p[4].replace("*","")}</a>${p[4].endsWith("*")?" · confirm ID at S3 before download":""}</div>`);});
+
+/* dashboard: aggregate from SITE_DATA.corpus, render KPI tiles + charts */
+(function(){
+  const C=SITE_DATA.corpus, N=C.length;
+  const drone=C.filter(p=>p[5]==="drone").length, fresh=C.filter(p=>p[2]>=2025).length,
+        zero=C.filter(p=>p[6]==="zero").length,
+        mean=Math.round(C.reduce((a,p)=>a+p[7],0)/N),
+        verified=C.filter(p=>p[8]!=="know").length;
+  $("#kpiRow").innerHTML=[
+    ["Papers seeded","70","full manifest incl. reserves"],
+    ["Ranked in this hub",N,"charted below"],
+    ["Drone-primary",drone,Math.round(drone/N*100)+"% of ranked"],
+    ["From 2025-26",fresh,"the FRESH cohort"],
+    ["Zero-shot",zero,(N-zero)+" semi"],
+    ["Mean triage score",mean,"of 100"],
+    ["Web-checked sources",verified,(N-verified)+" to confirm at S3"]
+  ].map(k=>`<div class="kpi" data-tip="<b>${k[0]}</b><br>${k[2]}">
+    <div class="kl">${k[0]}</div><div class="kv">${k[1]}</div><div class="kn">${k[2]}</div></div>`).join("");
+
+  /* stacked columns: year x zero/semi */
+  const years=[...new Set(C.map(p=>p[2]))].sort();
+  const byY=years.map(y=>({y,z:C.filter(p=>p[2]===y&&p[6]==="zero").length,s:C.filter(p=>p[2]===y&&p[6]==="semi").length}));
+  const maxT=Math.max(...byY.map(d=>d.z+d.s));
+  $("#yearPlot").innerHTML=byY.map(d=>`<div class="colGroup"><div class="colCap">${d.z+d.s}</div>
+    <div class="colStack" style="height:${((d.z+d.s)/maxT*100)}%">
+      ${d.s?`<div class="colSeg" style="flex:${d.s};background:var(--s-semi)" data-tip="<b>${d.y} · semi-zero-shot</b><br>${d.s} paper${d.s===1?"":"s"}"></div>`:""}
+      ${d.z?`<div class="colSeg" style="flex:${d.z};background:var(--s-zero)" data-tip="<b>${d.y} · zero-shot</b><br>${d.z} paper${d.z===1?"":"s"}"></div>`:""}
+    </div></div>`).join("");
+  $("#yearX").innerHTML=byY.map(d=>`<div>${d.y}</div>`).join("");
+
+  /* horizontal single-hue bars */
+  function hbars(el,rows){const mx=Math.max(...rows.map(r=>r[1]));
+    $(el).innerHTML=rows.map(r=>`<div class="hRow"><div class="hl">${esc(r[0])}</div>
+      <div class="hTrack"><div class="hBar" style="width:${(r[1]/mx*100).toFixed(1)}%"
+        data-tip="<b>${esc(r[0])}</b><br>${r[1]} paper${r[1]===1?"":"s"}${r[2]?"<br>"+esc(r[2]):""}"></div></div>
+      <div class="hv">${r[1]}</div></div>`).join("");}
+  const plats={};C.forEach(p=>plats[p[5]]=(plats[p[5]]||0)+1);
+  hbars("#platBars",Object.entries(plats).sort((a,b)=>b[1]-a[1]));
+
+  const instNorm=s=>{const t=s.split(" + ")[0];
+    for(const k of ["CMU","Berkeley","DeepMind","MIT","TU Delft","Shanghai AI Lab","SJTU","NVIDIA","UZH-RPG","ETH-RSL","UW"])
+      if(t.indexOf(k)===0||s.indexOf(k)>=0&&k==="NVIDIA")return k;
+    return t;};
+  const inst={};C.forEach(p=>{const k=instNorm(p[11]);inst[k]=(inst[k]||0)+1;});
+  const big=Object.entries(inst).filter(e=>e[1]>=2&&e[0]!=="(confirm)").sort((a,b)=>b[1]-a[1]);
+  const other=N-big.reduce((a,e)=>a+e[1],0);
+  hbars("#instBars",big.concat([["Other / to confirm",other,"singleton labs + affiliations pending PDF check"]]));
+
+  /* score histogram */
+  const buckets=[[70,74],[75,79],[80,84],[85,89],[90,95]];
+  const bc=buckets.map(b=>C.filter(p=>p[7]>=b[0]&&p[7]<=b[1]).length), mxB=Math.max(...bc);
+  $("#scorePlot").innerHTML=bc.map((v,i)=>`<div class="colGroup"><div class="colCap">${v}</div>
+    <div class="colStack" style="height:${(v/mxB*100)}%">
+      <div class="colSeg" style="flex:1;background:var(--s-one)" data-tip="<b>${buckets[i][0]}–${buckets[i][1]} points</b><br>${v} paper${v===1?"":"s"}"></div>
+    </div></div>`).join("");
+  $("#scoreX").innerHTML=buckets.map(b=>`<div>${b[0]}–${b[1]}</div>`).join("");
+})();
 
 /* sitemap + protocol */
 $("#siteMapEl").innerHTML=`<table>`+SITE_DATA.siteMap.map(m=>
