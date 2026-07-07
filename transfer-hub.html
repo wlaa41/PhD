@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhD Zero-Shot UAV · Transfer Hub</title>
+<style>
+  :root{
+    --bg:#0d0e14; --bg2:#12131c; --panel:#171826; --panel2:#1d1f30;
+    --line:#262840; --line2:#32355480;
+    --txt:#d8dae8; --dim:#8b8fa8; --faint:#5a5e78;
+    --acc:#a78bfa; --acc2:#7c5cf0; --accSoft:#a78bfa22;
+    --ok:#4ade80; --warn:#fbbf24; --info:#60a5fa; --bad:#f87171;
+    --zero:#4ade80; --semi:#fbbf24; --no:#f87171;
+    --r:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:70px}
+  body{background:var(--bg);color:var(--txt);font:15px/1.65 "Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--acc2);color:#fff}
+  a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+  h1,h2,h3{font-weight:650;letter-spacing:-.01em}
+  code,.mono{font-family:"Cascadia Code",Consolas,monospace;font-size:.92em}
+  code{background:#ffffff10;padding:1px 6px;border-radius:5px}
+
+  /* nav */
+  nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:2px;
+    padding:10px 22px;background:#0d0e14d9;backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav .brand{font-weight:700;margin-right:14px;color:#fff;white-space:nowrap}
+  nav .brand b{color:var(--acc)}
+  nav a.nl{color:var(--dim);padding:5px 11px;border-radius:8px;font-size:13.5px;white-space:nowrap}
+  nav a.nl:hover{color:var(--txt);background:#ffffff0a;text-decoration:none}
+  nav a.nl.on{color:#fff;background:var(--accSoft)}
+  nav .ver{margin-left:auto;color:var(--faint);font-size:12px;white-space:nowrap}
+
+  section{max-width:1180px;margin:0 auto;padding:72px 26px 10px}
+  .kicker{color:var(--acc);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px}
+  h2{font-size:27px;margin-bottom:10px;color:#fff}
+  .lead{color:var(--dim);max-width:820px;margin-bottom:26px}
+
+  /* hero */
+  #hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;
+    max-width:none;padding:0;border-bottom:1px solid var(--line)}
+  #weatherCanvas{position:absolute;inset:0;width:100%;height:100%}
+  .heroInner{position:relative;max-width:1180px;margin:0 auto;padding:110px 26px 70px;width:100%}
+  #hero h1{font-size:clamp(34px,5vw,56px);line-height:1.08;color:#fff;max-width:760px}
+  #hero h1 em{font-style:normal;color:var(--acc)}
+  .heroSub{color:var(--dim);font-size:17px;max-width:640px;margin:18px 0 26px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{background:#ffffff0d;border:1px solid var(--line);border-radius:99px;padding:6px 14px;
+    font-size:13px;color:var(--txt);cursor:default;transition:.18s}
+  .chip:hover{border-color:var(--acc);background:var(--accSoft);transform:translateY(-1px)}
+  .chip b{color:var(--acc)}
+  .wxCtl{position:absolute;right:26px;bottom:22px;display:flex;gap:6px;align-items:center;z-index:5}
+  .wxCtl span{color:var(--faint);font-size:12px;margin-right:4px}
+  .wxBtn{background:#ffffff0d;border:1px solid var(--line);color:var(--dim);border-radius:8px;
+    padding:5px 12px;font-size:12.5px;cursor:pointer;transition:.15s}
+  .wxBtn:hover{color:#fff;border-color:var(--acc)}
+  .wxBtn.on{background:var(--accSoft);color:#fff;border-color:var(--acc)}
+  .scrollHint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);color:var(--faint);font-size:12px;animation:bob 2.4s infinite}
+  @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,6px)}}
+
+  /* cards */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;transition:.18s}
+  .card:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 8px 30px #00000055}
+  .card h3{font-size:15.5px;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .card p{color:var(--dim);font-size:13.5px}
+  .card .ico{font-size:17px}
+  .clickable{cursor:pointer}
+
+  /* registry diagram */
+  .regWrap{display:flex;flex-direction:column;align-items:center;gap:0;margin:26px 0 8px}
+  .regBox{background:var(--panel2);border:1px solid var(--acc2);border-radius:14px;padding:14px 22px;
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:720px}
+  .regFile{background:#0d0e14;border:1px solid var(--line);border-radius:8px;padding:5px 12px;
+    font-family:Consolas,monospace;font-size:12.5px;color:var(--acc);cursor:pointer;transition:.15s}
+  .regFile:hover{border-color:var(--acc);background:var(--accSoft)}
+  .regArrows{color:var(--faint);font-size:20px;margin:6px 0;letter-spacing:60px;padding-left:60px}
+  .regViews{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .regView{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 18px;font-size:13.5px;cursor:pointer;transition:.15s}
+  .regView:hover{border-color:var(--acc)}
+  .regView small{display:block;color:var(--faint);font-size:11.5px}
+
+  /* loops timeline */
+  .loops{border-left:2px solid var(--line);margin:8px 0 0 8px;padding-left:22px;display:flex;flex-direction:column;gap:14px}
+  .loop{position:relative;cursor:pointer}
+  .loop::before{content:"";position:absolute;left:-29px;top:6px;width:11px;height:11px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--acc);transition:.15s}
+  .loop:hover::before{background:var(--acc)}
+  .loop b{color:#fff;font-size:14px}
+  .loop p{color:var(--dim);font-size:13px;max-width:760px}
+
+  /* pipeline */
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;transition:.15s;min-width:96px}
+  .stage:hover{border-color:var(--acc);background:var(--panel2);transform:translateY(-2px)}
+  .stage b{display:block;color:var(--acc);font-size:12px;font-family:Consolas,monospace}
+  .stage span{font-size:13px;color:var(--txt)}
+  .stage.gate{border-color:var(--warn);background:#fbbf2411}
+  .stage.gate b{color:var(--warn)}
+  .arr{color:var(--faint);font-size:15px}
+  .statesLine{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 4px}
+  .st{border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:12.5px;font-family:Consolas,monospace;color:var(--txt);cursor:default;transition:.15s}
+  .st:hover{border-color:var(--acc);background:var(--accSoft)}
+  .st.good{color:var(--ok);border-color:#4ade8055}
+  .st.badS{color:var(--bad);border-color:#f8717155}
+  .subhead{font-size:16px;color:#fff;margin:30px 0 4px;font-weight:650}
+  .note{color:var(--faint);font-size:12.5px;margin-top:6px}
+
+  /* ladder */
+  .ladder{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px}
+  .rung{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:10px;padding:8px 15px;font-size:13px;cursor:default;transition:.15s}
+  .rung:hover{border-color:var(--ok);transform:translateY(-2px)}
+  .rung i{display:block;font-style:normal;color:var(--faint);font-size:11px}
+
+  /* gantt */
+  .gantt{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;overflow-x:auto}
+  .gInner{min-width:860px}
+  .gHead{display:grid;grid-template-columns:190px repeat(12,1fr);gap:0;margin-bottom:6px}
+  .gHead div{color:var(--faint);font-size:11.5px;text-align:center;border-left:1px dashed var(--line2);padding:2px 0}
+  .gHead div:first-child{border:none;text-align:left}
+  .gTrack{color:var(--acc);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 6px}
+  .gRow{display:grid;grid-template-columns:190px 1fr;align-items:center;margin:5px 0}
+  .gLabel{font-size:12.5px;color:var(--dim);padding-right:10px}
+  .gLane{position:relative;height:24px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/12 - 1px),var(--line2) calc(100%/12 - 1px),var(--line2) calc(100%/12))}
+  .gBar{position:absolute;top:3px;bottom:3px;border-radius:6px;cursor:pointer;transition:.15s;
+    background:linear-gradient(90deg,var(--acc2),var(--acc));opacity:.85}
+  .gBar:hover{opacity:1;transform:scaleY(1.15);box-shadow:0 2px 14px #a78bfa66}
+  .gBar.impl{background:linear-gradient(90deg,#0e9f6e,#4ade80)}
+  .gBar.write{background:linear-gradient(90deg,#b45309,#fbbf24)}
+  .gGate{position:absolute;top:50%;width:13px;height:13px;transform:translate(-50%,-50%) rotate(45deg);
+    background:var(--warn);border:2px solid #fff3;cursor:pointer;z-index:3}
+  .gGate:hover{background:#fff}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--dim)}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+
+  /* skills tables */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{color:var(--faint);text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;
+    padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:8px 10px;border-bottom:1px solid #1c1e30;color:var(--dim);vertical-align:top}
+  tr{transition:.12s}
+  tbody tr:hover{background:#ffffff06}
+  tbody tr:hover td{color:var(--txt)}
+  td:first-child{color:var(--txt);white-space:nowrap}
+  .badge{display:inline-block;border-radius:99px;padding:2px 11px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .b-ok{background:#4ade8022;color:var(--ok)}
+  .b-todo{background:#fbbf2422;color:var(--warn)}
+  .b-p0{background:#60a5fa22;color:var(--info)}
+  .b-zero{background:#4ade8022;color:var(--zero)}
+  .b-semi{background:#fbbf2422;color:var(--semi)}
+  .b-no{background:#f8717122;color:var(--no)}
+  .b-web{background:#a78bfa22;color:var(--acc)}
+  .b-webv{background:#4ade8022;color:var(--ok)}
+  .b-know{background:#fbbf2422;color:var(--warn)}
+  .tblWrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:6px 14px 10px;overflow-x:auto;margin-top:14px}
+  .score{position:relative;min-width:86px}
+  .scoreBar{position:absolute;left:0;top:50%;transform:translateY(-50%);height:7px;border-radius:4px;
+    background:linear-gradient(90deg,var(--acc2),var(--acc));opacity:.5}
+  .score b{position:relative;color:var(--txt);font-size:12px}
+
+  /* graph */
+  .graphWrap{position:relative;background:radial-gradient(1000px 500px at 50% 0%,#1a1530 0%,var(--bg2) 60%);
+    border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  #graphCanvas{display:block;width:100%;height:600px;cursor:grab}
+  #graphCanvas.grabbing{cursor:grabbing}
+  .gLegend{position:absolute;left:14px;top:12px;display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--dim);
+    background:#0d0e14b8;border:1px solid var(--line);border-radius:10px;padding:10px 14px;backdrop-filter:blur(6px)}
+  .gLegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
+  .graphBtns{position:absolute;right:14px;top:12px;display:flex;gap:6px}
+
+  /* drawer + tooltip */
+  #tip{position:fixed;z-index:99;pointer-events:none;background:#1c1e30f2;border:1px solid var(--acc2);
+    border-radius:10px;padding:10px 14px;font-size:13px;color:var(--txt);max-width:340px;display:none;
+    box-shadow:0 10px 40px #000a;backdrop-filter:blur(8px)}
+  #tip b{color:var(--acc)}
+  #drawerBack{position:fixed;inset:0;background:#0007;z-index:60;display:none}
+  #drawer{position:fixed;top:0;right:-500px;width:min(480px,92vw);height:100vh;background:var(--panel);
+    border-left:1px solid var(--line);z-index:61;transition:right .28s cubic-bezier(.2,.8,.2,1);
+    padding:26px 28px;overflow-y:auto}
+  #drawer.open{right:0}
+  #drawer h3{color:#fff;font-size:19px;margin-bottom:4px;padding-right:36px}
+  #drawer .dTag{color:var(--acc);font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  #drawer .dBody{margin-top:14px;color:var(--dim);font-size:14px}
+  #drawer .dBody b{color:var(--txt)}
+  #drawer .dBody ul{margin:8px 0 8px 18px}
+  #drawer .dBody li{margin:5px 0}
+  .dRow{border-top:1px solid var(--line);padding:9px 0}
+  .dRow b{display:block;color:var(--acc);font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+  #dClose{position:absolute;top:18px;right:18px;background:none;border:1px solid var(--line);color:var(--dim);
+    width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px}
+  #dClose:hover{color:#fff;border-color:var(--acc)}
+
+  /* sitemap / protocol */
+  .mapCols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:8px}
+  .proto{counter-reset:step}
+  .proto li{list-style:none;position:relative;padding:9px 0 9px 40px;border-bottom:1px solid #1c1e30;color:var(--dim);font-size:13.5px}
+  .proto li::before{counter-increment:step;content:counter(step);position:absolute;left:0;top:9px;
+    width:26px;height:26px;border-radius:8px;background:var(--accSoft);color:var(--acc);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .proto b{color:var(--txt)}
+  footer{max-width:1180px;margin:40px auto 0;padding:26px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media(max-width:760px){nav{overflow-x:auto} .wxCtl{position:static;margin-top:18px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">◇ <b>zero-shot</b> uav</span>
+  <a class="nl" href="#hero">Home</a>
+  <a class="nl" href="#system">System</a>
+  <a class="nl" href="#tools">Tools</a>
+  <a class="nl" href="#pipeline">Pipeline</a>
+  <a class="nl" href="#gantt">Gantt</a>
+  <a class="nl" href="#skills">Skills</a>
+  <a class="nl" href="#graph">Graph</a>
+  <a class="nl" href="#corpus">Corpus</a>
+  <a class="nl" href="#map">Map</a>
+  <span class="ver" id="verStamp"></span>
+</nav>
+
+<section id="hero">
+  <canvas id="weatherCanvas"></canvas>
+  <div class="heroInner">
+    <div class="kicker">MPhil to PhD transfer · City, University of London · Research Affiliate, MIT</div>
+    <h1>Simulation-trained UAV control, deployed <em>zero-shot</em> to real hardware.</h1>
+    <p class="heroSub">One registry, many views. Two parallel tracks: a verified 50-paper literature machine and a
+      hardware track that flies. Everything on this page regenerates from a single data block, the same way the
+      research regenerates from the registry.</p>
+    <div class="chips" id="heroChips"></div>
+    <div class="wxCtl"><span>deployment weather:</span>
+      <button class="wxBtn" data-wx="calm">Calm</button>
+      <button class="wxBtn on" data-wx="wind">Wind</button>
+      <button class="wxBtn" data-wx="rain">Rain</button>
+      <button class="wxBtn" data-wx="storm">Storm</button>
+    </div>
+  </div>
+  <div class="scrollHint">scroll ↓</div>
+</section>
+
+<section id="system">
+  <div class="kicker">The system</div>
+  <h2>One registry, many views</h2>
+  <p class="lead">Facts about papers, methods, pipelines, gaps and experiments live in exactly one place:
+    <code>data/registry/*.json</code>. The Obsidian vault, the React dashboard, this hub and the transfer report are
+    generated views. Edit the registry, regenerate the views; nothing is written twice, so nothing drifts.</p>
+  <div class="regWrap">
+    <div class="regBox" id="regBox"></div>
+    <div class="regArrows">↓↓↓</div>
+    <div class="regViews" id="regViews"></div>
+  </div>
+  <h3 class="subhead">How the design got here: five loops of self-critique</h3>
+  <p class="note">Hover or press a loop for the critique that produced the next one.</p>
+  <div class="loops" id="loopsEl"></div>
+</section>
+
+<section id="tools">
+  <div class="kicker">The approach</div>
+  <h2>Tool lanes: each tool has one job</h2>
+  <p class="lead">No tool crosses lanes. Claude Code alone writes the registry; NotebookLM only verifies; Codex and
+    Antigravity own the webapp; Obsidian is where the human thinks. Press a card for the full lane contract.</p>
+  <div class="grid g3" id="toolCards"></div>
+</section>
+
+<section id="pipeline">
+  <div class="kicker">The machine</div>
+  <h2>Pipeline: discovery to submitted report</h2>
+  <p class="lead">Every paper is a state machine; every stage is a contract (input, process, output, owner, gate,
+    failure path). Press any stage. Amber stages are the three human gates that no agent may bypass.</p>
+  <div class="flow" id="stageFlow"></div>
+  <h3 class="subhead">Paper state machine</h3>
+  <div class="statesLine" id="paperStates"></div>
+  <p class="note">Dashboard and vault only ever render <code>verified</code> and <code>integrated</code> papers.
+    Quarantined papers sit in a work queue, never in the analysis.</p>
+  <h3 class="subhead">Implementation track (parallel, from week 1)</h3>
+  <div class="flow" id="implFlow"></div>
+  <h3 class="subhead">Flight-safety ladder: no rung skipped, ever</h3>
+  <div class="ladder" id="ladderEl"></div>
+  <p class="note">Every rung gets a written pass criterion in <code>experiments.json</code> before the rung is attempted.
+    Anomaly at any rung: stop, log, drop back one rung after the fix.</p>
+</section>
+
+<section id="gantt">
+  <div class="kicker">The programme</div>
+  <h2>Twelve weeks to submission</h2>
+  <p class="lead">Two tracks share nothing until Gate 2, so neither blocks the other. Chapter 2 drafts from week 4,
+    which keeps writing off the critical path if the corpus slips (risk R5). Hover bars and gate diamonds.</p>
+  <div class="gantt"><div class="gInner">
+    <div class="gHead" id="gHead"></div>
+    <div id="gBody"></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:linear-gradient(90deg,#7c5cf0,#a78bfa)"></i>Literature track</span>
+    <span><i style="background:linear-gradient(90deg,#0e9f6e,#4ade80)"></i>Implementation track</span>
+    <span><i style="background:linear-gradient(90deg,#b45309,#fbbf24)"></i>Writing</span>
+    <span><i style="background:var(--warn);border-radius:2px;transform:rotate(45deg)"></i>Human gate</span>
+  </div></div>
+</section>
+
+<section id="skills">
+  <div class="kicker">Capability</div>
+  <h2>Skills and agents: installed vs pending</h2>
+  <p class="lead">Three layers: environment tools that already exist on this machine, the twelve project skills and
+    eight agents that Phase 0 creates inside the repo, and external services to connect once. Hover rows for detail.</p>
+  <h3 class="subhead">Environment (this machine, today)</h3>
+  <div class="tblWrap"><table id="envTable"></table></div>
+  <h3 class="subhead">Project skills · created at Phase 0</h3>
+  <div class="tblWrap"><table id="skillTable"></table></div>
+  <h3 class="subhead">Agents · created at Phase 0</h3>
+  <div class="tblWrap"><table id="agentTable"></table></div>
+</section>
+
+<section id="graph">
+  <div class="kicker">Obsidian view</div>
+  <h2>The whole system as a graph</h2>
+  <p class="lead">Every document, skill, agent, registry file, gate and tool, wired the way they reference each other.
+    Drag nodes, hover to trace a neighbourhood, press for details. The full literature knowledge graph
+    (papers, methods, authors) is generated later by Understand-Anything over the vault; this is the system's own map.</p>
+  <div class="graphWrap">
+    <canvas id="graphCanvas"></canvas>
+    <div class="gLegend" id="gLegend"></div>
+    <div class="graphBtns">
+      <button class="wxBtn" id="gFreeze">Freeze</button>
+      <button class="wxBtn" id="gReset">Reset</button>
+    </div>
+  </div>
+</section>
+
+<section id="corpus">
+  <div class="kicker">Deep research · 2026-07-07</div>
+  <h2>Candidate corpus: 70 papers seeded</h2>
+  <p class="lead">A 106-agent deep-research sweep seeded the list; then three addition blocks, nothing ever removed:
+    institutional (MIT, Stanford, CMU, Berkeley, DeepMind), Chinese institutions (SJTU, Shanghai AI Lab, Tsinghua,
+    Qi Zhi, Fudan) and fresh 2026 papers found by live search. The rule throughout: 2025-26 papers cannot show
+    citation velocity yet, so lab pedigree, competition wins, hardware evidence and code releases carry the weight.
+    <b>Press any row</b> for how its score is earned, point by point. Citations are fetched at S2 by the acquisition
+    module. Ranked list: <code>corpus-candidates.md</code>; download manifest with instructions:
+    <code>corpus-acquisition.md</code>. Scout completes to 100-120 in Phase 1; you approve the final ~50 at Gate 1.</p>
+  <div class="tblWrap"><table id="corpusTable"></table></div>
+  <p class="note">Status key: <span class="badge b-webv">web-verified</span> quotes on file ·
+    <span class="badge b-web">web-found</span> ID resolves, claims unverified ·
+    <span class="badge b-know">knowledge</span> must be existence-checked at S3 before entering the corpus.
+    Scores are S2 triage estimates against the fixed rubric.</p>
+</section>
+
+<section id="map">
+  <div class="kicker">Meta</div>
+  <h2>Site map and the update protocol</h2>
+  <p class="lead">The canonical site map and this protocol live in the README (single entry point, versioned with the
+    docs); this page mirrors them so it stays self-describing. Every tweak follows the same six steps, in order.</p>
+  <div class="mapCols">
+    <div class="card"><h3><span class="ico">🗺</span> Site map</h3><div id="siteMapEl"></div></div>
+    <div class="card"><h3><span class="ico">🔁</span> When you request a tweak</h3><ul class="proto" id="protoEl"></ul></div>
+  </div>
+</section>
+
+<footer>
+  <span id="footStamp"></span>
+  <span>Single-file, dependency-free. Edit <code>SITE_DATA</code> only; markup below it never changes.</span>
+</footer>
+
+<div id="tip"></div>
+<div id="drawerBack"></div>
+<aside id="drawer"><button id="dClose">✕</button><div class="dTag" id="dTag"></div><h3 id="dTitle"></h3><div class="dBody" id="dBody"></div></aside>
+
+<script>
+/* ================================================================
+   SITE_DATA : the ONLY block you edit when content changes.
+   Bump meta.version + meta.updated with every tweak.
+   Markup and renderers below this block never change.
+   ================================================================ */
+const SITE_DATA = {
+  meta:{ version:"1.2.1", updated:"2026-07-07",
+    sources:"docs/phd-architecture.md · phd-pipeline.md · phd-implementation.md · phd-agents.md · phd-transfer-report.md · sim2real-litreview-command.md · corpus-candidates.md · corpus-acquisition.md" },
+
+  heroChips:[
+    ["8","docs"],["12","project skills"],["8","agents"],["7","registry files"],
+    ["3","human gates"],["12","weeks"],["70","papers seeded"],["1","pilot flight"]
+  ],
+
+  registry:{
+    files:[
+      ["papers.json","Every paper as a tracked object with a status field: candidate to integrated. Strict extraction schema; every quantitative claim carries a page or section provenance field."],
+      ["methods.json","One entry per distinct method with usage_count (distinct papers, not mentions), alias table, split-test rules, trend by year buckets. The frequency table is the headline analysis."],
+      ["pipelines.json","Per paper, the ordered end-to-end pipeline from sim setup to real hardware. Stages reference method ids, so pipelines are the ground truth for frequency counting."],
+      ["gaps.json","Clustered limitations across the corpus with recurrence counts, hardware-feasibility filter, ranked shortlist of 3 and the selected direction with its pilot spec."],
+      ["hardware-map.json","Owned equipment mapped to the methods and experiments each item enables. Feasibility filter for every analysis step."],
+      ["candidates.json","Discovery output: 100-120 scored candidates awaiting Gate 1. Seeded 2026-07-07 by the deep-research sweep plus institutional, Chinese and 2026 additions (70 entries; manifest: corpus-acquisition.md)."],
+      ["experiments.json","Experiment state machine mirroring papers: planned to reported, per-rung pass criteria, kill conditions, results references."]
+    ],
+    views:[
+      ["Obsidian vault","reading + thinking","Generated by /vault-build: paper notes, method notes, Mermaid pipelines, Dataview dashboards. Your annotations promote back into the registry via vault-sync."],
+      ["React dashboard","presenting","Vite + React + Recharts + react-flow, static build for Vercel. Eight pages including Pipeline Gallery with compare mode and the Experiments board. Renders only what the registry says."],
+      ["Transfer report","writing","Drafted by /phd-writing under the phd-transfer-report.md contract: argument spine, chapter budgets, evidence standards, two cold reviews, citation audit."],
+      ["Knowledge graph","exploring","Understand-Anything wiki-analysis over the vault: papers, methods, authors as nodes; cites, builds_on, contradicts as edges."]
+    ]
+  },
+
+  loops:[
+    ["Loop 1","Base skills-and-agents structure.","Critique: vault and React app written separately would drift apart; no rule for which AI tool does what; nothing stops fabricated citations reaching the report."],
+    ["Loop 2","Single source of truth: the JSON registry; tool lanes.","Critique: still no independent verification of extractions, and rebuilding the dashboard by hand on every registry change is churn."],
+    ["Loop 3","NotebookLM verification gate, Understand-Anything graph, /dashboard-sync, human gates at corpus lock and gap selection.","Critique: the system builds evidence but never specifies the paper; nothing defines what an outstanding transfer report contains."],
+    ["Loop 4","Transfer report contract: chapter structure with word budgets, the six-sentence argument spine, RQ rules with kill conditions, evidence standards, mock viva bank.","Critique: implementation deferred to later means no preliminary results in the report and infrastructure risk surfacing in month 8."],
+    ["Loop 5","Parallel implementation track from week 1: I1 infrastructure, I2 baseline reproduction, I3 pilot. experiments.json state machine, flight ladder, risk register. Gate 2 requires a 3-week-feasible pilot spec.","Current state. Next critique welcome."]
+  ],
+
+  tools:[
+    ["🧠","Claude Code","Orchestrator","The only tool that writes the registry. Runs all skills, dispatches all agents, searches, extracts, builds the vault, drafts the report. WSL2.","Hard rule: agents write to staging; only the registrar agent merges into the registry. The orchestrator plans and checks gates; it never does bulk work itself."],
+    ["📓","NotebookLM Pro","Independent second reader","All ~50 PDFs in one notebook. Answers the five fixed verification questions per paper; cross-corpus Q&A; Audio Overviews per method family.","Never writes anything. Two independent models rarely hallucinate the same fact: agreement is evidence, disagreement is a cheap-to-check flag."],
+    ["🕸","Understand-Anything","Knowledge graph","Claude Code plugin. Wiki-analysis over the wikilinked vault produces the interactive papers-methods-authors graph. Later reused on the ROS 2 codebase.","Install once: /plugin marketplace add Egonex-AI/Understand-Anything."],
+    ["⚙️","Codex Pro","Second engineer","Implements dashboard pages against the section-6 spec and reviews Claude Code's generator scripts.","Two independent implementations of anything critical means bugs surface."],
+    ["🌐","Antigravity Pro","Browser-verified frontend","Its agent runs the React app in a real browser, clicks every page, screenshots, files fix tasks. Gemini long-context for whole-corpus cross-checks.","E2E checklist must pass clean before a Friday render counts."],
+    ["💎","Obsidian","Human layer","Where you read, annotate and think. Annotations promote back into the registry via /vault-sync.","The one lane no AI occupies."]
+  ],
+
+  stages:[
+    ["S1","Discover","Claude Code + NotebookLM discovery + snowballing from anchor reference lists.","The litreview command brief: 2022+, zero-shot focus, drones first.","100-120 rows in candidates.json with one-line relevance notes.","Claude Code (/corpus-search, scout agent)",null,"Too few drone hits in a category: widen to adjacent platforms and flag the thinness as a finding."],
+    ["S2","Triage","Score every candidate 0-100: recency 25, hardware evidence 25, zero-shot 20, venue and velocity 15, relevance 15.","candidates.json","Ranked list: top ~50 proposed, 15 reserves.","scout agent","GATE 1: you approve, veto or swap; vetoes recorded with reason.","Cannot fail; only be overridden by you."],
+    ["S3","Acquire","Download PDFs; upload the identical set to one NotebookLM notebook. Filename = paper id everywhere.","Approved list","PDFs in docs/literature/pdfs/, sources in NotebookLM.","Claude Code",null,"Paywalled: try arXiv, author page, lab page, or your institutional login via the browser. Still nothing: mark unavailable, promote top reserve, log the swap."],
+    ["S4","Extract","Batches of 5, one extractor agent per paper in parallel. Strict schema; not-stated over guessing; provenance per claim.","PDF + paper id","Staged JSON drafts in data/staging/.","extractor agents (x5)",null,"Unreadable PDF: OCR pass; still failing: quarantine with reason."],
+    ["S5","Verify","Ask NotebookLM five fixed questions per paper; compare field-by-field with the extraction. DOI must resolve.","Staged extraction + NotebookLM answers","Status verified, or quarantined with the discrepancy logged.","verifier agent",null,"Any mismatch: re-read the specific section; fix or mark the field unverified. Near-match on numbers is a mismatch."],
+    ["S6","Integrate","Registrar merges the batch, maps aliases, recomputes usage_count and trends, validates referential integrity.","Verified staging files","Consistent registry; frequency table current after every batch.","registrar agent (single writer)",null,"Ambiguous method: decision logged in methods-decisions.md, applied consistently forever."],
+    ["S7","Analyse","Frequency table finalised; per-method synthesis; gap clustering with recurrence counts, feasibility and novelty filters; pilot sketch per shortlisted gap.","Registry at 80%+ integrated","Ranked shortlist of 3 gaps + 1 recommended direction with its pilot spec.","gap-analyst agent (opus)","GATE 2: you pick the direction AND approve its pilot together.","A gap without a 3-week-feasible pilot is demoted, not shortlisted."],
+    ["S8","Render","/vault-build, Understand-Anything graph, /dashboard-sync; Codex reviews generators; Antigravity browser-tests every page.","Registry","Fresh vault, graph and dashboard. Idempotent: run twice, same output.","Claude Code + Codex + Antigravity",null,"E2E findings become fix tasks; loop until the walkthrough passes clean."],
+    ["S9","Write","Draft per the transfer-report contract: spine first, Ch. 2 from week 4, two cold thesis-reviewer passes, citation audit.","Registry + synthesis + experiments","Submission-ready transfer report.","Claude Code + thesis-reviewer (opus)","GATE 3: /citation-audit clean + checklist + your sign-off.","Any claim that fails audit is rewritten or cut. No exceptions."]
+  ],
+
+  paperStates:["candidate","triaged","acquired","extracted","verified","integrated"],
+  paperStatesBad:["rejected","unavailable","quarantined"],
+
+  impl:[
+    ["I1","Infrastructure","Weeks 1-3","Eight items, each with an acceptance test committed to experiments/logs/i1/: WSL2+CUDA, Isaac Lab, Aerial Gym, PX4 SITL + ROS 2 + XRCE-DDS, Jetson flash + TensorRT, Jetson-Pixhawk bridge, X500 bench bring-up (no props), logging conventions. Fallback: dual-boot decision by end of week 2 (risk R1)."],
+    ["I2","Baseline","Weeks 3-6","Reproduce one published zero-shot pipeline end to end: train 3 seeds, ONNX to TensorRT with parity check, Orin Nano latency benchmark (the number every later method choice filters against), SITL, HITL, tethered flight. The tethered hover is the minimum Chapter 4 headline."],
+    ["I3","Pilot","Weeks 7-9","Minimum viable experiment on the Gate 2 direction: the I2 stack unchanged except the one novel component. Complete experiments.json entry (baseline, metrics, seeds, kill condition, per-rung criteria) written before any code. Negative result with a diagnosed cause is valid transfer evidence."]
+  ],
+
+  ladder:["unit tests","simulation","SITL","HITL · bench, no props","tethered flight","free flight"],
+
+  ganttWeeks:12,
+  gantt:[
+    {track:"Literature", rows:[
+      ["S1-S2 Discover + triage",1,2,"lit","Scout sweep to 100-120 candidates, rubric scoring. Ends at Gate 1: you approve the ~50."],
+      ["S3-S4 Acquire + extract",3,3,"lit","PDFs to repo + NotebookLM; first extraction batches of 5 in parallel."],
+      ["S4-S6 Batches, verify, integrate",4,5,"lit","Mon/Wed extract, Tue/Thu verify, Thu integrate, Fri render + read + commit. 10 papers a week."],
+      ["S7 Analysis",6,6,"lit","Frequency table final; gap shortlist with pilot sketches. Ends at Gate 2."],
+      ["S8 Render + revise",7,9,"lit","Vault, graph, dashboard refreshed; Chapter 2 rewritten for narrative."],
+      ["S9 Write + audit",10,11,"lit","Ch. 3-5, two cold reviews, citation audit."],
+      ["Buffer + submit",12,12,"lit","Checklist, Gate 3 sign-off, freeze, format, submit."]
+    ]},
+    {track:"Implementation", rows:[
+      ["I1 Infrastructure",1,3,"impl","Acceptance-tested bring-up: sims, SITL, Jetson, bench. Evidence to experiments/logs/i1/."],
+      ["I2 Baseline reproduction",3,6,"impl","3 seeds, TensorRT parity, Orin latency benchmark, SITL, HITL, tethered flight."],
+      ["I3 Pilot experiment",7,9,"impl","One variable over the I2 baseline, on the selected gap. Ladder discipline throughout."],
+      ["Results analysis + figures",10,11,"impl","Every figure regenerates from committed logs. Failures are data."]
+    ]},
+    {track:"Writing", rows:[
+      ["Ch. 2 drafts incrementally",4,9,"write","From the partially populated registry; keeps writing off the critical path (risk R5)."],
+      ["Spine → Ch. 3-5 → reviews",10,12,"write","Argument spine instantiated after Gate 2; the one thing written by hand."]
+    ]}
+  ],
+  gates:[
+    [2,"Gate 1","Corpus lock: approve, veto or swap the ~50 papers. Vetoes recorded with reason."],
+    [6,"Gate 2","Direction lock: pick the gap AND approve its pilot spec together."],
+    [12,"Gate 3","Sign-off: citation audit clean, checklist complete, freeze and submit."]
+  ],
+
+  env:[
+    ["Claude Code (WSL2 + Windows)","orchestrator","ok","Installed","Running this project now; owns registry writes once the repo exists."],
+    ["deep-research skill","corpus discovery","ok","Installed · used 2026-07-07","Ran the 106-agent sweep that seeded corpus-candidates.md."],
+    ["aula-download skill","teaching materials","ok","Installed","Not on the PhD critical path; available."],
+    ["Obsidian","human reading layer","ok","Installed","Opens vault/ directly once Phase 0 creates it."],
+    ["Understand-Anything plugin","knowledge graph","todo","Install at Phase 0","/plugin marketplace add Egonex-AI/Understand-Anything, then /plugin install understand-anything."],
+    ["NotebookLM Pro","verification gate","todo","Create notebook at S3","One notebook, all ~50 PDFs; five fixed questions per paper."],
+    ["Codex Pro","second engineer","ok","Account ready","Activates at S8 to build and review the dashboard."],
+    ["Antigravity Pro","browser E2E","ok","Account ready","Activates at S8 for the browser walkthrough."],
+    ["GitHub repo (wlaa41/PhD)","provenance + recovery","ok","Live since 2026-07-07","Weekly Friday commit is the recovery point (risk R7). https://github.com/wlaa41/PhD"]
+  ],
+
+  skills:[
+    ["/corpus-search","Find and rank candidate papers per the S2 rubric","S1-S2"],
+    ["/paper-extract","One PDF to a strict papers.json entry + vault note; not-stated over guessing","S4"],
+    ["/method-registry","Merge methods, alias table, recompute usage counts and trends","S6"],
+    ["/pipeline-map","Per-paper ordered pipeline stages + Mermaid diagram","S4/S6"],
+    ["/gap-analysis","Cluster limitations, feasibility + novelty filter, ranked shortlist","S7"],
+    ["/vault-build","Registry to Obsidian vault, idempotent","S8"],
+    ["/dashboard-sync","Registry to webapp/public/data + rebuild","S8"],
+    ["/citation-audit","Every claim resolves to a verified source; 10 spot checks per section","S9 / Gate 3"],
+    ["/phd-writing","Draft report sections under the transfer-report contract","S9"],
+    ["/experiment-plan","RQ or gap to a complete experiments.json entry before any code","I1-I3"],
+    ["/ros2-review","ROS 2 / PX4 code review lane","I1-I3"],
+    ["/hardware-safety","Pre-flight checklist; enforces the ladder","I2-I3"]
+  ],
+
+  agents:[
+    ["scout","sonnet","S1-S2","Searches and scores candidates; writes only candidates.json; never extracts."],
+    ["extractor ×5","sonnet","S4","One paper per instance, five in parallel; writes only to staging; returns two lines."],
+    ["verifier","sonnet","S5","Field-by-field comparison against NotebookLM answers; strict; near-match is a mismatch."],
+    ["registrar","sonnet","S6","THE single writer of papers/methods/pipelines/experiments.json; logs every merge judgement."],
+    ["gap-analyst","opus","S7","Clusters limitations, filters by feasibility and novelty, sketches a pilot per shortlisted gap."],
+    ["dashboard-engineer","sonnet","S8","Builds and fixes dashboard generators; never hardcodes content."],
+    ["thesis-reviewer","opus","S9","Cold-context adversarial examiner; enforces the report contract; generates tailored viva questions."],
+    ["ros2-px4-engineer","sonnet","I1-I3","Owns the implementation track; acceptance evidence committed before any item is done."]
+  ],
+
+  graph:{
+    groups:{doc:"#a78bfa", reg:"#60a5fa", skill:"#4ade80", agent:"#fbbf24", gate:"#f87171", view:"#f472b6", tool:"#94a3b8"},
+    groupLabels:{doc:"Documents", reg:"Registry", skill:"Skills", agent:"Agents", gate:"Gates", view:"Views", tool:"Tools"},
+    nodes:[
+      ["readme","doc","README","Bootstrap: reading order, Phase 0 prompt, both track kick-offs, site map, update protocol."],
+      ["arch","doc","phd-architecture","The environment: registry principle, tool lanes, repo structure, CLAUDE.md, dashboard spec, hardware map, five design loops."],
+      ["pipe","doc","phd-pipeline","The machine: S1-S9 contracts, paper state machine, merge rules, cadence, provenance chain."],
+      ["implD","doc","phd-implementation","The hardware track: I1-I3, experiment schema, flight ladder, risk register, statistics standards."],
+      ["agentsD","doc","phd-agents","Eight agent definitions, orchestration protocol, single-writer rule."],
+      ["reportD","doc","phd-transfer-report","The paper contract: examiner questions, chapter budgets, argument spine, RQ rules, viva bank."],
+      ["briefD","doc","litreview-command","The task brief: ~50 papers, 2022+, frequency counting, vault output."],
+      ["corpusD","doc","corpus-candidates","70 seeded candidates: deep-research sweep + institutional, Chinese (SJTU, Shanghai AI Lab, Tsinghua) and 2026 additions. Download manifest with point breakdowns and strength signals: corpus-acquisition.md."],
+      ["papers","reg","papers.json","Paper objects with status fields."],
+      ["methods","reg","methods.json","Method registry with usage counts."],
+      ["pipes","reg","pipelines.json","Per-paper pipeline stage arrays."],
+      ["gaps","reg","gaps.json","Gap clusters and the selected direction."],
+      ["hw","reg","hardware-map.json","Equipment to methods and experiments."],
+      ["cand","reg","candidates.json","Scored discovery output."],
+      ["exps","reg","experiments.json","Experiment state machine."],
+      ["sCorpus","skill","/corpus-search",""],["sExtract","skill","/paper-extract",""],
+      ["sMethod","skill","/method-registry",""],["sPipe","skill","/pipeline-map",""],
+      ["sGap","skill","/gap-analysis",""],["sVault","skill","/vault-build",""],
+      ["sDash","skill","/dashboard-sync",""],["sCite","skill","/citation-audit",""],
+      ["sWrite","skill","/phd-writing",""],["sExp","skill","/experiment-plan",""],
+      ["sRos","skill","/ros2-review",""],["sSafe","skill","/hardware-safety",""],
+      ["aScout","agent","scout",""],["aExt","agent","extractor ×5",""],
+      ["aVer","agent","verifier",""],["aReg","agent","registrar",""],
+      ["aGap","agent","gap-analyst",""],["aDashE","agent","dashboard-engineer",""],
+      ["aRev","agent","thesis-reviewer",""],["aRos","agent","ros2-px4-engineer",""],
+      ["g1","gate","Gate 1","Corpus lock. Yours alone."],
+      ["g2","gate","Gate 2","Direction + pilot lock. Yours alone."],
+      ["g3","gate","Gate 3","Report sign-off. Yours alone."],
+      ["vault","view","Obsidian vault",""],["webapp","view","React dashboard",""],
+      ["report","view","Transfer report",""],["kg","view","Knowledge graph",""],
+      ["tCC","tool","Claude Code",""],["tNB","tool","NotebookLM",""],
+      ["tUA","tool","Understand-Anything",""],["tCX","tool","Codex",""],
+      ["tAG","tool","Antigravity",""],["tOB","tool","Obsidian",""]
+    ],
+    links:[
+      ["readme","arch"],["readme","pipe"],["readme","implD"],["readme","agentsD"],["readme","reportD"],["readme","briefD"],
+      ["arch","pipe"],["pipe","implD"],["agentsD","pipe"],["reportD","pipe"],["briefD","corpusD"],["corpusD","cand"],
+      ["arch","papers"],["arch","methods"],["arch","hw"],
+      ["sCorpus","cand"],["sExtract","papers"],["sMethod","methods"],["sPipe","pipes"],
+      ["sGap","gaps"],["sVault","vault"],["sDash","webapp"],["sCite","report"],["sWrite","report"],
+      ["sExp","exps"],["sRos","exps"],["sSafe","exps"],
+      ["aScout","sCorpus"],["aExt","sExtract"],["aVer","papers"],["aReg","papers"],["aReg","methods"],["aReg","pipes"],["aReg","exps"],
+      ["aGap","sGap"],["aDashE","webapp"],["aRev","report"],["aRos","implD"],
+      ["cand","g1"],["gaps","g2"],["report","g3"],["exps","g2"],
+      ["papers","vault"],["methods","vault"],["papers","webapp"],["methods","webapp"],["gaps","webapp"],["exps","webapp"],
+      ["papers","report"],["methods","report"],["gaps","report"],["exps","report"],
+      ["vault","kg"],["tUA","kg"],["tCC","papers"],["tNB","aVer"],["tCX","webapp"],["tAG","webapp"],["tOB","vault"],
+      ["hw","gaps"],["implD","exps"],["reportD","report"]
+    ]
+  },
+
+  /* corpus row: [#, title, year, venue, id, platform, zs, score, status, "R+H+Z+V+A", "STRENGTH CODES", institution] */
+  corpus:[
+    [1,"FalconGym: zero-shot vision gate-crossing via NeRF sim",2025,"IROS","2503.02198","drone","zero",95,"web","25+25+20+10+15","HW FRESH VENUE","UIUC"],
+    [2,"RAPTOR: one 2,084-param foundation policy flies 10 real quadrotors",2025,"arXiv","2509.11481","drone","zero",93,"web","25+25+20+8+15","HW FRESH LINE","(confirm)"],
+    [3,"MonoRace: monocular champion racing, won A2RL 2025 vs 3 human champions",2026,"arXiv","2601.15222","drone","zero",93,"webv","25+25+20+8+15","CHAMP LAB HW FRESH LINE","TU Delft MAVLab"],
+    [4,"E2E-Fly: integrated training-to-deployment, end-to-end quadrotor autonomy",2026,"arXiv","2604.12916","drone","zero",93,"web","25+25+20+8+15","LAB HW FRESH","SJTU"],
+    [5,"Attention-Based Map Encoding for Generalized Legged Locomotion",2025,"Sci. Robotics","2506.09588","legged","zero",93,"web","25+25+20+15+8","LAB VENUE HW FRESH","ETH-RSL"],
+    [6,"Learning to Fly in Seconds: RL-to-firmware, 18 s training, Crazyflie",2024,"RA-L","2311.13081","drone","zero",92,"web","20+25+20+12+15","LAB CODE HW VENUE","NYU ARPL"],
+    [7,"Wheeled Lab: Isaac Lab to low-cost wheeled robots",2025,"CoRL","2502.07380","ground","zero",92,"web","25+25+20+10+12","CODE ADOPT FRESH","UW"],
+    [8,"Agile Flight from Pixels without State Estimation",2024,"RSS","2406.12505*","drone","zero",90,"know","20+25+20+10+15","LAB VENUE LINE","UZH-RPG"],
+    [9,"Vision-based agile flight via differentiable physics",2025,"NMI","2407.10648*","drone","zero",90,"know","25+15+20+15+15","LAB VENUE FRESH","SJTU + Qi Zhi"],
+    [10,"What Matters in Zero-Shot Sim-to-Real Quadrotor RL (SimpleFlight)",2024,"arXiv","2412.11764","drone","zero",88,"web","20+25+20+8+15","LAB CODE HW ADOPT","Tsinghua"],
+    [11,"ANYmal Parkour: perception + skills from sim only",2024,"Sci. Robotics","2306.14874","legged","zero",88,"web","20+25+20+15+8","LAB VENUE HW LINE","ETH-RSL"],
+    [12,"Real-World Humanoid Locomotion with RL",2024,"Sci. Robotics","2303.03381*","humanoid","zero",88,"know","20+25+20+15+8","LAB VENUE HW","Berkeley"],
+    [13,"Learning Agile Soccer Skills for a Bipedal Robot",2024,"Sci. Robotics","2304.13653*","humanoid","zero",86,"know","20+25+20+15+6","LAB VENUE HW","DeepMind"],
+    [14,"Agile But Safe: collision-free high-speed legged locomotion",2024,"RSS","2401.17583*","legged","zero",85,"know","20+25+20+12+8","LAB VENUE HW","CMU LeCAR"],
+    [15,"HIM: Hybrid Internal Model for agile legged locomotion",2024,"ICLR","2312.11460*","legged","zero",85,"know","20+25+20+12+8","LAB VENUE CODE","Shanghai AI Lab + SJTU"],
+    [16,"DTC: Deep Tracking Control",2024,"Sci. Robotics","2309.15462*","legged","zero",84,"know","20+25+20+11+8","LAB VENUE","ETH-RSL"],
+    [17,"HoST: humanoid standing-up control across postures",2025,"arXiv","2502.08378*","humanoid","zero",84,"know","25+25+20+8+6","LAB HW FRESH","Shanghai AI Lab"],
+    [18,"Aerial Gym Simulator: GPU-parallel sim + zero-shot depth navigation",2025,"arXiv","2503.01471","drone","zero",83,"web","25+15+20+8+15","ADOPT CODE FRESH","NTNU-ARL"],
+    [19,"Extreme Parkour with Legged Robots",2024,"ICRA","2309.14341","legged","zero",83,"web","20+25+20+10+8","LAB HW CODE LINE","CMU"],
+    [20,"HOVER: neural whole-body humanoid controller",2024,"arXiv","2410.21229*","humanoid","zero",83,"know","20+25+20+10+8","LAB LINE","NVIDIA GEAR"],
+    [21,"SkyJEPA: long-horizon world models for zero-shot quadrotor control",2026,"arXiv","2606.23444","drone","zero",83,"web","25+15+20+8+15","LAB FRESH LINE","Berkeley + NYU"],
+    [22,"Superhuman Safe and Agile Racing through Multi-Agent RL",2026,"arXiv","2605.22748","drone","zero",83,"web","25+15+20+8+15","FRESH","(confirm)"],
+    [23,"Bridging Performance and Generalization in RL for Agile Flight",2026,"arXiv","2606.27348","drone","zero",83,"web","25+15+20+8+15","FRESH","(confirm)"],
+    [24,"World-model generalization under environmental variability (quadrotor)",2026,"arXiv","2606.05015","drone","zero",83,"web","25+15+20+8+15","FRESH","(confirm)"],
+    [25,"DATT: Deep Adaptive Trajectory Tracking",2023,"CoRL","2310.09053*","drone","zero",82,"know","12+25+20+10+15","VENUE CODE","UW"],
+    [26,"One Near-Hover Controller for Vastly Different Quadcopters",2023,"ICRA","2209.09232*","drone","zero",82,"know","12+25+20+10+15","LAB HW","Berkeley HiPeRLab"],
+    [27,"ASAP: Aligning Sim and Real Physics (humanoid delta-action)",2025,"arXiv","2502.01143*","humanoid","semi",80,"know","25+25+12+10+8","LAB FRESH LINE","CMU LeCAR + NVIDIA"],
+    [28,"Visual Dexterity: in-hand reorientation sim-to-real",2023,"Sci. Robotics","2211.11744*","manip","zero",80,"know","12+25+20+15+8","LAB VENUE HW","MIT"],
+    [29,"Bootstrapping RL with Imitation for Vision-Based Agile Flight",2024,"CoRL","2403.12203*","drone","zero",80,"know","20+15+20+10+15","LAB VENUE","UZH-RPG"],
+    [30,"Swift: champion-level drone racing (PPO + empirical residuals)",2023,"Nature","10.1038/s41586-023-06419-4","drone","semi",79,"webv","12+25+12+15+15","CHAMP LAB VENUE LINE","UZH-RPG"],
+    [31,"Reaching the Limit in Autonomous Racing: OC vs RL",2023,"Sci. Robotics","2310.10943*","drone","semi",79,"know","12+25+12+15+15","LAB VENUE LINE","UZH-RPG"],
+    [32,"DeXtreme: in-hand manipulation sim-to-real",2023,"ICRA","2210.13702*","manip","zero",79,"know","12+25+20+12+10","LAB HW","NVIDIA"],
+    [33,"Time-optimal quadcopter flight, end-to-end RL",2024,"arXiv","2311.16948*","drone","zero",78,"know","20+15+20+8+15","LAB LINE","TU Delft MAVLab"],
+    [34,"MuJoCo Playground (MJX; zero-shot state + pixels)",2025,"arXiv","2502.08844","multi","zero",78,"web","25+15+20+8+10","ADOPT CODE FRESH","DeepMind + Berkeley"],
+    [35,"Robot Parkour Learning",2023,"CoRL","2309.05665","legged","zero",77,"web","12+25+20+12+8","LAB VENUE CODE LINE","Qi Zhi + Stanford"],
+    [36,"DrEureka: LLM-designed rewards + DR for sim-to-real",2024,"RSS","2406.01967","legged","zero",75,"web","20+15+20+12+8","LAB VENUE CODE","UPenn + NVIDIA"],
+    [37,"DreamWaQ: implicit terrain, zero-shot on Unitree A1",2023,"ICRA","2301.10602","legged","zero",75,"web","12+25+20+10+8","LAB HW LINE","KAIST URL"],
+    [38,"Perceptive Locomotion in the Wild (teacher-student)",2022,"Sci. Robotics","2201.08117","legged","zero",74,"know","6+25+20+15+8","LAB VENUE HW LINE","ETH-RSL"],
+    [39,"Neural-Fly: rapid adaptation in strong winds",2022,"Sci. Robotics","10.1126/scirobotics.abm6597","drone","semi",73,"know","6+25+12+15+15","LAB VENUE HW","Caltech CAST"],
+    [40,"Walk These Ways: multiplicity of behaviour",2022,"CoRL","2212.03238*","legged","zero",71,"know","6+25+20+12+8","LAB CODE ADOPT","MIT Improbable AI"]
+  ],
+  strengthDecode:{
+    LAB:"Reputable lab or institution with a sustained line in this area",
+    CHAMP:"Competition win or landmark public demo on real hardware",
+    HW:"Strong real-hardware evidence: many flights, platforms, out-of-lab",
+    CODE:"Open code and checkpoints; reproducible on the RTX A4000",
+    VENUE:"Top venue: Nature, Science Robotics, RSS, CoRL, ICRA, IROS, RA-L, ICLR",
+    ADOPT:"Stack or benchmark adopted by many follow-up works",
+    LINE:"Part of a research line with visible momentum",
+    FRESH:"2025-26: low citations EXPECTED; judged by lab, venue and hardware instead"
+  },
+
+  siteMap:[
+    ["#hero","Home","weather sim, programme at a glance"],
+    ["#system","System","registry principle, generated views, five design loops"],
+    ["#tools","Tools","six tool lanes and their contracts"],
+    ["#pipeline","Pipeline","S1-S9 contracts, paper states, I1-I3, flight ladder"],
+    ["#gantt","Gantt","12-week programme, three lanes, three gates"],
+    ["#skills","Skills","installed vs Phase 0 vs external, agents roster"],
+    ["#graph","Graph","force-directed map of the whole system"],
+    ["#corpus","Corpus","47 seeded candidates with verification status"],
+    ["#map","Map","this site map + the update protocol"]
+  ],
+
+  protocol:[
+    ["Edit the source of truth first","the relevant file in docs/ (architecture, pipeline, implementation, agents, report contract, brief). Never start with a generated view."],
+    ["Record the loop","if the change alters how the system works, add a design-loop entry to phd-architecture.md section 0 with the critique that caused it."],
+    ["Update this hub","edit SITE_DATA in transfer-hub.html only; bump meta.version and meta.updated. Markup and renderers stay untouched."],
+    ["Update the README","site map and reading order, if pages, sections or files changed."],
+    ["Update Claude memory","the phd-transfer-pipeline memory, if the change alters standing facts a future session needs."],
+    ["Regenerate and commit","after Phase 0 exists: /vault-build + /dashboard-sync, then a git commit naming the loop."]
+  ]
+};
+
+/* ============ renderers (do not edit for content tweaks) ============ */
+const $=q=>document.querySelector(q), esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+/* nav stamp + footer */
+$("#verStamp").textContent="v"+SITE_DATA.meta.version+" · "+SITE_DATA.meta.updated;
+$("#footStamp").textContent="PhD Zero-Shot UAV Transfer Hub · v"+SITE_DATA.meta.version+" · updated "+SITE_DATA.meta.updated+" · generated from "+SITE_DATA.meta.sources;
+
+/* hero chips */
+$("#heroChips").innerHTML=SITE_DATA.heroChips.map(c=>`<span class="chip"><b>${c[0]}</b> ${c[1]}</span>`).join("");
+
+/* tooltip */
+const tip=$("#tip");
+function showTip(html,x,y){tip.innerHTML=html;tip.style.display="block";
+  const r=tip.getBoundingClientRect();
+  tip.style.left=Math.min(x+16,innerWidth-r.width-12)+"px";
+  tip.style.top=Math.min(y+16,innerHeight-r.height-12)+"px";}
+function hideTip(){tip.style.display="none";}
+document.addEventListener("mousemove",e=>{
+  const el=e.target.closest("[data-tip]");
+  if(el)showTip(el.dataset.tip,e.clientX,e.clientY); else if(tip.style.display==="block"&&!e.target.closest("#graphCanvas"))hideTip();
+});
+
+/* drawer */
+const drawer=$("#drawer"),dBack=$("#drawerBack");
+function openDrawer(tag,title,html){$("#dTag").textContent=tag;$("#dTitle").textContent=title;
+  $("#dBody").innerHTML=html;drawer.classList.add("open");dBack.style.display="block";}
+function closeDrawer(){drawer.classList.remove("open");dBack.style.display="none";}
+$("#dClose").onclick=closeDrawer; dBack.onclick=closeDrawer;
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();});
+
+/* registry */
+$("#regBox").innerHTML=SITE_DATA.registry.files.map((f,i)=>
+  `<span class="regFile" data-i="${i}">${f[0]}</span>`).join("");
+$("#regBox").addEventListener("click",e=>{const t=e.target.closest(".regFile");if(!t)return;
+  const f=SITE_DATA.registry.files[+t.dataset.i];
+  openDrawer("registry · single source of truth",f[0],`<p>${esc(f[1])}</p>`);});
+$("#regViews").innerHTML=SITE_DATA.registry.views.map((v,i)=>
+  `<span class="regView" data-i="${i}">${v[0]}<small>${v[1]}</small></span>`).join("");
+$("#regViews").addEventListener("click",e=>{const t=e.target.closest(".regView");if(!t)return;
+  const v=SITE_DATA.registry.views[+t.dataset.i];
+  openDrawer("generated view · never hand-edited",v[0],`<p>${esc(v[2])}</p>`);});
+
+/* loops (clickable) */
+$("#loopsEl").innerHTML=SITE_DATA.loops.map((l,i)=>
+  `<div class="loop" data-i="${i}"><b>${l[0]}</b> · ${esc(l[1])}<p>${esc(l[2])}</p></div>`).join("");
+$("#loopsEl").addEventListener("click",e=>{const l=e.target.closest(".loop");if(!l)return;
+  const d=SITE_DATA.loops[+l.dataset.i];
+  openDrawer("design loop",d[0],
+    `<div class="dRow"><b>What it added</b>${esc(d[1])}</div>
+     <div class="dRow"><b>Critique that produced the next loop</b>${esc(d[2])}</div>`);});
+
+/* tool cards */
+$("#toolCards").innerHTML=SITE_DATA.tools.map((t,i)=>
+  `<div class="card clickable" data-i="${i}"><h3><span class="ico">${t[0]}</span>${t[1]}</h3>
+   <p style="color:var(--acc);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">${t[2]}</p>
+   <p>${esc(t[3])}</p></div>`).join("");
+$("#toolCards").addEventListener("click",e=>{const c=e.target.closest(".card");if(!c)return;
+  const t=SITE_DATA.tools[+c.dataset.i];
+  openDrawer("tool lane · "+t[2],t[1],`<p>${esc(t[3])}</p><div class="dRow"><b>Lane rule</b>${esc(t[4])}</div>`);});
+
+/* pipeline stages */
+$("#stageFlow").innerHTML=SITE_DATA.stages.map((s,i)=>{
+  const gate=s[6]?` gate`:"";
+  return `<div class="stage${gate}" data-i="${i}"><b>${s[0]}</b><span>${s[1]}</span></div>`+
+    (i<SITE_DATA.stages.length-1?`<span class="arr">→</span>`:"");
+}).join("");
+$("#stageFlow").addEventListener("click",e=>{const el=e.target.closest(".stage");if(!el)return;
+  const s=SITE_DATA.stages[+el.dataset.i];
+  openDrawer("stage contract",s[0]+" · "+s[1],
+    `<div class="dRow"><b>Process</b>${esc(s[2])}</div>
+     <div class="dRow"><b>Input</b>${esc(s[3])}</div>
+     <div class="dRow"><b>Output</b>${esc(s[4])}</div>
+     <div class="dRow"><b>Owner</b>${esc(s[5])}</div>`+
+    (s[6]?`<div class="dRow"><b style="color:var(--warn)">Human gate</b>${esc(s[6])}</div>`:"")+
+    `<div class="dRow"><b>Failure path</b>${esc(s[7])}</div>`);});
+
+/* paper states */
+$("#paperStates").innerHTML=
+  SITE_DATA.paperStates.map((s,i)=>`<span class="st${i>=4?" good":""}" data-tip="<b>${s}</b> · pipeline state ${i+1} of 6">${s}</span>`+
+    (i<SITE_DATA.paperStates.length-1?`<span class="arr">→</span>`:"")).join("")+
+  `<span class="arr" style="margin:0 8px">|</span>`+
+  SITE_DATA.paperStatesBad.map(s=>`<span class="st badS" data-tip="<b>${s}</b> · failure branch, kept with reason for audit">${s}</span>`).join("");
+
+/* impl flow */
+$("#implFlow").innerHTML=SITE_DATA.impl.map((p,i)=>
+  `<div class="stage" data-impl="${i}"><b style="color:var(--ok)">${p[0]}</b><span>${p[1]}</span></div>`+
+  (i<SITE_DATA.impl.length-1?`<span class="arr">→</span>`:"")).join("");
+$("#implFlow").addEventListener("click",e=>{const el=e.target.closest(".stage");if(!el)return;
+  const p=SITE_DATA.impl[+el.dataset.impl];
+  openDrawer("implementation phase · "+p[2],p[0]+" · "+p[1],`<p>${esc(p[3])}</p>`);});
+
+/* ladder */
+$("#ladderEl").innerHTML=SITE_DATA.ladder.map((r,i)=>
+  `<div class="rung"><i>rung ${i+1}</i>${r}</div>`+(i<SITE_DATA.ladder.length-1?`<span class="arr">→</span>`:"")).join("");
+
+/* gantt */
+(function(){
+  const W=SITE_DATA.ganttWeeks;
+  $("#gHead").innerHTML=`<div></div>`+Array.from({length:W},(_,i)=>`<div>wk ${i+1}</div>`).join("");
+  let html="";
+  SITE_DATA.gantt.forEach(tr=>{
+    html+=`<div class="gTrack">${tr.track}</div>`;
+    tr.rows.forEach(r=>{
+      const[label,s,e,cls,tipTxt]=r;
+      const left=((s-1)/W*100).toFixed(2), width=((e-s+1)/W*100).toFixed(2);
+      html+=`<div class="gRow"><div class="gLabel">${label}</div><div class="gLane">
+        <div class="gBar ${cls}" style="left:${left}%;width:${width}%"
+          data-tip="<b>${label}</b> · weeks ${s}–${e}<br>${esc(tipTxt)}"></div></div></div>`;
+    });
+  });
+  html+=`<div class="gRow"><div class="gLabel" style="color:var(--warn)">Human gates</div><div class="gLane" style="background:none">`+
+    SITE_DATA.gates.map(g=>`<span class="gGate" style="left:${(g[0]/W*100).toFixed(2)}%"
+      data-tip="<b>${g[1]}</b> · end of week ${g[0]}<br>${esc(g[2])}"></span>`).join("")+`</div></div>`;
+  $("#gBody").innerHTML=html;
+})();
+
+/* skills tables */
+$("#envTable").innerHTML=`<thead><tr><th>Tool</th><th>Lane</th><th>Status</th><th>Note</th></tr></thead><tbody>`+
+  SITE_DATA.env.map(r=>`<tr data-tip="${esc(r[4])}"><td>${r[0]}</td><td>${r[1]}</td>
+    <td><span class="badge b-${r[2]}">${r[3]}</span></td><td>${esc(r[4])}</td></tr>`).join("")+"</tbody>";
+$("#skillTable").innerHTML=`<thead><tr><th>Skill</th><th>Does</th><th>Stage</th><th>Status</th></tr></thead><tbody>`+
+  SITE_DATA.skills.map(s=>`<tr><td><code>${s[0]}</code></td><td>${esc(s[1])}</td><td>${s[2]}</td>
+    <td><span class="badge b-p0">Phase 0</span></td></tr>`).join("")+"</tbody>";
+$("#agentTable").innerHTML=`<thead><tr><th>Agent</th><th>Model</th><th>Stage</th><th>Role</th><th>Status</th></tr></thead><tbody>`+
+  SITE_DATA.agents.map(a=>`<tr><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${esc(a[3])}</td>
+    <td><span class="badge b-p0">Phase 0</span></td></tr>`).join("")+"</tbody>";
+
+/* corpus table (rows clickable: press for the point breakdown drawer) */
+const ST_MAP={webv:["b-webv","web-verified"],web:["b-web","web-found"],know:["b-know","knowledge"]};
+const RUBRIC=[["R · Recency",25],["H · Hardware evidence",25],["Z · Zero-shot",20],["V · Venue + velocity",15],["A · Relevance",15]];
+function corpusLink(id){const clean=id.replace("*","");
+  return id.startsWith("10.")?`https://doi.org/${clean}`:`https://arxiv.org/abs/${clean}`;}
+$("#corpusTable").innerHTML=`<thead><tr><th>#</th><th>Paper</th><th>Institution</th><th>Year</th><th>Venue</th><th>ID</th><th>ZS</th><th>Points R+H+Z+V+A</th><th>Score</th><th>Strength</th><th>Cites</th><th>Status</th></tr></thead><tbody>`+
+  SITE_DATA.corpus.map((p,i)=>{
+    const id=p[4], conf=id.endsWith("*"), clean=id.replace("*",""), st=ST_MAP[p[8]];
+    return `<tr data-i="${i}" style="cursor:pointer" data-tip="<b>${esc(p[1])}</b><br>Press for the full point breakdown">
+      <td>${p[0]}</td><td>${esc(p[1])}</td><td>${esc(p[11])}</td><td>${p[2]}</td><td>${p[3]}</td>
+      <td><a href="${corpusLink(id)}" target="_blank" rel="noopener">${clean}</a>${conf?" <span style='color:var(--warn)' title='ID to confirm at S3'>?</span>":""}</td>
+      <td><span class="badge b-${p[6]}">${p[6]}</span></td>
+      <td class="mono" style="white-space:nowrap">${p[9]}</td>
+      <td class="score"><span class="scoreBar" style="width:${p[7]}%"></span><b>${p[7]}</b></td>
+      <td class="mono" style="font-size:11px">${p[10]}</td>
+      <td class="mono" style="color:var(--faint)" title="Filled at S2 via Semantic Scholar; low counts are EXPECTED for 2025-26 (FRESH rule)">S2</td>
+      <td><span class="badge ${st[0]}">${st[1]}</span></td></tr>`;
+  }).join("")+"</tbody>";
+$("#corpusTable").addEventListener("click",e=>{
+  if(e.target.closest("a"))return;
+  const tr=e.target.closest("tr[data-i]");if(!tr)return;
+  const p=SITE_DATA.corpus[+tr.dataset.i], pts=p[9].split("+").map(Number), st=ST_MAP[p[8]];
+  const bars=RUBRIC.map((r,k)=>`<div style="margin:7px 0">
+    <div style="display:flex;justify-content:space-between;font-size:12px">
+      <span>${r[0]}</span><b style="color:var(--txt)">${pts[k]} / ${r[1]}</b></div>
+    <div style="height:7px;background:#ffffff10;border-radius:4px;overflow:hidden">
+      <div style="height:100%;width:${(pts[k]/r[1]*100).toFixed(0)}%;background:linear-gradient(90deg,var(--acc2),var(--acc))"></div></div></div>`).join("");
+  const sig=p[10].split(" ").filter(Boolean).map(s=>
+    `<li><b>${s}</b>: ${esc(SITE_DATA.strengthDecode[s.replace("?","")]||"")}</li>`).join("");
+  openDrawer("candidate paper · "+esc(p[11]),p[1],
+    `<p>${p[2]} · ${p[3]} · platform: ${p[5]} · <span class="badge b-${p[6]}">${p[6]}</span>
+      <span class="badge ${st[0]}">${st[1]}</span></p>
+     <div class="dRow"><b>How the score of ${p[7]} is earned</b>${bars}</div>
+     <div class="dRow"><b>Strength beyond citations</b><ul>${sig}</ul></div>
+     <div class="dRow"><b>Citations</b>Fetched at S2 by the acquisition module (Semantic Scholar, raw/influential). For 2025-26 papers low counts are expected and never reduce the score: lab, venue and hardware evidence carry that weight (FRESH rule).</div>
+     <div class="dRow"><b>Get it</b><a href="${corpusLink(p[4])}" target="_blank" rel="noopener">${p[4].replace("*","")}</a>${p[4].endsWith("*")?" · confirm ID at S3 before download":""}</div>`);});
+
+/* sitemap + protocol */
+$("#siteMapEl").innerHTML=`<table>`+SITE_DATA.siteMap.map(m=>
+  `<tr><td style="white-space:nowrap"><a href="${m[0]}">${m[1]}</a></td><td>${esc(m[2])}</td></tr>`).join("")+`</table>
+  <p class="note" style="margin-top:10px">Canonical copy: README section "Site map". Repo docs: ${esc(SITE_DATA.meta.sources)}</p>`;
+$("#protoEl").innerHTML=SITE_DATA.protocol.map(p=>`<li><b>${esc(p[0])}</b>: ${esc(p[1])}</li>`).join("");
+
+/* nav scrollspy */
+(function(){
+  const links=[...document.querySelectorAll("nav a.nl")];
+  const map={}; links.forEach(l=>map[l.getAttribute("href").slice(1)]=l);
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{
+    if(en.isIntersecting){links.forEach(l=>l.classList.remove("on"));
+      const l=map[en.target.id]; if(l)l.classList.add("on");}
+  });},{rootMargin:"-35% 0px -55% 0px"});
+  document.querySelectorAll("section").forEach(s=>io.observe(s));
+})();
+
+/* ===================== weather simulation ===================== */
+(function(){
+  const cv=$("#weatherCanvas"),cx=cv.getContext("2d");
+  let W,H,t=0,mode="wind",parts=[],flash=0;
+  const CFG={
+    calm:{n:70, wind:.25, fall:.05, len:5,  alpha:.25, gust:0},
+    wind:{n:170,wind:1.6, fall:.08, len:14, alpha:.35, gust:.9},
+    rain:{n:230,wind:.7,  fall:3.2, len:12, alpha:.4,  gust:.3},
+    storm:{n:330,wind:2.6,fall:4.2, len:16, alpha:.5,  gust:1.6}
+  };
+  function size(){const r=cv.parentElement.getBoundingClientRect();
+    W=cv.width=r.width*devicePixelRatio;H=cv.height=r.height*devicePixelRatio;
+    cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    W=r.width;H=r.height;}
+  addEventListener("resize",size);size();
+  function spawn(){const c=CFG[mode];parts=Array.from({length:c.n},()=>({
+    x:Math.random()*W,y:Math.random()*H,v:.5+Math.random(),o:Math.random()*6.28}));}
+  spawn();
+  function field(x,y){ // pseudo-noise wind field
+    return Math.sin(x*0.004+t*0.42)+Math.sin(y*0.006-t*0.3)*0.6+Math.sin((x+y)*0.002+t*0.2)*0.4;
+  }
+  /* the drone */
+  const drone={x:0,y:0,vx:0,vy:0};
+  function drawDrone(gustX){
+    const c=CFG[mode];
+    const hx=W*0.76, hy=H*0.36+Math.sin(t*1.4)*8;
+    drone.vx+=(hx-drone.x)*0.004+gustX*0.12; drone.vy+=(hy-drone.y)*0.004;
+    drone.vx*=0.94; drone.vy*=0.94; drone.x+=drone.vx; drone.y+=drone.vy;
+    const tilt=Math.max(-.5,Math.min(.5,-drone.vx*0.05-c.wind*0.06));
+    cx.save();cx.translate(drone.x,drone.y);cx.rotate(tilt);
+    cx.strokeStyle="#c4b5fd";cx.lineWidth=2;cx.globalAlpha=.9;
+    cx.beginPath();cx.moveTo(-22,-9);cx.lineTo(22,9);cx.moveTo(-22,9);cx.lineTo(22,-9);cx.stroke();
+    cx.fillStyle="#a78bfa";
+    cx.beginPath();cx.ellipse(0,0,7,5,0,0,6.29);cx.fill();
+    const spin=t*30;
+    [[-22,-9],[22,9],[-22,9],[22,-9]].forEach((p,i)=>{
+      cx.beginPath();cx.ellipse(p[0],p[1],9*Math.abs(Math.sin(spin+i)),2.4,0,0,6.29);
+      cx.strokeStyle="#8b8fd8";cx.lineWidth=1.4;cx.stroke();});
+    cx.restore();cx.globalAlpha=1;
+    /* status label */
+    cx.fillStyle="#5a5e78";cx.font="11px Consolas,monospace";cx.textAlign="center";
+    const lbl={calm:"hover · nominal",wind:"gust rejection active",rain:"observation noise ↑",storm:"failsafe armed · ladder rung: tethered"}[mode];
+    cx.fillText(lbl,drone.x,drone.y+34);
+  }
+  function frame(){
+    t+=0.016;const c=CFG[mode];
+    cx.clearRect(0,0,W,H);
+    /* stars/dust */
+    cx.fillStyle="#ffffff08";
+    for(let i=0;i<40;i++){cx.fillRect((i*97+t*4)%W,(i*173)%H,1.4,1.4);}
+    const gust=Math.sin(t*0.7)*c.gust+field(t*40,0)*c.gust*0.4;
+    cx.lineWidth=1.1;
+    parts.forEach(p=>{
+      const a=field(p.x,p.y);
+      const wx=(c.wind+gust)*(1+0.4*Math.sin(a))*p.v, wy=c.fall*p.v+Math.cos(a)*0.3;
+      p.x+=wx;p.y+=wy;
+      if(p.x>W+20)p.x=-15;if(p.x<-20)p.x=W+15;if(p.y>H+20){p.y=-10;p.x=Math.random()*W;}
+      const isRain=(mode==="rain"||mode==="storm");
+      cx.strokeStyle=isRain?`rgba(140,160,230,${c.alpha*p.v*.8})`:`rgba(167,139,250,${c.alpha*p.v*.55})`;
+      cx.beginPath();cx.moveTo(p.x,p.y);
+      cx.lineTo(p.x-wx*c.len*(isRain?.6:1.4),p.y-wy*c.len*(isRain?1.2:.6));cx.stroke();
+    });
+    if(mode==="storm"){ if(Math.random()<0.006)flash=0.55;
+      if(flash>0){cx.fillStyle=`rgba(200,205,255,${flash})`;cx.fillRect(0,0,W,H);flash*=0.82;if(flash<0.02)flash=0;}}
+    drawDrone(gust);
+    requestAnimationFrame(frame);
+  }
+  frame();
+  document.querySelectorAll(".wxBtn[data-wx]").forEach(b=>b.onclick=()=>{
+    mode=b.dataset.wx;spawn();
+    document.querySelectorAll(".wxBtn[data-wx]").forEach(x=>x.classList.toggle("on",x===b));});
+})();
+
+/* ===================== force-directed graph ===================== */
+(function(){
+  const cv=$("#graphCanvas"),cx=cv.getContext("2d");
+  const G=SITE_DATA.graph;
+  let W,H,frozen=false,hover=null,drag=null,mx=0,my=0;
+  function size(){const r=cv.getBoundingClientRect();
+    cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;
+    cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=r.width;H=r.height;}
+  const nodes=G.nodes.map((n,i)=>{
+    const grp=Object.keys(G.groups).indexOf(n[1]);
+    const ang=(i/G.nodes.length)*6.283+grp*1.1;
+    return {id:n[0],grp:n[1],label:n[2],info:n[3],
+      x:0,y:0,vx:0,vy:0,ix:Math.cos(ang),iy:Math.sin(ang),
+      r:n[1]==="doc"?9:n[1]==="gate"?8:n[1]==="reg"?7.5:6};
+  });
+  const byId={};nodes.forEach(n=>byId[n.id]=n);
+  const links=G.links.map(l=>({a:byId[l[0]],b:byId[l[1]]})).filter(l=>l.a&&l.b);
+  const adj={};nodes.forEach(n=>adj[n.id]=new Set());
+  links.forEach(l=>{adj[l.a.id].add(l.b.id);adj[l.b.id].add(l.a.id);});
+  function reset(){size();nodes.forEach(n=>{
+    n.x=W/2+n.ix*Math.min(W,H)*0.32+(Math.random()-.5)*40;
+    n.y=H/2+n.iy*Math.min(W,H)*0.32+(Math.random()-.5)*40;n.vx=n.vy=0;});}
+  reset();addEventListener("resize",reset);
+  $("#gLegend").innerHTML=Object.entries(G.groupLabels).map(([k,v])=>
+    `<span><i style="background:${G.groups[k]}"></i>${v}</span>`).join("");
+  function step(){
+    if(frozen)return;
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i],b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy+0.01,d=Math.sqrt(d2);
+      if(d<180){const f=900/d2;dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;}}
+    links.forEach(l=>{let dx=l.b.x-l.a.x,dy=l.b.y-l.a.y,d=Math.sqrt(dx*dx+dy*dy)+0.01;
+      const f=(d-92)*0.004;dx/=d;dy/=d;
+      l.a.vx+=dx*f*d*0.05;l.a.vy+=dy*f*d*0.05;l.b.vx-=dx*f*d*0.05;l.b.vy-=dy*f*d*0.05;});
+    nodes.forEach(n=>{
+      n.vx+=(W/2-n.x)*0.0012;n.vy+=(H/2-n.y)*0.0012;
+      if(n!==drag){n.vx*=0.86;n.vy*=0.86;n.x+=n.vx;n.y+=n.vy;}
+      n.x=Math.max(24,Math.min(W-24,n.x));n.y=Math.max(24,Math.min(H-24,n.y));});
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    const hi=hover?adj[hover.id]:null;
+    links.forEach(l=>{
+      const on=hover&&(l.a===hover||l.b===hover);
+      cx.strokeStyle=on?"#a78bfa":"#32355466";cx.lineWidth=on?1.6:1;
+      cx.beginPath();cx.moveTo(l.a.x,l.a.y);cx.lineTo(l.b.x,l.b.y);cx.stroke();});
+    nodes.forEach(n=>{
+      const dim=hover&&n!==hover&&!hi.has(n.id);
+      cx.globalAlpha=dim?0.22:1;
+      cx.fillStyle=G.groups[n.grp];
+      cx.beginPath();cx.arc(n.x,n.y,n===hover?n.r+3:n.r,0,6.29);cx.fill();
+      if(n===hover){cx.strokeStyle="#fff";cx.lineWidth=1.5;cx.stroke();}
+      if(!dim&&(hover?(n===hover||hi.has(n.id)):n.r>=7.5)){
+        cx.fillStyle=dim?"#5a5e78":"#d8dae8";cx.font="11px Segoe UI,sans-serif";cx.textAlign="center";
+        cx.fillText(n.label,n.x,n.y-n.r-6);}
+      cx.globalAlpha=1;});
+  }
+  (function loop(){step();draw();requestAnimationFrame(loop);})();
+  function pick(x,y){let best=null,bd=400;
+    nodes.forEach(n=>{const d=(n.x-x)**2+(n.y-y)**2;if(d<bd){bd=d;best=n;}});
+    return bd<((best?best.r:0)+9)**2?best:null;}
+  cv.addEventListener("mousemove",e=>{
+    const r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top;
+    if(drag){drag.x=mx;drag.y=my;drag.vx=drag.vy=0;return;}
+    hover=pick(mx,my);cv.style.cursor=hover?"pointer":"grab";
+    if(hover){const deg=adj[hover.id].size;
+      showTip(`<b>${hover.label}</b> · ${G.groupLabels[hover.grp]}<br>${hover.info||""}${hover.info?"<br>":""}${deg} connection${deg===1?"":"s"} · press for details`,e.clientX,e.clientY);}
+    else hideTip();});
+  cv.addEventListener("mousedown",()=>{if(hover){drag=hover;cv.classList.add("grabbing");}});
+  addEventListener("mouseup",()=>{drag=null;cv.classList.remove("grabbing");});
+  cv.addEventListener("mouseleave",()=>{hover=null;hideTip();});
+  cv.addEventListener("click",()=>{if(hover&&!drag){
+    const n=hover,neigh=[...adj[n.id]].map(id=>byId[id].label).join(", ");
+    openDrawer(G.groupLabels[n.grp],n.label,
+      `<p>${esc(n.info||"Part of the pipeline system.")}</p>
+       <div class="dRow"><b>Connected to</b>${esc(neigh||"nothing yet")}</div>`);}});
+  $("#gFreeze").onclick=function(){frozen=!frozen;this.textContent=frozen?"Resume":"Freeze";this.classList.toggle("on",frozen);};
+  $("#gReset").onclick=reset;
+})();
+</script>
+</body>
+</html>
