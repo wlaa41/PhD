@@ -1,3 +1,8 @@
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# public repo: paper PDFs must never be committed (copyright); keep them local or make the repo private
+pdfs/
+docs/literature/pdfs/
+*.pdf
