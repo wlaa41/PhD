@@ -173,6 +173,15 @@
   .hBar:hover{filter:brightness(1.25)}
   .hRow .hv{font-size:12px;color:var(--txt);font-variant-numeric:tabular-nums}
 
+  /* corpus filters */
+  .filterRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0 0}
+  .filterRow .fLbl{font-size:11.5px;color:var(--faint);margin:0 2px 0 10px;text-transform:uppercase;letter-spacing:.06em}
+  .filterRow .fLbl:first-child{margin-left:0}
+  .fIn{background:#ffffff0d;border:1px solid var(--line);border-radius:8px;color:var(--txt);
+    padding:5px 12px;font-size:12.5px;min-width:180px;outline:none}
+  .fIn:focus{border-color:var(--acc)}
+  .fCount{margin-left:auto;font-size:12px;color:var(--faint)}
+
   /* pipeline */
   .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0}
   .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;transition:.15s;min-width:96px}
@@ -465,6 +474,25 @@
     <b>Press any row</b> for how its score is earned, point by point. Citations are fetched at S2 by the acquisition
     module. Ranked list: <code>corpus-candidates.md</code>; download manifest with instructions:
     <code>corpus-acquisition.md</code>. Scout completes to 100-120 in Phase 1; you approve the final ~50 at Gate 1.</p>
+  <div class="filterRow" id="corpusFilters">
+    <span class="fLbl">platform</span>
+    <button class="wxBtn on" data-f="plat" data-v="">all</button>
+    <button class="wxBtn" data-f="plat" data-v="drone">drone</button>
+    <button class="wxBtn" data-f="plat" data-v="legged">legged</button>
+    <button class="wxBtn" data-f="plat" data-v="humanoid">humanoid</button>
+    <button class="wxBtn" data-f="plat" data-v="manip">manip</button>
+    <button class="wxBtn" data-f="plat" data-v="ground">ground</button>
+    <span class="fLbl">source</span>
+    <button class="wxBtn on" data-f="st" data-v="">all</button>
+    <button class="wxBtn" data-f="st" data-v="webv">verified</button>
+    <button class="wxBtn" data-f="st" data-v="web">web-found</button>
+    <button class="wxBtn" data-f="st" data-v="know">to confirm</button>
+    <span class="fLbl">year</span>
+    <button class="wxBtn on" data-f="yr" data-v="">all</button>
+    <button class="wxBtn" data-f="yr" data-v="fresh">2025-26</button>
+    <input class="fIn" id="corpusSearch" type="search" placeholder="search title, lab, method…">
+    <span class="fCount" id="corpusCount"></span>
+  </div>
   <div class="tblWrap"><table id="corpusTable"></table></div>
   <p class="note">Status key: <span class="badge b-webv">web-verified</span> quotes on file ·
     <span class="badge b-web">web-found</span> ID resolves, claims unverified ·
@@ -499,7 +527,7 @@
    Markup and renderers below this block never change.
    ================================================================ */
 const SITE_DATA = {
-  meta:{ version:"1.5.0", updated:"2026-07-07",
+  meta:{ version:"1.6.0", updated:"2026-07-07",
     sources:"docs/phd-architecture.md · phd-pipeline.md · phd-implementation.md · phd-agents.md · phd-transfer-report.md · sim2real-litreview-command.md · corpus-candidates.md · corpus-acquisition.md" },
 
   heroChips:[
@@ -987,7 +1015,9 @@ function corpusLink(id){const clean=id.replace("*","");
 $("#corpusTable").innerHTML=`<thead><tr><th>#</th><th>Paper</th><th>Institution</th><th>Year</th><th>Venue</th><th>ID</th><th>ZS</th><th>Points R+H+Z+V+A</th><th>Score</th><th>Strength</th><th>Cites</th><th>Status</th></tr></thead><tbody>`+
   SITE_DATA.corpus.map((p,i)=>{
     const id=p[4], conf=id.endsWith("*"), clean=id.replace("*",""), st=ST_MAP[p[8]];
-    return `<tr data-i="${i}" style="cursor:pointer" data-tip="<b>${esc(p[1])}</b><br>Press for the full point breakdown">
+    return `<tr data-i="${i}" data-plat="${p[5]}" data-st="${p[8]}" data-yr="${p[2]>=2025?"fresh":""}"
+      data-q="${esc((p[1]+" "+p[11]+" "+p[10]).toLowerCase())}"
+      style="cursor:pointer" data-tip="<b>${esc(p[1])}</b><br>Press for the full point breakdown">
       <td>${p[0]}</td><td>${esc(p[1])}</td><td>${esc(p[11])}</td><td>${p[2]}</td><td>${p[3]}</td>
       <td><a href="${corpusLink(id)}" target="_blank" rel="noopener">${clean}</a>${conf?" <span style='color:var(--warn)' title='ID to confirm at S3'>?</span>":""}</td>
       <td><span class="badge b-${p[6]}">${p[6]}</span></td>
@@ -1015,6 +1045,30 @@ $("#corpusTable").addEventListener("click",e=>{
      <div class="dRow"><b>Strength beyond citations</b><ul>${sig}</ul></div>
      <div class="dRow"><b>Citations</b>Fetched at S2 by the acquisition module (Semantic Scholar, raw/influential). For 2025-26 papers low counts are expected and never reduce the score: lab, venue and hardware evidence carry that weight (FRESH rule).</div>
      <div class="dRow"><b>Get it</b><a href="${corpusLink(p[4])}" target="_blank" rel="noopener">${p[4].replace("*","")}</a>${p[4].endsWith("*")?" · confirm ID at S3 before download":""}</div>`);});
+
+/* corpus filters */
+(function(){
+  const state={plat:"",st:"",yr:"",q:""};
+  const rows=[...document.querySelectorAll("#corpusTable tbody tr")];
+  function apply(){
+    let n=0;
+    rows.forEach(r=>{
+      const ok=(!state.plat||r.dataset.plat===state.plat)&&
+               (!state.st||r.dataset.st===state.st)&&
+               (!state.yr||r.dataset.yr===state.yr)&&
+               (!state.q||r.dataset.q.indexOf(state.q)>=0);
+      r.style.display=ok?"":"none"; if(ok)n++;});
+    $("#corpusCount").textContent="showing "+n+" of "+rows.length;
+  }
+  $("#corpusFilters").addEventListener("click",e=>{
+    const b=e.target.closest(".wxBtn[data-f]");if(!b)return;
+    state[b.dataset.f]=b.dataset.v;
+    document.querySelectorAll(`#corpusFilters .wxBtn[data-f="${b.dataset.f}"]`)
+      .forEach(x=>x.classList.toggle("on",x===b));
+    apply();});
+  $("#corpusSearch").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();apply();});
+  apply();
+})();
 
 /* dashboard: aggregate from SITE_DATA.corpus, render KPI tiles + charts */
 (function(){
