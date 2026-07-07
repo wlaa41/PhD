@@ -117,6 +117,31 @@
     border-radius:var(--r);padding:14px 20px;margin:0 0 18px;font-size:13.5px;color:var(--txt)}
   .keyCallout code{color:var(--acc)}
 
+  /* agent board */
+  .orchBanner{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--acc2);
+    border-radius:var(--r);padding:14px 20px;margin:14px 0;font-size:13.5px;color:var(--dim)}
+  .orchBanner b{color:#fff}
+  .agentGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:14px;margin-top:14px}
+  .agentCard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:.18s}
+  .agentCard:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 8px 30px #00000055}
+  .agentTop{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .agentTop code{background:none;padding:0;color:#fff;font-size:13.5px;font-weight:700}
+  .mB{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.05em;border-radius:99px;padding:2px 9px}
+  .mB.sonnet{background:#a78bfa22;color:var(--acc)}
+  .mB.opus{background:#fbbf2422;color:var(--warn)}
+  .agentStage{font-size:11px;color:var(--faint);font-family:Consolas,monospace;margin-bottom:6px}
+  .agentRole{font-size:12.5px;color:var(--dim);min-height:34px}
+  .agentWrites{margin-top:9px;font-size:11.5px;border-top:1px solid #1c1e30;padding-top:8px;color:var(--dim)}
+  .agentWrites b{color:var(--ok);font-weight:600}
+  .agentWrites.ro b{color:var(--info)}
+  .agentTools{margin-top:5px;font-family:Consolas,monospace;font-size:10.5px;color:var(--faint)}
+  .flowStrip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 4px}
+  .flowN{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 13px;font-size:12.5px;cursor:default;transition:.15s}
+  .flowN:hover{border-color:var(--acc)}
+  .flowN.hum{border-color:#fbbf2455;background:#fbbf240d}
+  .flowN.par{border-style:dashed}
+  .flowN i{display:block;font-style:normal;font-size:10px;color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+
   /* pipeline */
   .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0}
   .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;transition:.15s;min-width:96px}
@@ -349,7 +374,16 @@
   <h3 class="subhead">Project skills · created at Phase 0</h3>
   <div class="tblWrap"><table id="skillTable"></table></div>
   <h3 class="subhead">Agents · created at Phase 0</h3>
-  <div class="tblWrap"><table id="agentTable"></table></div>
+  <div class="orchBanner"><b>Orchestrator = the main Claude Code session.</b> It plans, dispatches, checks gate
+    conditions and asks you at Gates 1-3; it never does bulk work itself. Agents write results to disk and return
+    two-line summaries, so the orchestrator's context stays small across the whole run. Model economy: sonnet for
+    bulk extraction and engineering, opus reserved for the two places judgement quality is the product.</div>
+  <div class="agentGrid" id="agentGrid"></div>
+  <h3 class="subhead">The weekly batch, as data flows through it</h3>
+  <div class="flowStrip" id="flowStrip"></div>
+  <p class="note">Single-writer rule: extractors touch only staging; the registrar alone writes the registry.
+    Parallelism never touches shared files. The thesis-reviewer is always invoked cold and never sees the
+    drafting conversation.</p>
 </section>
 
 <section id="graph">
@@ -412,7 +446,7 @@
    Markup and renderers below this block never change.
    ================================================================ */
 const SITE_DATA = {
-  meta:{ version:"1.3.0", updated:"2026-07-07",
+  meta:{ version:"1.4.0", updated:"2026-07-07",
     sources:"docs/phd-architecture.md · phd-pipeline.md · phd-implementation.md · phd-agents.md · phd-transfer-report.md · sim2real-litreview-command.md · corpus-candidates.md · corpus-acquisition.md" },
 
   heroChips:[
@@ -565,15 +599,34 @@ const SITE_DATA = {
     ["/hardware-safety","Pre-flight checklist; enforces the ladder","I2-I3"]
   ],
 
+  /* agent: [name, model, stage, role, tools, writes, readonly?, rules] */
   agents:[
-    ["scout","sonnet","S1-S2","Searches and scores candidates; writes only candidates.json; never extracts."],
-    ["extractor ×5","sonnet","S4","One paper per instance, five in parallel; writes only to staging; returns two lines."],
-    ["verifier","sonnet","S5","Field-by-field comparison against NotebookLM answers; strict; near-match is a mismatch."],
-    ["registrar","sonnet","S6","THE single writer of papers/methods/pipelines/experiments.json; logs every merge judgement."],
-    ["gap-analyst","opus","S7","Clusters limitations, filters by feasibility and novelty, sketches a pilot per shortlisted gap."],
-    ["dashboard-engineer","sonnet","S8","Builds and fixes dashboard generators; never hardcodes content."],
-    ["thesis-reviewer","opus","S9","Cold-context adversarial examiner; enforces the report contract; generates tailored viva questions."],
-    ["ros2-px4-engineer","sonnet","I1-I3","Owns the implementation track; acceptance evidence committed before any item is done."]
+    ["scout","sonnet","S1-S2 · discovery","Searches arXiv, Semantic Scholar and venue proceedings; snowballs from anchor reference lists; scores 0-100 with the fixed rubric.","Read · WebSearch · WebFetch · Write","candidates.json only",0,
+     "Never extracts papers. Never invents: every entry needs a resolvable arXiv id or DOI. One-line relevance note per paper."],
+    ["extractor ×5","sonnet","S4 · extraction","Extracts exactly ONE paper per invocation into the strict schema; five instances run in parallel, one paper each.","Read · Write","data/staging/{paper-id}.json",0,
+     "Not-stated over guessing; never infer results. Every quantitative claim gets a provenance field (page or section). Limitations section is mandatory. Returns a two-line summary, nothing more."],
+    ["verifier","sonnet","S5 · anti-hallucination","Compares a staged extraction field-by-field against NotebookLM's answers to the five standard questions.","Read · Write","staging status + quarantine-log.md",0,
+     "All five consistent = verified; any mismatch = quarantined with the discrepancy logged. A near-match on numbers is a mismatch. DOI must resolve to the claimed title and authors."],
+    ["registrar","sonnet","S6 · integration","THE single writer of the registry. Merges verified extractions, maps aliases, recomputes usage counts and trends, validates integrity.","Read · Write · Grep · Glob","papers · methods · pipelines · experiments.json — ONLY writer",0,
+     "Count = distinct papers, not mentions. Split test for method identity; every judgement logged in methods-decisions.md. Violations reported, never silently fixed. Experiment states must follow the ladder."],
+    ["gap-analyst","opus","S7 · analysis","Clusters limitations across the corpus, filters by hardware feasibility and novelty, ranks the shortlist of 3 with a pilot sketch each.","Read · Write","gaps.json",0,
+     "Runs only when ≥ 80% of the corpus is integrated. A gap must recur in ≥ 3 papers. A gap whose pilot is infeasible in 3 weeks is demoted. Sceptical by instruction: narrow and defensible beats impressive and vague."],
+    ["dashboard-engineer","sonnet","S8 · rendering","Builds and fixes the React dashboard generators and pages; reproduces and fixes Antigravity's E2E findings.","Read · Write · Edit · Bash · Grep · Glob","webapp/ code only — never content",0,
+     "NEVER hardcodes paper or method content: if content is wrong, the registry is wrong. Rendering is idempotent. Build stays passing at all times."],
+    ["thesis-reviewer","opus","S9 · adversarial review","A sceptical transfer-viva examiner in a fresh context; sees only the finished text and the registry, never the drafting conversation.","Read · Grep · Glob","findings list only",1,
+     "Enforces the phd-transfer-report.md contract: spine, RQ rules, evidence standards. Checks every count quoted in prose against methods.json. No praise. After each pass, generates the 5 viva questions the draft is least prepared for."],
+    ["ros2-px4-engineer","sonnet","I1-I3 · implementation","Owns the hardware track from week 1: infrastructure acceptance tests, baseline reproduction, pilot experiment.","Read · Write · Edit · Bash · Grep · Glob","src/ + experiments/logs/ — never experiments.json",0,
+     "Acceptance evidence (log, rosbag, benchmark) committed before any item is called done. Never proposes a flight without the ladder; every rung gets a written pass criterion first. Plans and results go to staging for the registrar."]
+  ],
+  agentFlow:[
+    ["Orchestrator","plans the batch",""],
+    ["extractor ×5","parallel, 1 paper each","par"],
+    ["data/staging/","drafts land here",""],
+    ["You + NotebookLM","5 questions per paper","hum"],
+    ["verifier","compare · verdict",""],
+    ["registrar","single writer merge",""],
+    ["registry","counts recomputed",""],
+    ["Friday render","vault + dashboard + commit",""]
   ],
 
   graph:{
@@ -852,9 +905,25 @@ $("#envTable").innerHTML=`<thead><tr><th>Tool</th><th>Lane</th><th>Status</th><t
 $("#skillTable").innerHTML=`<thead><tr><th>Skill</th><th>Does</th><th>Stage</th><th>Status</th></tr></thead><tbody>`+
   SITE_DATA.skills.map(s=>`<tr><td><code>${s[0]}</code></td><td>${esc(s[1])}</td><td>${s[2]}</td>
     <td><span class="badge b-p0">Phase 0</span></td></tr>`).join("")+"</tbody>";
-$("#agentTable").innerHTML=`<thead><tr><th>Agent</th><th>Model</th><th>Stage</th><th>Role</th><th>Status</th></tr></thead><tbody>`+
-  SITE_DATA.agents.map(a=>`<tr><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${esc(a[3])}</td>
-    <td><span class="badge b-p0">Phase 0</span></td></tr>`).join("")+"</tbody>";
+$("#agentGrid").innerHTML=SITE_DATA.agents.map((a,i)=>
+  `<div class="agentCard" data-i="${i}">
+    <div class="agentTop"><code>${a[0]}</code><span class="mB ${a[1]}">${a[1]}</span></div>
+    <div class="agentStage">${a[2]}</div>
+    <div class="agentRole">${esc(a[3])}</div>
+    <div class="agentWrites${a[6]?" ro":""}">${a[6]?"👁 read-only · returns":"✎ writes"} <b>${esc(a[5])}</b></div>
+    <div class="agentTools">${esc(a[4])}</div>
+  </div>`).join("");
+$("#agentGrid").addEventListener("click",e=>{const c=e.target.closest(".agentCard");if(!c)return;
+  const a=SITE_DATA.agents[+c.dataset.i];
+  openDrawer("agent · "+a[1]+" · "+a[2],a[0],
+    `<p>${esc(a[3])}</p>
+     <div class="dRow"><b>Tools</b><span class="mono" style="font-size:12px">${esc(a[4])}</span></div>
+     <div class="dRow"><b>${a[6]?"Read-only: returns":"Writes"}</b>${esc(a[5])}</div>
+     <div class="dRow"><b>Hard rules</b>${esc(a[7])}</div>
+     <div class="dRow"><b>Status</b><span class="badge b-p0">created at Phase 0</span> from the verbatim definition in phd-agents.md</div>`);});
+$("#flowStrip").innerHTML=SITE_DATA.agentFlow.map((f,i)=>
+  `<div class="flowN ${f[2]}" data-tip="<b>${esc(f[0])}</b><br>${esc(f[1])}"><i>${f[2]==="hum"?"human gate-work":f[2]==="par"?"parallel":"step "+(i+1)}</i>${esc(f[0])}</div>`+
+  (i<SITE_DATA.agentFlow.length-1?`<span class="arr">→</span>`:"")).join("");
 
 /* corpus table (rows clickable: press for the point breakdown drawer) */
 const ST_MAP={webv:["b-webv","web-verified"],web:["b-web","web-found"],know:["b-know","knowledge"]};
