@@ -23,10 +23,12 @@ The website mirrors this map in its Map section; this README copy is the source 
 |---|---|---|
 | Home | `#hero` | weather sim, programme at a glance |
 | System | `#system` | registry principle, generated views, five design loops |
+| Data | `#data` | registry schemas as cards: fields, join keys, writers, relations |
 | Tools | `#tools` | six tool lanes and their contracts |
 | Pipeline | `#pipeline` | S1-S9 contracts, paper states, I1-I3, flight ladder |
 | Gantt | `#gantt` | 12-week programme, three lanes, three gates |
-| Skills | `#skills` | installed vs Phase 0 vs external, agent roster |
+| Dash | `#dash` | KPI tiles + 4 corpus charts computed live from the table |
+| Skills | `#skills` | installed vs Phase 0 vs external; agent orchestration board |
 | Graph | `#graph` | force-directed map of the whole system |
 | Corpus | `#corpus` | seeded candidates with verification status |
 | Map | `#map` | site map mirror + update protocol |
