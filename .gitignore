@@ -6,3 +6,6 @@ desktop.ini
 pdfs/
 docs/literature/pdfs/
 *.pdf
+
+# personal documents stay local (public repo)
+*.docx
