@@ -182,6 +182,43 @@
   .fIn:focus{border-color:var(--acc)}
   .fCount{margin-left:auto;font-size:12px;color:var(--faint)}
 
+  /* method registry */
+  .familyBlock{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:15px 18px;margin-bottom:12px}
+  .familyBlock h3{font-size:14px;color:#fff;margin-bottom:2px}
+  .familyBlock .fNote{font-size:12px;color:var(--faint);margin-bottom:10px}
+  .methodChips{display:flex;flex-wrap:wrap;gap:8px}
+  .methodChip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:99px;
+    padding:5px 6px 5px 13px;font-size:12.5px;font-family:Consolas,monospace;color:var(--txt);cursor:pointer;transition:.15s}
+  .methodChip:hover{border-color:var(--acc);background:var(--accSoft)}
+  .methodChip .uc{background:var(--accSoft);color:var(--acc);border-radius:99px;min-width:22px;text-align:center;
+    padding:1px 7px;font-weight:700;font-size:11.5px}
+  /* paper cards + pages */
+  .paperGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .paperCard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;
+    display:flex;flex-direction:column;gap:7px;transition:.18s}
+  .paperCard:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 8px 30px #00000055}
+  .paperCard .pcRank{font-size:11px;color:var(--faint);font-family:Consolas,monospace}
+  .paperCard h3{font-size:14.5px;color:#fff;line-height:1.35}
+  .paperCard .pcMeta{font-size:12px;color:var(--dim)}
+  .paperCard .pcSum{font-size:12.5px;color:var(--dim);flex:1}
+  .paperCard .pcGo{align-self:flex-start;font-size:13px;font-weight:600}
+  .bc{font-size:13px;margin-bottom:14px;display:inline-block}
+  .ppMeta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+  .ppBlock{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;margin-top:14px}
+  .ppBlock h3{font-size:14px;color:var(--acc);text-transform:uppercase;letter-spacing:.08em;font-size:12px;margin-bottom:9px}
+  .ppBlock p,.ppBlock li{font-size:13.5px;color:var(--dim)}
+  .ppBlock ul{margin-left:18px}
+  .ppBlock li{margin:4px 0}
+  .ppStage{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #1c1e30}
+  .ppStage:last-child{border:none}
+  .ppStage .sn{width:26px;height:26px;border-radius:8px;background:var(--accSoft);color:var(--acc);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px}
+  .ppStage .sb b{display:block;color:var(--txt);font-size:13.5px}
+  .ppStage .sb span{font-size:12.5px;color:var(--dim)}
+  .ppStage .sb .methodChips{margin-top:6px}
+  .ppNav{display:flex;justify-content:space-between;margin-top:18px;font-size:13px}
+  .provNote{font-size:11.5px;color:var(--faint);border-left:2px solid var(--warn);padding:4px 12px;margin-top:14px}
+
   /* pipeline */
   .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0}
   .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;transition:.15s;min-width:96px}
@@ -308,6 +345,8 @@
   <a class="nl" href="#pipeline">Pipeline</a>
   <a class="nl" href="#gantt">Gantt</a>
   <a class="nl" href="#dash">Dash</a>
+  <a class="nl" href="#methods">Methods</a>
+  <a class="nl" href="#papers">Papers</a>
   <a class="nl" href="#skills">Skills</a>
   <a class="nl" href="#graph">Graph</a>
   <a class="nl" href="#corpus">Corpus</a>
@@ -426,6 +465,26 @@
   </div>
 </section>
 
+<section id="methods">
+  <div class="kicker">Level 2 · the method landscape</div>
+  <h2>Method registry, categorized</h2>
+  <p class="lead">Every method a paper uses gets a canonical id in one of nine families; usage counts are computed
+    live from the extracted papers below and are the essentiality signal. Counts are tiny now (5 of ~50 papers
+    extracted) and grow with every weekly batch. Press a method for its member papers.</p>
+  <div id="familyList"></div>
+</section>
+
+<section id="papers">
+  <div class="kicker">Level 3 · the papers themselves</div>
+  <h2>Extracted papers · 5 of ~50</h2>
+  <p class="lead">First S4-lite batch, extracted from arXiv pages on 2026-07-07 and pending NotebookLM verification
+    (S5). Each paper has its own page: full pipeline, methods, hardware, results, stated limitations and relevance
+    to this PhD. The hierarchy runs big to small: dashboard → methods → this list → one page per paper.</p>
+  <div class="paperGrid" id="paperGrid"></div>
+</section>
+
+<section id="paperPage" style="display:none"></section>
+
 <section id="skills">
   <div class="kicker">Capability</div>
   <h2>Skills and agents: installed vs pending</h2>
@@ -527,7 +586,7 @@
    Markup and renderers below this block never change.
    ================================================================ */
 const SITE_DATA = {
-  meta:{ version:"1.6.1", updated:"2026-07-07",
+  meta:{ version:"1.7.0", updated:"2026-07-07",
     sources:"docs/phd-architecture.md · phd-pipeline.md · phd-implementation.md · phd-agents.md · phd-transfer-report.md · sim2real-litreview-command.md · corpus-candidates.md · corpus-acquisition.md" },
 
   heroChips:[
@@ -819,6 +878,119 @@ const SITE_DATA = {
     FRESH:"2025-26: low citations EXPECTED; judged by lab, venue and hardware instead"
   },
 
+  /* method registry: families + canonical methods; usage counts computed live from papers[].methods */
+  methodFamilies:[
+    ["sim","Simulation and fidelity","What the policy is trained inside, and how close it is to reality"],
+    ["rand","Randomization and robustness","Making the policy survive what the simulator got wrong"],
+    ["ident","System ID and real-to-sim","Measuring reality and folding it back into the simulator"],
+    ["adapt","Adaptation mechanisms","Letting one policy adjust to platforms or conditions it never saw"],
+    ["distill","Distillation and curricula","Compressing many teachers or staged difficulty into one deployable student"],
+    ["algo","Training algorithms and architecture","The learning machinery itself"],
+    ["input","Abstraction and input design","What the policy actually sees; often where transfer is won"],
+    ["deploy","Deployment runtime","Getting the network onto the vehicle and keeping it real-time"],
+    ["latency","Latency and delay handling","The gap between command and consequence, modelled or compensated"]
+  ],
+  methods:[
+    ["photorealistic-nerf-sim","sim","NeRF photorealistic simulation","Neural Radiance Field scene reconstruction gives unlimited photorealistic training images; visual fidelity attacks the perception half of the gap."],
+    ["custom-high-performance-simulator","sim","Custom high-throughput simulator","Purpose-built fast dynamics sim (Learning to Fly in Seconds: ~5 months of flight per second on a laptop GPU)."],
+    ["differentiable-physics-learning","sim","Differentiable physics learning","Gradients flow through the dynamics model itself; sample efficiency beyond model-free RL."],
+    ["domain-randomization-dynamics","rand","Domain randomization (dynamics)","Randomize physical parameters in training so the real vehicle is just another sample."],
+    ["sensor-noise-modelling","rand","Sensor noise modelling","Inject empirically shaped sensor noise so perception in sim degrades like reality."],
+    ["system-identification","ident","System identification","Measure the real platform (or refine calibration from real flight data) and align the simulator to it. Merge note: MonoRace's offline calibration-refinement from flight logs is counted here (same mechanism: real data → model parameters)."],
+    ["meta-imitation-multi-platform","adapt","Meta-imitation across platform variants","Sample many platform variants (RAPTOR: 1,000 quadrotors), train per-variant teachers, learn one student that generalizes across them."],
+    ["in-context-adaptation-recurrent","adapt","In-context adaptation (recurrent)","Recurrent hidden state adapts to the platform within milliseconds at deployment; no gradient updates on the vehicle."],
+    ["teacher-student-distillation","distill","Teacher-student distillation","Distil privileged or per-variant teachers into one deployable student policy."],
+    ["curriculum-learning","distill","Curriculum learning","Staged task difficulty so training converges fast and stays stable."],
+    ["imitation-learning-sim","algo","Imitation learning in simulation","Learn from expert demonstrations generated inside the simulator."],
+    ["end-to-end-rl","algo","End-to-end reinforcement learning","Model-free RL from observations to low-level commands, no hand-built controller in the loop."],
+    ["asymmetric-actor-critic","algo","Asymmetric actor-critic","Critic sees privileged sim state; actor sees only what the real vehicle will have."],
+    ["tiny-policy-architecture","algo","Tiny policy architecture","Deliberately minimal networks (RAPTOR: 2,084 parameters, 3 layers) — less overfitting, trivial onboard compute."],
+    ["neural-pose-estimation-kalman","input","Neural pose estimation + Kalman filter","A learned pose estimator from RGB, fused with IMU through a Kalman filter (FalconGym's NPE)."],
+    ["gate-segmentation-model-fusion","input","Gate segmentation + drone-model fusion","Segment known track geometry with a NN, fuse with a drone dynamics model for robust monocular state estimation (MonoRace)."],
+    ["self-attention-sensor-fusion","input","Self-attention sensor fusion","Attention adaptively weights visual features vs pose estimates in the controller input."],
+    ["direct-motor-command-control","deploy","Direct motor-command control","The network outputs motor/RPM commands directly, bypassing inner-loop controllers (MonoRace: 500 Hz on the flight controller)."],
+    ["microcontroller-deployment","deploy","Microcontroller / FC deployment","Policy runs on the flight controller or MCU itself under real-time guarantees."],
+    ["sim-to-sim-validation","deploy","Sim-to-sim transfer validation","Validate in a second, different simulator before touching hardware — cheap gap detection."],
+    ["hardware-in-the-loop","deploy","Hardware-in-the-loop testing","Run the real autopilot hardware against the simulator before flight (our I2.5 rung)."],
+    ["latency-compensation","latency","Latency compensation","Model or compensate the sensing-to-actuation delay explicitly during training or deployment."]
+  ],
+
+  /* extracted papers (S4-lite from arXiv pages 2026-07-07; S5 NotebookLM verification pending) */
+  papers:[
+    {id:"falcongym-2025",rank:1,title:"FalconGym: A Photorealistic Simulation Framework for Zero-Shot Sim-to-Real Vision-Based Quadrotor Navigation",
+     authors:"Yan Miao, Will Shen, Sayan Mitra",inst:"UIUC",year:2025,venue:"IROS 2025",arxiv:"2503.02198",zs:"zero",score:95,breakdown:"25+25+20+10+15",strength:"HW FRESH VENUE",
+     summary:"Trains a vision-based gate-navigation policy entirely inside a NeRF-reconstructed photorealistic simulator, then flies it zero-shot on a real quadrotor. The trick is splitting perception into a Neural Pose Estimator fused with a Kalman filter, plus a self-attention controller that adaptively weighs visual features against pose estimates.",
+     sim:"FalconGym: NeRF photorealistic environment, effectively unlimited synthetic training images",
+     methods:["photorealistic-nerf-sim","imitation-learning-sim","neural-pose-estimation-kalman","self-attention-sensor-fusion"],
+     pipeline:[["NeRF scene capture","photorealistic-nerf-sim","Reconstruct the flight space photorealistically; generate unlimited synthetic camera images"],
+       ["Imitation learning in sim","imitation-learning-sim","Policy learns gate navigation entirely from simulated demonstrations"],
+       ["Perception stack","neural-pose-estimation-kalman","Neural Pose Estimator from RGB + Kalman fusion with IMU"],
+       ["Adaptive controller","self-attention-sensor-fusion","Self-attention integrates visual features and pose estimates"],
+       ["Zero-shot real flight","","No fine-tuning; straight to hardware"]],
+     hardware:"Real quadrotor, 38 cm-radius racing gates, three track shapes (circle, U-turn, figure-8)",
+     results:["95.8% success rate across 30 live flights","~10 cm average gate-crossing error","~120 real gate crossings total","Zero fine-tuning after simulation"],
+     limitations:["Not stated in the abstract; full-PDF extraction pending (S4 full pass)"],
+     relevance:"NeRF-based sim runs on our RTX A4000; gates and mounts are printable on the H2C; the NPE + Kalman split is a candidate perception stack for the X500 with an Orin Nano."},
+    {id:"raptor-2026",rank:2,title:"RAPTOR: A Foundation Policy for Quadrotor Control",
+     authors:"Jonas Eschmann, Dario Albani, Giuseppe Loianno",inst:"NYU ARPL",year:2026,venue:"arXiv (v2 2026-04)",arxiv:"2509.11481",zs:"zero",score:93,breakdown:"25+25+20+8+15",strength:"HW FRESH LINE",
+     summary:"One 2,084-parameter recurrent policy flies ten physically different real quadrotors, 32 g to 2.4 kg, zero-shot. Trained by sampling 1,000 simulated quadrotor variants, training an RL teacher for each, and distilling all of them into a single tiny student whose recurrent state adapts in-context within milliseconds.",
+     sim:"Simulated distribution of 1,000 quadrotor variants; RL teachers per variant",
+     methods:["meta-imitation-multi-platform","teacher-student-distillation","in-context-adaptation-recurrent","tiny-policy-architecture","end-to-end-rl"],
+     pipeline:[["Sample 1,000 platform variants","meta-imitation-multi-platform","Motors, frames, propellers, masses drawn from a wide distribution"],
+       ["RL teacher per variant","end-to-end-rl","1,000 specialist teachers trained in simulation"],
+       ["Distil to one student","teacher-student-distillation","Meta-Imitation Learning compresses all teachers into one policy"],
+       ["Tiny recurrent network","tiny-policy-architecture","3 layers, 2,084 parameters; recurrence carries platform identity"],
+       ["Zero-shot on 10 real quadrotors","in-context-adaptation-recurrent","PX4, Betaflight, Crazyflie, M5StampFly; adapts within milliseconds"]],
+     hardware:"10 real quadrotors, 32 g to 2.4 kg: brushed + brushless motors, soft + rigid frames, 2/3/4-blade props, four flight-controller ecosystems",
+     results:["Zero-shot trajectory tracking on all 10 platforms","Indoor and outdoor flight, wind disturbance, physical poking","Different propellers swapped without retraining"],
+     limitations:["Not stated in the abstract; full-PDF extraction pending (S4 full pass)"],
+     relevance:"The foundation-policy trend in miniature: 2,084 parameters would run on anything we own, including the Pixhawk itself. Cross-platform generalization is exactly our drone-to-RoboMaster ambition."},
+    {id:"monorace-2026",rank:3,title:"MonoRace: Winning Champion-Level Drone Racing with Robust Monocular AI",
+     authors:"Stavrow A. Bahnam, Robin Ferede, Till M. Blaha, Anton E. Lang, Erin Lucassen, Quentin Missinne, Aderik E.C. Verraest, Christophe De Wagter, Guido C.H.E. de Croon",
+     inst:"TU Delft MAVLab",year:2026,venue:"arXiv 2026-01",arxiv:"2601.15222",zs:"zero",score:93,breakdown:"25+25+20+8+15",strength:"CHAMP LAB HW FRESH LINE",
+     summary:"Won the 2025 A2RL Abu Dhabi drone racing championship against every AI team and three human world champions, using only a monocular rolling-shutter camera and IMU, fully onboard. Robust state estimation fuses NN gate segmentation with a drone model; a neural network sends motor commands directly at 500 Hz.",
+     sim:"Training approach not detailed in the abstract; full-PDF extraction pending",
+     methods:["gate-segmentation-model-fusion","system-identification","direct-motor-command-control","microcontroller-deployment","end-to-end-rl"],
+     pipeline:[["Monocular perception","gate-segmentation-model-fusion","NN gate segmentation fused with a drone dynamics model for state estimation"],
+       ["Offline calibration refinement","system-identification","Known gate geometry + onboard flight data refine calibration parameters"],
+       ["Neural guidance and control","end-to-end-rl","Network computes guidance and control jointly"],
+       ["Direct motor commands at 500 Hz","direct-motor-command-control","Bypasses inner-loop controllers, runs on the flight controller"],
+       ["Competition deployment","microcontroller-deployment","Out-of-lab venue, no external tracking, up to 100 km/h"]],
+     hardware:"Racing quadrotor: monocular rolling-shutter camera + IMU only; all compute onboard the flight controller",
+     results:["Won A2RL 2025 outright: beat all AI teams and 3 human world champions (web-verified 2-0 with quote)","Speeds up to 100 km/h on the competition track","No external motion-capture at any point"],
+     limitations:["Paper reports handling camera interference and IMU saturation as engineering hurdles","Racing-gate tracks are a structured environment; generality beyond gates untested (our reading, to verify)"],
+     relevance:"The strongest evidence in the corpus that fully-onboard monocular agile flight is competition-grade in 2025-26. Its state-estimation recipe is hardware-frugal: our Orin Nano is generous by comparison."},
+    {id:"fly-seconds-2024",rank:6,title:"Learning to Fly in Seconds",
+     authors:"Jonas Eschmann, Dario Albani, Giuseppe Loianno",inst:"NYU ARPL",year:2024,venue:"RA-L 2024",arxiv:"2311.13081",zs:"zero",score:92,breakdown:"20+25+20+12+15",strength:"LAB CODE HW VENUE",
+     summary:"An asymmetric actor-critic RL policy for direct RPM control trained in 18 seconds on a consumer laptop, thanks to a purpose-built simulator running about five months of flight per second. Deployed on a Crazyflie nano quadrotor with the policy on a microcontroller under real-time guarantees. Fully open-sourced.",
+     sim:"Custom optimized multirotor simulator: ~5 months of simulated flight per second on a laptop GPU; open source",
+     methods:["custom-high-performance-simulator","end-to-end-rl","asymmetric-actor-critic","curriculum-learning","direct-motor-command-control","microcontroller-deployment"],
+     pipeline:[["Optimized simulator","custom-high-performance-simulator","Sample cost driven near zero: months of flight per wall-clock second"],
+       ["Curriculum","curriculum-learning","Staged difficulty stabilizes fast training"],
+       ["Asymmetric actor-critic RL","asymmetric-actor-critic","Critic gets privileged state; actor gets deployable observations; 18 s to train"],
+       ["Direct RPM policy","direct-motor-command-control","End-to-end to motor speeds, no cascade"],
+       ["MCU deployment","microcontroller-deployment","Real-time guarantees on the Crazyflie's microcontroller"]],
+     hardware:"Crazyflie nano quadrotor; consumer-grade laptop for training; onboard MCU inference",
+     results:["18 seconds of training to a flying policy","Competitive trajectory tracking vs state-of-the-art controllers","Code, simulator and checkpoints open source"],
+     limitations:["Zero-shot status inferred from the deployment claims; exact wording to verify at S5","Not stated further in the abstract; full-PDF extraction pending"],
+     relevance:"Our designated I2 baseline candidate: open code, tiny compute, PX4-adjacent tooling. Reproducing it end-to-end is the fastest honest route to a tethered flight for report Chapter 4."},
+    {id:"e2e-fly-2026",rank:4,title:"E2E-Fly: An Integrated Training-to-Deployment System for End-to-End Quadrotor Autonomy",
+     authors:"Fangyu Sun, Fanxing Li, Linzuo Zhang, Yu Hu, Renbiao Jin, Shuyu Wu, Wenxian Yu, Danping Zou",
+     inst:"SJTU (Danping Zou group)",year:2026,venue:"arXiv 2026-04",arxiv:"2604.12916",zs:"zero",score:93,breakdown:"25+25+20+8+15",strength:"LAB HW FRESH",
+     summary:"A whole-system answer to the same problem our pipeline attacks piecemeal: one integrated stack from a differentiable-physics + RL simulator with structured rewards, through system identification, domain randomization, latency compensation and sensor-noise modelling, to a two-stage validation ladder (sim-to-sim, then hardware-in-the-loop) and real deployment of six end-to-end tasks on two physical quadrotors.",
+     sim:"High-performance simulator supporting differentiable physics learning AND reinforcement learning, with structured reward design per task",
+     methods:["differentiable-physics-learning","end-to-end-rl","system-identification","domain-randomization-dynamics","latency-compensation","sensor-noise-modelling","sim-to-sim-validation","hardware-in-the-loop"],
+     pipeline:[["Differentiable + RL simulator","differentiable-physics-learning","One simulator, two learning modes, structured rewards per task"],
+       ["Real-to-sim alignment","system-identification","System ID plus sensor-noise modelling close the modelling gap"],
+       ["Robustness training","domain-randomization-dynamics","DR over dynamics; latency compensated explicitly"],
+       ["Sim-to-sim validation","sim-to-sim-validation","Second simulator catches overfitting to the training sim"],
+       ["HIL, then hardware","hardware-in-the-loop","Real autopilot against the sim before real flight; then 6 tasks on 2 platforms"]],
+     hardware:"Two physical quadrotor platforms (models pending full-PDF read)",
+     results:["Six end-to-end control tasks deployed on real hardware","First system to unify differentiable physics learning with training, validation and deployment (authors' claim)"],
+     limitations:["Numerical performance metrics not in the abstract; full-PDF extraction pending"],
+     relevance:"The closest published blueprint to our own I1-I3 stack, from a Chinese lab (SJTU) in 2026: its validation ladder (sim-to-sim, HIL, real) is our flight ladder with different names. Reading its full PDF early will pressure-test our implementation plan."}
+  ],
+
   siteMap:[
     ["#hero","Home","weather sim, programme at a glance"],
     ["#system","System","registry principle, generated views, five design loops"],
@@ -827,6 +999,8 @@ const SITE_DATA = {
     ["#pipeline","Pipeline","S1-S9 contracts, paper states, I1-I3, flight ladder"],
     ["#gantt","Gantt","12-week programme, three lanes, three gates"],
     ["#dash","Dash","KPI tiles + corpus charts computed live from the table"],
+    ["#methods","Methods","categorized method registry with live usage counts"],
+    ["#papers","Papers","extracted papers, big picture to detail, one page each (#paper/{id})"],
     ["#skills","Skills","installed vs Phase 0 vs external, agents roster"],
     ["#graph","Graph","force-directed map of the whole system"],
     ["#corpus","Corpus","47 seeded candidates with verification status"],
@@ -1009,6 +1183,7 @@ $("#flowStrip").innerHTML=SITE_DATA.agentFlow.map((f,i)=>
 
 /* corpus table (rows clickable: press for the point breakdown drawer) */
 const ST_MAP={webv:["b-webv","web-verified"],web:["b-web","web-found"],know:["b-know","knowledge"]};
+const PAGE_BY_ARXIV={};SITE_DATA.papers.forEach(p=>PAGE_BY_ARXIV[p.arxiv]=p.id);
 const RUBRIC=[["R · Recency",25],["H · Hardware evidence",25],["Z · Zero-shot",20],["V · Venue + velocity",15],["A · Relevance",15]];
 function corpusLink(id){const clean=id.replace("*","");
   return id.startsWith("10.")?`https://doi.org/${clean}`:`https://arxiv.org/abs/${clean}`;}
@@ -1018,7 +1193,7 @@ $("#corpusTable").innerHTML=`<thead><tr><th>#</th><th>Paper</th><th>Institution<
     return `<tr data-i="${i}" data-plat="${p[5]}" data-st="${p[8]}" data-yr="${p[2]>=2025?"fresh":""}"
       data-q="${esc((p[1]+" "+p[11]+" "+p[10]).toLowerCase())}"
       style="cursor:pointer" data-tip="<b>${esc(p[1])}</b><br>Press for the full point breakdown">
-      <td>${p[0]}</td><td>${esc(p[1])}</td><td>${esc(p[11])}</td><td>${p[2]}</td><td>${p[3]}</td>
+      <td>${p[0]}</td><td>${esc(p[1])}${PAGE_BY_ARXIV[clean]?` <a href="#paper/${PAGE_BY_ARXIV[clean]}" style="font-size:11px;white-space:nowrap">📄 page</a>`:""}</td><td>${esc(p[11])}</td><td>${p[2]}</td><td>${p[3]}</td>
       <td><a href="${corpusLink(id)}" target="_blank" rel="noopener">${clean}</a>${conf?" <span style='color:var(--warn)' title='ID to confirm at S3'>?</span>":""}</td>
       <td><span class="badge b-${p[6]}">${p[6]}</span></td>
       <td class="mono" style="white-space:nowrap">${p[9]}</td>
@@ -1069,6 +1244,77 @@ $("#corpusTable").addEventListener("click",e=>{
   $("#corpusSearch").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();apply();});
   apply();
 })();
+
+/* method registry + extracted papers + per-paper pages */
+const paperById={};SITE_DATA.papers.forEach(p=>paperById[p.id]=p);
+const methodById={};SITE_DATA.methods.forEach(m=>methodById[m[0]]=m);
+const methodUsage={};SITE_DATA.methods.forEach(m=>methodUsage[m[0]]=[]);
+SITE_DATA.papers.forEach(p=>p.methods.forEach(id=>{if(methodUsage[id])methodUsage[id].push(p.id);}));
+function methodChip(id){const m=methodById[id];if(!m)return "";
+  return `<span class="methodChip" data-m="${id}">${m[2]}<span class="uc">${methodUsage[id].length}</span></span>`;}
+
+$("#familyList").innerHTML=SITE_DATA.methodFamilies.map(f=>{
+  const ms=SITE_DATA.methods.filter(m=>m[1]===f[0]);
+  return `<div class="familyBlock"><h3>${f[1]}</h3><div class="fNote">${esc(f[2])}</div>
+    <div class="methodChips">${ms.map(m=>methodChip(m[0])).join("")}</div></div>`;}).join("");
+
+document.addEventListener("click",e=>{const c=e.target.closest(".methodChip");if(!c)return;
+  const m=methodById[c.dataset.m],members=methodUsage[c.dataset.m];
+  const fam=SITE_DATA.methodFamilies.find(f=>f[0]===m[1]);
+  openDrawer("method · "+fam[1],m[2],
+    `<p>${esc(m[3])}</p>
+     <div class="dRow"><b>Canonical id</b><code>${m[0]}</code></div>
+     <div class="dRow"><b>Usage count</b>${members.length} of ${SITE_DATA.papers.length} extracted papers · frequency is the essentiality signal and grows with each weekly batch</div>
+     <div class="dRow"><b>Member papers</b>${members.length?members.map(pid=>
+       `<div style="margin:3px 0">· <a href="#paper/${pid}">${esc(paperById[pid].title.split(":")[0])}</a> (${paperById[pid].year})</div>`).join(""):"none yet"}</div>`);});
+
+$("#paperGrid").innerHTML=SITE_DATA.papers.map(p=>
+ `<div class="paperCard"><span class="pcRank">corpus #${p.rank} · score ${p.score}</span>
+  <h3>${esc(p.title.split(":")[0])}</h3>
+  <div class="pcMeta">${esc(p.inst)} · ${p.year} · ${p.venue} · <span class="badge b-${p.zs}">${p.zs}</span></div>
+  <div class="pcSum">${esc(p.summary.slice(0,160))}…</div>
+  <a class="pcGo" href="#paper/${p.id}">open paper page →</a></div>`).join("");
+
+function renderPaper(pid){
+  const p=paperById[pid];if(!p)return false;
+  const idx=SITE_DATA.papers.findIndex(x=>x.id===pid);
+  const prev=SITE_DATA.papers[(idx-1+SITE_DATA.papers.length)%SITE_DATA.papers.length];
+  const next=SITE_DATA.papers[(idx+1)%SITE_DATA.papers.length];
+  $("#paperPage").innerHTML=`
+    <a class="bc" href="#papers">← all extracted papers</a>
+    <div class="kicker">paper page · corpus #${p.rank} · S4-lite extraction</div>
+    <h2 style="max-width:900px">${esc(p.title)}</h2>
+    <p class="lead" style="margin-bottom:4px">${esc(p.authors)}</p>
+    <div class="ppMeta">
+      <span class="chip">${esc(p.inst)}</span><span class="chip">${p.year} · ${p.venue}</span>
+      <span class="chip"><span class="badge b-${p.zs}">${p.zs}</span></span>
+      <span class="chip">score <b>${p.score}</b> · ${p.breakdown}</span>
+      <span class="chip">${p.strength}</span>
+      <span class="chip"><a href="https://arxiv.org/abs/${p.arxiv}" target="_blank" rel="noopener">arXiv ${p.arxiv}</a></span></div>
+    <div class="ppBlock"><h3>Summary</h3><p>${esc(p.summary)}</p></div>
+    <div class="ppBlock"><h3>Pipeline · simulation to real hardware</h3>${p.pipeline.map((s,i)=>
+      `<div class="ppStage"><div class="sn">${i+1}</div><div class="sb"><b>${esc(s[0])}</b><span>${esc(s[2])}</span>
+       ${s[1]?`<div class="methodChips">${methodChip(s[1])}</div>`:""}</div></div>`).join("")}</div>
+    <div class="ppBlock"><h3>All methods used (${p.methods.length})</h3><div class="methodChips">${p.methods.map(methodChip).join("")}</div></div>
+    <div class="ppBlock"><h3>Simulator and training stack</h3><p>${esc(p.sim)}</p></div>
+    <div class="ppBlock"><h3>Hardware</h3><p>${esc(p.hardware)}</p></div>
+    <div class="ppBlock"><h3>Real-world results</h3><ul>${p.results.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>
+    <div class="ppBlock"><h3>Stated limitations and future work</h3><ul>${p.limitations.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>
+    <div class="ppBlock" style="border-color:var(--acc2)"><h3>Relevance to this PhD</h3><p>${esc(p.relevance)}</p></div>
+    <div class="provNote">Provenance: extracted from the arXiv abstract page on 2026-07-07 (S4-lite). Anything marked pending awaits the full-PDF pass and NotebookLM verification (S5) before it can enter papers.json as verified.</div>
+    <div class="ppNav"><a href="#paper/${prev.id}">← ${prev.id}</a><a href="#paper/${next.id}">${next.id} →</a></div>`;
+  return true;
+}
+function route(){
+  const m=location.hash.match(/^#paper\/([a-z0-9-]+)$/);
+  const on=!!(m&&renderPaper(m[1]));
+  document.querySelectorAll("section").forEach(s=>{
+    if(s.id==="paperPage")s.style.display=on?"":"none";
+    else s.style.display=on?"none":"";});
+  if(on)window.scrollTo(0,0);
+  else if(location.hash.length>1){const t=document.getElementById(location.hash.slice(1));if(t)t.scrollIntoView();}
+}
+addEventListener("hashchange",route);route();
 
 /* dashboard: aggregate from SITE_DATA.corpus, render KPI tiles + charts */
 (function(){

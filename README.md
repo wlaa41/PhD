@@ -28,6 +28,8 @@ The website mirrors this map in its Map section; this README copy is the source 
 | Pipeline | `#pipeline` | S1-S9 contracts, paper states, I1-I3, flight ladder |
 | Gantt | `#gantt` | 12-week programme, three lanes, three gates |
 | Dash | `#dash` | KPI tiles + 4 corpus charts computed live from the table |
+| Methods | `#methods` | categorized method registry (9 families), live usage counts |
+| Papers | `#papers` | extracted papers; each opens its own page at `#paper/{id}` |
 | Skills | `#skills` | installed vs Phase 0 vs external; agent orchestration board |
 | Graph | `#graph` | force-directed map of the whole system |
 | Corpus | `#corpus` | seeded candidates with verification status |
