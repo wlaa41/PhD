@@ -55,6 +55,7 @@
     <a class="chip-btn" href="#agents">Agents</a>
     <a class="chip-btn" href="#data">Schemas</a>
     <a class="chip-btn" href="#implementation">Implementation</a>
+    <a class="chip-btn" href="#skills">Skills</a>
     <a class="chip-btn" href="#programme">Programme</a>
     <a class="chip-btn" href="#law">The law</a>
   </nav>
@@ -426,6 +427,45 @@
   <blockquote>Flight ladder, never skipped: "unit test → simulation → SITL → HITL → tethered → free flight.
     Every rung gets a written pass criterion before the next."
     <span class="q-src">docs/phd-agents.md · docs/phd-implementation.md §6 (arrow typography adapted)</span></blockquote>
+
+  <!-- ============ SKILLS & TOOLING ============ -->
+  <h2 class="section-label" id="skills">Skills &amp; tooling · installed vs pending <span class="src">docs/phd-architecture.md §3, §5 · statuses verified 10 Jul 2026</span></h2>
+  <p class="section-sub">Three layers: what already runs on this machine, the twelve project skills Phase&nbsp;0
+    creates inside the research repo, and the one plugin still to install. The eight agents have
+    <a href="#agents">their own section</a>.</p>
+  <div class="grid g3">
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.92rem">Claude Code <span class="badge verified">installed</span></h3>
+      <p class="small" style="margin-top:.3rem">The orchestrator; runs everything on this page.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.92rem">Codex CLI 0.142.5 <span class="badge verified">installed</span></h3>
+      <p class="small" style="margin-top:.3rem">Second engineer: mechanical multi-file edits and design consultation, diff-reviewed.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.92rem">deep-research <span class="badge verified">installed · used 7 Jul</span></h3>
+      <p class="small" style="margin-top:.3rem">Ran the 106-agent sweep that seeded the candidate corpus.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.92rem">NotebookLM notebook <span class="badge verified">live · used 10 Jul</span></h3>
+      <p class="small" style="margin-top:.3rem">The standing S5 second reader (notebook d336f22d, 5 full-text sources).</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.92rem">GitHub repo <span class="badge verified">live</span></h3>
+      <p class="small" style="margin-top:.3rem">wlaa41/PhD · public · weekly commits are the recovery point.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.92rem">Understand-Anything <span class="badge pending">NOT installed</span></h3>
+      <p class="small" style="margin-top:.3rem">The vault knowledge-graph plugin. Install at Phase&nbsp;0:
+      <code>/plugin marketplace add Egonex-AI/Understand-Anything</code>. Verified absent 10 Jul 2026.</p></div>
+  </div>
+  <details class="x-card" id="skills-project" style="margin-top:1rem">
+    <summary><span class="xc-key">×12</span><span class="xc-title">The project skills · created at Phase 0</span>
+      <span class="xc-hint">specifications in docs/phd-architecture.md §5 · none exist yet</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>/corpus-search</dt><dd>find and rank candidate papers with the S2 rubric (S1–S2)</dd>
+      <dt>/paper-extract</dt><dd>one PDF → strict papers.json entry + vault note; "not stated" over guessing (S4)</dd>
+      <dt>/method-registry</dt><dd>merge methods through the alias table, recompute usage counts and trends (S6)</dd>
+      <dt>/pipeline-map</dt><dd>per-paper ordered pipeline stages + Mermaid diagram (S4/S6)</dd>
+      <dt>/gap-analysis</dt><dd>cluster limitations, feasibility + novelty filters, ranked shortlist (S7)</dd>
+      <dt>/vault-build</dt><dd>registry → Obsidian vault, idempotent (S8)</dd>
+      <dt>/dashboard-sync</dt><dd>registry → webapp data + rebuild; the dashboard never hardcodes content (S8)</dd>
+      <dt>/citation-audit</dt><dd>every claim resolves to a verified source; 10 spot checks per section (S9 / Gate 3)</dd>
+      <dt>/phd-writing</dt><dd>draft report sections under the phd-transfer-report.md contract (S9)</dd>
+      <dt>/experiment-plan</dt><dd>RQ or gap → complete experiments.json entry before any code (I1–I3)</dd>
+      <dt>/ros2-review</dt><dd>ROS 2 / PX4 code-review lane (I1–I3)</dd>
+      <dt>/hardware-safety</dt><dd>pre-flight checklist; enforces the flight ladder (I2–I3)</dd>
+    </dl></div>
+  </details>
 
   <!-- ============ PROGRAMME ============ -->
   <h2 class="section-label" id="programme">The 12-week programme <span class="src">docs/phd-pipeline.md §4</span></h2>
