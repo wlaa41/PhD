@@ -72,6 +72,40 @@
     <code>rejected</code>, <code>unavailable</code> and <code>quarantined</code>. Only verified and integrated
     papers ever render anywhere. Press a stage.</p>
 
+  <figure style="margin:1rem 0 1.6rem">
+    <svg viewBox="0 0 760 150" role="img" aria-label="Pipeline flow: stages S1 to S9 in sequence, with human gates after S2, S7 and S9, and the verification gate at S5 highlighted.">
+      <g font-family="Inter,system-ui,sans-serif" font-size="11">
+        <defs><marker id="pfa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#9b9da6"/></marker></defs>
+        <g>
+          <rect x="8"   y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="41"  y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S1</text><text x="41"  y="78" text-anchor="middle" fill="#3d3f46">Discover</text>
+          <rect x="90"  y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="123" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S2</text><text x="123" y="78" text-anchor="middle" fill="#3d3f46">Triage</text>
+          <rect x="172" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="205" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S3</text><text x="205" y="78" text-anchor="middle" fill="#3d3f46">Acquire</text>
+          <rect x="254" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="287" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S4</text><text x="287" y="78" text-anchor="middle" fill="#3d3f46">Extract</text>
+          <rect x="336" y="42" width="72" height="48" rx="7" fill="#eef0fe" stroke="#4f46e5" stroke-width="1.5"/><text x="372" y="61" text-anchor="middle" fill="#4f46e5" font-weight="700">S5</text><text x="372" y="76" text-anchor="middle" fill="#3d3f46">Verify</text>
+          <rect x="424" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="457" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S6</text><text x="457" y="78" text-anchor="middle" fill="#3d3f46">Integrate</text>
+          <rect x="506" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="539" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S7</text><text x="539" y="78" text-anchor="middle" fill="#3d3f46">Analyse</text>
+          <rect x="588" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="621" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S8</text><text x="621" y="78" text-anchor="middle" fill="#3d3f46">Render</text>
+          <rect x="670" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="703" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S9</text><text x="703" y="78" text-anchor="middle" fill="#3d3f46">Write</text>
+          <line x1="74"  y1="66" x2="86"  y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="156" y1="66" x2="168" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="238" y1="66" x2="250" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="320" y1="66" x2="332" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="408" y1="66" x2="420" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="490" y1="66" x2="502" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="572" y1="66" x2="584" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <line x1="654" y1="66" x2="666" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
+          <path d="M123 46 L118 34 L128 34 Z" fill="#b45309"/><text x="123" y="26" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 1</text>
+          <path d="M539 46 L534 34 L544 34 Z" fill="#b45309"/><text x="539" y="26" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 2</text>
+          <path d="M703 46 L698 34 L708 34 Z" fill="#b45309"/><text x="703" y="26" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 3</text>
+          <text x="372" y="110" text-anchor="middle" fill="#71737c" font-size="10">S5 highlighted: the anti-hallucination gate — nothing is trusted until a second independent reader agrees</text>
+          <text x="380" y="132" text-anchor="middle" fill="#71737c" font-size="10">quarantined papers loop back: S5 → re-read → S5 · rejected and unavailable branches keep their reasons for audit</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption><b>The pipeline at a glance.</b> Amber flags are the three human gates no agent may pass. Drawn on a constant light plate; details per stage in the cards below.</figcaption>
+  </figure>
+
   <details class="x-card"><summary><span class="xc-key">S1</span><span class="xc-title">Discover</span><span class="xc-hint">Claude Code + NotebookLM</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><dl class="kv">
       <dt>Input</dt><dd>The literature-review brief: 2022 onwards, zero-shot focus, drones first.</dd>
@@ -256,6 +290,45 @@
 
   <!-- ============ PROGRAMME ============ -->
   <h2 class="section-label" id="programme">The 12-week programme <span class="src">docs/phd-pipeline.md §4</span></h2>
+  <figure style="margin:1rem 0 1.4rem">
+    <svg viewBox="0 0 760 190" role="img" aria-label="Two-track timeline over 12 weeks: the literature track runs S1 to S9 with gates at weeks 2, 6 and 12; the implementation track runs I1 infrastructure, I2 baseline reproduction ending in a tethered flight, and I3 pilot experiment; the tracks share nothing until Gate 2.">
+      <g font-family="Inter,system-ui,sans-serif" font-size="10.5">
+        <g fill="#71737c">
+          <text x="118" y="16">wk1</text><text x="170" y="16">wk2</text><text x="222" y="16">wk3</text><text x="274" y="16">wk4</text>
+          <text x="326" y="16">wk5</text><text x="378" y="16">wk6</text><text x="430" y="16">wk7</text><text x="482" y="16">wk8</text>
+          <text x="534" y="16">wk9</text><text x="582" y="16">wk10</text><text x="634" y="16">wk11</text><text x="686" y="16">wk12</text>
+        </g>
+        <g stroke="#e6e6ea">
+          <line x1="112" y1="24" x2="112" y2="150"/><line x1="164" y1="24" x2="164" y2="150"/><line x1="216" y1="24" x2="216" y2="150"/>
+          <line x1="268" y1="24" x2="268" y2="150"/><line x1="320" y1="24" x2="320" y2="150"/><line x1="372" y1="24" x2="372" y2="150"/>
+          <line x1="424" y1="24" x2="424" y2="150"/><line x1="476" y1="24" x2="476" y2="150"/><line x1="528" y1="24" x2="528" y2="150"/>
+          <line x1="580" y1="24" x2="580" y2="150"/><line x1="632" y1="24" x2="632" y2="150"/><line x1="684" y1="24" x2="684" y2="150"/><line x1="736" y1="24" x2="736" y2="150"/>
+        </g>
+        <text x="8" y="46" fill="#3d3f46" font-weight="700">Literature</text>
+        <rect x="112" y="34" width="104" height="14" rx="4" fill="#4f46e5"/><text x="164" y="45" text-anchor="middle" fill="#fff" font-size="9">S1–S2</text>
+        <rect x="216" y="34" width="156" height="14" rx="4" fill="#6d66ea"/><text x="294" y="45" text-anchor="middle" fill="#fff" font-size="9">S3–S6 batches</text>
+        <rect x="372" y="34" width="52" height="14" rx="4" fill="#4f46e5"/><text x="398" y="45" text-anchor="middle" fill="#fff" font-size="9">S7</text>
+        <rect x="424" y="34" width="156" height="14" rx="4" fill="#6d66ea"/><text x="502" y="45" text-anchor="middle" fill="#fff" font-size="9">S8 render + Ch.2</text>
+        <rect x="580" y="34" width="104" height="14" rx="4" fill="#4f46e5"/><text x="632" y="45" text-anchor="middle" fill="#fff" font-size="9">S9 write</text>
+        <rect x="684" y="34" width="52" height="14" rx="4" fill="#a5a1f0"/><text x="710" y="45" text-anchor="middle" fill="#fff" font-size="9">buffer</text>
+        <text x="8" y="84" fill="#3d3f46" font-weight="700">Implementation</text>
+        <rect x="112" y="72" width="130" height="14" rx="4" fill="#15803d"/><text x="177" y="83" text-anchor="middle" fill="#fff" font-size="9">I1 infrastructure</text>
+        <rect x="216" y="94" width="182" height="14" rx="4" fill="#1d9d4f"/><text x="307" y="105" text-anchor="middle" fill="#fff" font-size="9">I2 baseline → tethered flight</text>
+        <rect x="424" y="72" width="156" height="14" rx="4" fill="#15803d"/><text x="502" y="83" text-anchor="middle" fill="#fff" font-size="9">I3 pilot experiment</text>
+        <rect x="580" y="72" width="104" height="14" rx="4" fill="#1d9d4f"/><text x="632" y="83" text-anchor="middle" fill="#fff" font-size="9">analysis + figures</text>
+        <text x="8" y="128" fill="#3d3f46" font-weight="700">Writing</text>
+        <rect x="268" y="118" width="312" height="14" rx="4" fill="#b45309"/><text x="424" y="129" text-anchor="middle" fill="#fff" font-size="9">Ch. 2 drafts incrementally (risk R5 mitigation)</text>
+        <rect x="580" y="118" width="156" height="14" rx="4" fill="#d97706"/><text x="658" y="129" text-anchor="middle" fill="#fff" font-size="9">spine → Ch. 3–5 → reviews</text>
+        <g>
+          <path d="M216 158 L210 170 L222 170 Z" fill="#b45309"/><text x="216" y="184" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 1 · wk2</text>
+          <path d="M424 158 L418 170 L430 170 Z" fill="#b45309"/><text x="424" y="184" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 2 · wk6</text>
+          <path d="M736 158 L730 170 L742 170 Z" fill="#b45309"/><text x="720" y="184" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 3 · wk12</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption><b>The two-track timeline.</b> Bars follow the week table below (docs/phd-pipeline.md §4); the
+      tethered flight in week 6 is the transfer report's minimum Chapter 4 headline. Constant light plate for both themes.</figcaption>
+  </figure>
   <div class="table-wrap"><table>
     <caption>Two tracks share nothing until Gate 2, so neither blocks the other. Chapter 2 drafts from week 4, keeping writing off the critical path.</caption>
     <thead><tr><th>Weeks</th><th>Literature track</th><th>Implementation track</th></tr></thead>

@@ -293,6 +293,13 @@ td.num{font-variant-numeric:tabular-nums;text-align:right}
 .cite{background:var(--card-2);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.2rem;margin:1.5rem 0;
   font-family:var(--mono);font-size:.75rem;line-height:1.6;overflow-x:auto;white-space:pre;color:var(--ink-2)}
 
+.crumbs{font-size:.8rem;color:var(--ink-3);margin-bottom:.7rem}
+.crumbs a{color:var(--ink-3)} .crumbs a:hover{color:var(--accent)}
+.foot-map{max-width:76rem;margin:0 auto;padding:1.4rem 1.25rem 0;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;font-size:.8rem}
+.foot-map b{display:block;font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-bottom:.35rem}
+.foot-map a{display:block;color:var(--ink-3);padding:.12rem 0}
+.foot-map a:hover{color:var(--accent)}
 .site-foot{border-top:1px solid var(--line);margin-top:2rem}
 .site-foot-inner{max-width:76rem;margin:0 auto;padding:1.5rem 1.25rem;display:flex;flex-wrap:wrap;gap:.8rem 1.5rem;
   justify-content:space-between;font-size:.8rem;color:var(--ink-3)}

@@ -7,6 +7,28 @@
 <meta name="description" content="Simulation-trained UAV control deployed to real hardware without retraining: a verified, self-learning research platform for an MPhil to PhD transfer.">
 <script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  /* page-local: quick-nav, graph, nav-map */
+  .quick-nav{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.4rem}
+  .graph-wrap{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow);overflow:hidden}
+  #graphCanvas{display:block;width:100%;height:440px;cursor:grab}
+  #graphCanvas.grabbing{cursor:grabbing}
+  .graph-legend{position:absolute;left:.9rem;top:.8rem;display:flex;flex-direction:column;gap:.3rem;
+    font-size:.74rem;color:var(--ink-3);background:color-mix(in srgb,var(--card) 82%,transparent);
+    border:1px solid var(--line);border-radius:8px;padding:.55rem .8rem;backdrop-filter:blur(6px)}
+  .graph-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:.45rem}
+  .graph-hint{position:absolute;right:.9rem;bottom:.7rem;font-size:.72rem;color:var(--ink-3);
+    background:color-mix(in srgb,var(--card) 82%,transparent);border:1px solid var(--line);border-radius:8px;padding:.3rem .7rem}
+  .foot-map{max-width:76rem;margin:0 auto;padding:1.4rem 1.25rem 0;display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1rem;font-size:.8rem}
+  .foot-map b{display:block;font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-bottom:.35rem}
+  .foot-map a{display:block;color:var(--ink-3);padding:.12rem 0}
+  .foot-map a:hover{color:var(--accent)}
+</style>
 </head>
 <body>
 
@@ -35,10 +57,16 @@
   </h1>
   <p class="lede">
     A working literature review you can learn from: annotated papers, a categorized method registry with
-    usage counts, transparent candidate scoring, and the pipeline that produces all of it.
-    <strong>Nothing on this platform is invented</strong> — every card carries its source, and every count
-    traces to a file in the repository.
+    deep-dive cards, a knowledge graph, transparent candidate scoring, and the pipeline that produces all of it.
+    <strong>Nothing on this platform is invented</strong> — every card carries its source.
   </p>
+  <nav class="quick-nav" aria-label="Jump to">
+    <a class="chip-btn" href="#papers">Papers</a>
+    <a class="chip-btn" href="#graph">Knowledge graph</a>
+    <a class="chip-btn" href="#methods">Methods</a>
+    <a class="chip-btn" href="system.html">How it works</a>
+    <a class="chip-btn" href="corpus.html">Ranked corpus</a>
+  </nav>
 
   <div class="grid g4" style="margin-top:1.8rem" aria-label="Project status">
     <a class="card clickable status-card" href="corpus.html"><b>70</b>
@@ -104,30 +132,76 @@
     </a>
   </div>
 
+  <h2 class="section-label" id="graph">The knowledge graph</h2>
+  <p class="section-sub">
+    The Obsidian view of this corpus: papers link to the methods they use, methods to their families. Drag
+    nodes, hover to trace a neighbourhood, <strong>click a paper to open its page or a method to open its
+    deep-dive</strong>. Edges come from the extractions on this page — nothing decorative. The full vault graph
+    (papers, methods, authors, citations) is generated later by Understand-Anything over the Obsidian vault.
+    <span class="src">edges: the member lists in the method registry below</span>
+  </p>
+  <div class="graph-wrap">
+    <canvas id="graphCanvas"></canvas>
+    <div class="graph-legend" id="graphLegend"></div>
+    <div class="graph-hint">drag · hover · click</div>
+  </div>
+
   <h2 class="section-label" id="methods">The method registry</h2>
   <p class="section-sub">
     Every technique that makes a real deployment work gets a canonical card in one of nine families. The count
     is how many extracted papers rely on it — frequency is the essentiality signal, recomputed every batch.
-    <strong>Press any card</strong> for what it is, the evidence, and its member papers.
+    <strong>Press any card for the deep-dive</strong>: what it is, the intuition, the mathematics, the evidence,
+    and related methods.
     <span class="src">counting rules: docs/phd-pipeline.md §3 · see <a href="system.html#counting">System</a></span>
   </p>
   <div class="filter-chips" id="famChips" role="tablist" aria-label="Filter methods by family"></div>
   <div class="grid g4" id="methodGrid"></div>
 
-  <h2 class="section-label">How this platform is produced</h2>
-  <p class="section-sub">The full machinery — approach, pipeline stages, agents, data schemas, scoring and
-    categorization rules — has its own page, with the specification documents quoted directly.</p>
-  <div class="grid g3">
-    <a class="card clickable status-card" href="system.html#pipeline"><b>S1–S9</b>
-      <span class="sc-label">The pipeline: discovery to submitted report, every stage a contract</span>
-      <span class="sc-go">system → pipeline →</span></a>
-    <a class="card clickable status-card" href="system.html#agents"><b>8</b>
-      <span class="sc-label">Agents with one writer for the registry and an adversarial reviewer</span>
-      <span class="sc-go">system → agents →</span></a>
-    <a class="card clickable status-card" href="system.html#counting"><b>R+H+Z+V+A</b>
-      <span class="sc-label">How papers are scored and methods are categorized and counted</span>
-      <span class="sc-go">system → data &amp; scoring →</span></a>
-  </div>
+  <h2 class="section-label" id="map">Finding your way</h2>
+  <p class="section-sub">The whole platform, drawn. Three pages, one habit: anything clickable tells you where
+    it leads, and every fact card names its source.</p>
+  <figure style="margin-top:.5rem">
+    <svg viewBox="0 0 760 300" role="img" aria-label="Site navigation map: the Overview page links to paper pages, the method deep-dives and the knowledge graph; the System page holds pipeline, agents, schemas and rules; the Corpus page holds the ranked candidates with filters.">
+      <g font-family="Inter,system-ui,sans-serif" font-size="12">
+        <defs><marker id="nma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#9b9da6"/></marker></defs>
+        <rect x="300" y="16" width="160" height="52" rx="9" fill="#4f46e5"/>
+        <text x="380" y="38" text-anchor="middle" fill="#ffffff" font-weight="700">Overview</text>
+        <text x="380" y="55" text-anchor="middle" fill="#e0e7ff" font-size="10">status · papers · graph · methods</text>
+
+        <rect x="40" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
+        <text x="115" y="139" text-anchor="middle" fill="#111216" font-weight="600">Paper pages ×5</text>
+        <text x="115" y="156" text-anchor="middle" fill="#71737c" font-size="10">math · figures · provenance</text>
+        <rect x="220" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
+        <text x="295" y="139" text-anchor="middle" fill="#111216" font-weight="600">Method deep-dives</text>
+        <text x="295" y="156" text-anchor="middle" fill="#71737c" font-size="10">popup: intuition · math · refs</text>
+        <rect x="400" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
+        <text x="475" y="139" text-anchor="middle" fill="#111216" font-weight="600">System page</text>
+        <text x="475" y="156" text-anchor="middle" fill="#71737c" font-size="10">pipeline · agents · rules</text>
+        <rect x="580" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
+        <text x="655" y="139" text-anchor="middle" fill="#111216" font-weight="600">Corpus table</text>
+        <text x="655" y="156" text-anchor="middle" fill="#71737c" font-size="10">70 ranked · filters · scores</text>
+
+        <line x1="330" y1="68" x2="130" y2="116" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+        <line x1="365" y1="68" x2="300" y2="116" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+        <line x1="400" y1="68" x2="470" y2="116" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+        <line x1="435" y1="68" x2="645" y2="116" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+
+        <rect x="40" y="216" width="330" height="44" rx="9" fill="#fff" stroke="#d8d8de" stroke-dasharray="4 3"/>
+        <text x="205" y="234" text-anchor="middle" fill="#111216" font-weight="600" font-size="11">Knowledge graph (Obsidian view)</text>
+        <text x="205" y="250" text-anchor="middle" fill="#71737c" font-size="10">papers ↔ methods ↔ families · click-through both ways</text>
+        <line x1="130" y1="166" x2="170" y2="212" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+        <line x1="295" y1="166" x2="250" y2="212" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+
+        <rect x="400" y="216" width="330" height="44" rx="9" fill="#fff" stroke="#d8d8de" stroke-dasharray="4 3"/>
+        <text x="565" y="234" text-anchor="middle" fill="#111216" font-weight="600" font-size="11">docs/ on GitHub — the source of truth</text>
+        <text x="565" y="250" text-anchor="middle" fill="#71737c" font-size="10">every source chip on the site points into these files</text>
+        <line x1="475" y1="166" x2="520" y2="212" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+        <line x1="655" y1="166" x2="610" y2="212" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
+      </g>
+    </svg>
+    <figcaption><b>The navigation map.</b> Drawn on a constant light plate so it reads identically in both themes.</figcaption>
+  </figure>
 </main>
 
 <div class="modal-back" id="modalBack"></div>
@@ -138,20 +212,47 @@
     <h3 id="mmTitle"></h3>
     <span class="small" id="mmFam"></span>
     <div class="mm-section"><span class="mm-label">What it is</span><p id="mmWhat"></p></div>
+    <div class="mm-section"><span class="mm-label">Intuition</span><p id="mmIntuition"></p></div>
+    <div class="mm-section" id="mmMathSec"><span class="mm-label">The mathematics · concept form, notation ours</span>
+      <div id="mmMath" style="overflow-x:auto"></div></div>
     <div class="mm-section"><span class="mm-label">Evidence · member papers</span><ul id="mmMembers"></ul></div>
+    <div class="mm-section"><span class="mm-label">Related methods</span><p id="mmRelated"></p></div>
     <div class="mm-section"><span class="mm-label">Count &amp; honesty</span><p id="mmCount"></p></div>
   </div>
 </div>
 
 <footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="papers/falcongym-2025.html">01 · FalconGym</a>
+      <a href="papers/raptor-2026.html">02 · RAPTOR</a>
+      <a href="papers/monorace-2026.html">03 · MonoRace</a>
+      <a href="papers/e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="papers/fly-seconds-2024.html">05 · Fly in Seconds</a></div>
+    <div><b>Explore</b>
+      <a href="#graph">Knowledge graph</a>
+      <a href="#methods">Method registry</a>
+      <a href="corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="system.html#pipeline">The pipeline S1–S9</a>
+      <a href="system.html#counting">Scoring &amp; counting</a>
+      <a href="system.html#agents">The agents</a>
+      <a href="system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
   <div class="site-foot-inner">
     <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
-    <span>Zero-Shot UAV · updated 7 July 2026 · <a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+    <span>Zero-Shot UAV · updated 7 July 2026</span>
   </div>
 </footer>
 
 <script>
-/* ---- method registry (evidence-linked; counts = distinct extracted papers) ---- */
+/* ---- method registry: categories unchanged; deep-dive content added ----
+   what/evidence: grounded in the papers' arXiv pages (fetched 2026-07-07).
+   intuition: our explanation, labelled as such. math: canonical concept
+   forms, labelled "notation ours". */
 const FAMS={sim:"Simulation & fidelity",rand:"Randomization & robustness",ident:"System ID & real-to-sim",
   adapt:"Adaptation",distill:"Distillation & curricula",algo:"Algorithms & architecture",
   input:"Input design",deploy:"Deployment runtime",latency:"Latency handling"};
@@ -161,39 +262,145 @@ const PAPERS={
   monorace:["papers/monorace-2026.html","MonoRace (TU Delft, 2026)"],
   e2efly:["papers/e2e-fly-2026.html","E2E-Fly (SJTU, 2026)"],
   flysec:["papers/fly-seconds-2024.html","Learning to Fly in Seconds (NYU ARPL, RA-L 2024)"]};
-/* member facts are taken from each paper's arXiv page (fetched 2026-07-07); see the paper pages for provenance */
+
+/* [id, family, name, what, members[[paper,fact]], intuition, mathLatex|null, related[]] */
 const METHODS=[
-["photorealistic-nerf-sim","sim","NeRF photorealistic simulation","Reconstruct the flight space as a Neural Radiance Field, giving effectively unlimited photorealistic training images; visual fidelity attacks the perception half of the sim-to-real gap.",[["falcongym","trains its visual policy entirely inside a NeRF environment"]]],
-["custom-high-performance-simulator","sim","Custom high-throughput simulator","A purpose-built fast dynamics simulator drives sample cost toward zero.",[["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"]]],
-["differentiable-physics-learning","sim","Differentiable physics learning","Gradients flow through the dynamics model itself, giving first-order training signal beyond model-free RL.",[["e2efly","its simulator supports differentiable physics learning alongside RL"]]],
-["domain-randomization-dynamics","rand","Domain randomization (dynamics)","Randomize physical parameters during training so the real vehicle is just another sample from the training distribution.",[["e2efly","lists domain randomization among its deployment methods"]]],
-["sensor-noise-modelling","rand","Sensor noise modelling","Inject empirically shaped sensor noise so perception in simulation degrades the way reality does.",[["e2efly","lists sensor noise modeling among its deployment methods"]]],
-["system-identification","ident","System identification","Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Merge decision (logged): MonoRace's offline calibration refinement from flight logs is counted here — same mechanism, real data → model parameters.",[["e2efly","lists system identification among its deployment methods"],["monorace","refines calibration parameters offline using known gate geometry and onboard flight data"]]],
-["meta-imitation-multi-platform","adapt","Meta-imitation across platforms","Sample many platform variants, train per-variant teachers, and learn one student that generalizes across all of them.",[["raptor","samples 1,000 quadrotor variants and distils their RL teachers into one policy"]]],
-["in-context-adaptation-recurrent","adapt","In-context adaptation (recurrent)","A recurrent hidden state adapts to the platform during flight, with no gradient updates on the vehicle.",[["raptor","reports adaptation to unseen platforms within milliseconds via recurrent hidden layers"]]],
-["teacher-student-distillation","distill","Teacher–student distillation","Distil privileged or per-variant teachers into one deployable student policy.",[["raptor","distils 1,000 specialist teachers into a single 2,084-parameter student"]]],
-["curriculum-learning","distill","Curriculum learning","Staged task difficulty keeps fast training stable.",[["flysec","uses a curriculum as part of its 18-second training recipe"]]],
-["imitation-learning-sim","algo","Imitation learning in simulation","Learn from expert demonstrations generated inside the simulator.",[["falcongym","trains by imitation learning entirely in simulation"]]],
-["end-to-end-rl","algo","End-to-end reinforcement learning","Model-free RL from observations to low-level commands, with no hand-built controller in the loop.",[["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"]]],
-["asymmetric-actor-critic","algo","Asymmetric actor-critic","The critic sees privileged simulator state; the actor sees only what the real vehicle will have.",[["flysec","names the asymmetric actor-critic architecture as a core contribution"]]],
-["tiny-policy-architecture","algo","Tiny policy architecture","Deliberately minimal networks: less overfitting, trivial onboard compute.",[["raptor","3 layers, 2,084 parameters"]]],
-["neural-pose-estimation-kalman","input","Neural pose estimation + Kalman","A learned pose estimator from RGB fused with IMU through a Kalman filter.",[["falcongym","its NPE + Kalman filter is the perception stack"]]],
-["gate-segmentation-model-fusion","input","Gate segmentation + model fusion","Segment known track geometry with a network; fuse with a drone dynamics model for robust monocular state estimation.",[["monorace","combines neural gate segmentation with a drone model for state estimation"]]],
-["self-attention-sensor-fusion","input","Self-attention sensor fusion","Attention adaptively weights visual features against pose estimates in the controller input.",[["falcongym","uses a self-attention-based multi-modal controller"]]],
-["direct-motor-command-control","deploy","Direct motor-command control","The network outputs motor or RPM commands directly, bypassing inner-loop controllers.",[["monorace","sends motor commands directly at 500 Hz"],["flysec","controls motor RPM directly"]]],
-["microcontroller-deployment","deploy","MCU / flight-controller deployment","The policy runs on the flight controller or microcontroller itself under real-time constraints.",[["monorace","all compute runs onboard the flight controller"],["flysec","deployed on the Crazyflie's microcontroller with real-time guarantees"]]],
-["sim-to-sim-validation","deploy","Sim-to-sim validation","Validate in a second, different simulator before touching hardware — cheap gap detection.",[["e2efly","stage one of its two-stage validation"]]],
-["hardware-in-the-loop","deploy","Hardware-in-the-loop testing","Run the real autopilot hardware against the simulator before flight.",[["e2efly","stage two of its two-stage validation"]]],
-["latency-compensation","latency","Latency compensation","Model or compensate the sensing-to-actuation delay explicitly.",[["e2efly","lists latency compensation among its deployment methods"]]]
+["photorealistic-nerf-sim","sim","NeRF photorealistic simulation",
+ "Reconstruct the flight space as a Neural Radiance Field, giving effectively unlimited photorealistic training images; visual fidelity attacks the perception half of the sim-to-real gap.",
+ [["falcongym","trains its visual policy entirely inside a NeRF environment"]],
+ "A camera policy fails in reality when reality looks different from training. Instead of making the policy robust to the difference, remove the difference: capture the real scene once, then render as many novel views as training needs.",
+ "C(\\mathbf{r})=\\int_{t_n}^{t_f} T(t)\\,\\sigma(\\mathbf{r}(t))\\,\\mathbf{c}(\\mathbf{r}(t),\\mathbf{d})\\,dt,\\qquad T(t)=\\exp\\!\\Big(-\\!\\int_{t_n}^{t}\\sigma(\\mathbf{r}(s))\\,ds\\Big)",
+ ["imitation-learning-sim","neural-pose-estimation-kalman"]],
+["custom-high-performance-simulator","sim","Custom high-throughput simulator",
+ "A purpose-built fast dynamics simulator drives sample cost toward zero.",
+ [["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"]],
+ "RL's real currency is wall-clock time per sample. If the simulator produces months of flight per second, algorithmic sample-efficiency stops being the bottleneck and iteration speed becomes the superpower.",
+ null,["end-to-end-rl","curriculum-learning"]],
+["differentiable-physics-learning","sim","Differentiable physics learning",
+ "Gradients flow through the dynamics model itself, giving first-order training signal beyond model-free RL.",
+ [["e2efly","its simulator supports differentiable physics learning alongside RL"]],
+ "Model-free RL learns from 'that rollout scored 7.2' — a single number. If the simulator is differentiable, you also learn 'and here is exactly how each parameter would have changed the score', which is enormously more informative per sample.",
+ "\\nabla_\\theta J=\\sum_t \\frac{\\partial J}{\\partial s_t}\\,\\frac{\\partial s_t}{\\partial \\theta},\\qquad s_{t+1}=f_\\psi(s_t,a_t)",
+ ["end-to-end-rl","system-identification"]],
+["domain-randomization-dynamics","rand","Domain randomization (dynamics)",
+ "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution.",
+ [["e2efly","lists domain randomization among its deployment methods"]],
+ "You cannot model the real drone exactly — so stop trying to. Train across a cloud of plausible drones; if the cloud is wide enough, reality falls inside it and the policy has already seen something like it.",
+ "\\max_\\theta\\;\\mathbb{E}_{\\xi\\sim p(\\xi)}\\big[J(\\theta;\\xi)\\big]",
+ ["sensor-noise-modelling","meta-imitation-multi-platform","system-identification"]],
+["sensor-noise-modelling","rand","Sensor noise modelling",
+ "Inject empirically shaped sensor noise so perception in simulation degrades the way reality does.",
+ [["e2efly","lists sensor noise modeling among its deployment methods"]],
+ "Clean simulated sensors teach the policy to trust its inputs too much. Corrupt them the way real sensors are corrupted, and trusting-behaviour that would break in reality never gets learned.",
+ "z_t = h(s_t)+\\varepsilon_t,\\qquad \\varepsilon_t\\sim\\hat{p}_{\\text{noise}}\\ \\text{(fit to real sensor logs)}",
+ ["domain-randomization-dynamics","system-identification"]],
+["system-identification","ident","System identification",
+ "Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Merge decision (logged): MonoRace's offline calibration refinement from flight logs is counted here — same mechanism, real data → model parameters.",
+ [["e2efly","lists system identification among its deployment methods"],["monorace","refines calibration parameters offline using known gate geometry and onboard flight data"]],
+ "Randomization says 'be ready for anything'; system ID says 'know your actual vehicle'. Fit the model to logged reality and the simulator stops being a guess. The strongest pipelines do both: identify what you can, randomize the rest.",
+ "\\psi^{*}=\\arg\\min_\\psi\\sum_t\\big\\lVert s^{\\text{real}}_{t+1}-f_\\psi(s^{\\text{real}}_t,a^{\\text{real}}_t)\\big\\rVert^2",
+ ["domain-randomization-dynamics","sensor-noise-modelling"]],
+["meta-imitation-multi-platform","adapt","Meta-imitation across platforms",
+ "Sample many platform variants, train per-variant teachers, and learn one student that generalizes across all of them.",
+ [["raptor","samples 1,000 quadrotor variants and distils their RL teachers into one policy"]],
+ "Domain randomization asks one policy to survive many vehicles; meta-imitation asks it to fly each one the way that vehicle's own specialist would. The student never sees which vehicle it got — it must infer that from flight, which is what makes it a foundation policy.",
+ "\\min_{\\phi}\\;\\mathbb{E}_{\\xi\\sim p(\\xi)}\\;\\mathbb{E}_{\\tau\\sim\\pi_\\phi|\\xi}\\Big[\\sum_t D\\big(\\pi^{*}_{\\xi}(\\cdot\\,|\\,s_t)\\,\\big\\Vert\\,\\pi_\\phi(\\cdot\\,|\\,o_t,h_t)\\big)\\Big]",
+ ["teacher-student-distillation","in-context-adaptation-recurrent","domain-randomization-dynamics"]],
+["in-context-adaptation-recurrent","adapt","In-context adaptation (recurrent)",
+ "A recurrent hidden state adapts to the platform during flight, with no gradient updates on the vehicle.",
+ [["raptor","reports adaptation to unseen platforms within milliseconds via recurrent hidden layers"]],
+ "Command a motion, observe what actually happened: the mismatch is exactly the evidence a system identifier needs. A recurrent state accumulates that evidence over a few control steps and becomes an implicit, continuously-updated estimate of the vehicle — identification as a side effect of remembering.",
+ "h_t=f_\\phi(h_{t-1},o_t,a_{t-1}),\\qquad a_t\\sim\\pi_\\phi(\\cdot\\,|\\,o_t,h_t)",
+ ["meta-imitation-multi-platform","tiny-policy-architecture"]],
+["teacher-student-distillation","distill","Teacher–student distillation",
+ "Distil privileged or per-variant teachers into one deployable student policy.",
+ [["raptor","distils 1,000 specialist teachers into a single 2,084-parameter student"]],
+ "Teachers can cheat in simulation — privileged state, unlimited compute, one vehicle each. The student cannot. Distillation transfers the teachers' competence into a policy restricted to what the real robot will actually have.",
+ "\\min_\\phi\\;\\mathbb{E}\\big[\\,D_{\\mathrm{KL}}\\big(\\pi_{\\text{teacher}}(\\cdot\\,|\\,s^{\\text{priv}})\\,\\Vert\\,\\pi_\\phi(\\cdot\\,|\\,o)\\big)\\big]",
+ ["meta-imitation-multi-platform","asymmetric-actor-critic"]],
+["curriculum-learning","distill","Curriculum learning",
+ "Staged task difficulty keeps fast training stable.",
+ [["flysec","uses a curriculum as part of its 18-second training recipe"]],
+ "Ask a fresh policy to do the hard task and it thrashes; reward is too sparse to learn from. Start where reward is dense, harden the task as competence grows, and the policy is never asked a question it has no hope of answering.",
+ null,["custom-high-performance-simulator","end-to-end-rl"]],
+["imitation-learning-sim","algo","Imitation learning in simulation",
+ "Learn from expert demonstrations generated inside the simulator.",
+ [["falcongym","trains by imitation learning entirely in simulation"]],
+ "When the simulator can compute what should be done (a planner, an oracle with ground truth), you do not need reward shaping or exploration at all — turn control into supervised learning on unlimited demonstrations.",
+ "\\min_\\theta\\;\\mathbb{E}_{(o,a^{*})\\sim\\mathcal{D}_{\\text{sim}}}\\big[\\ell\\big(\\pi_\\theta(o),a^{*}\\big)\\big]",
+ ["photorealistic-nerf-sim","teacher-student-distillation"]],
+["end-to-end-rl","algo","End-to-end reinforcement learning",
+ "Model-free RL from observations to low-level commands, with no hand-built controller in the loop.",
+ [["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"]],
+ "Cascaded controllers encode decades of assumptions — and their limits. Letting one network map observations straight to motor commands removes every hand-tuned layer, at the price that the sim-to-real gap now has nowhere to hide. The most-used method in the extracted set: 4 of 5 papers.",
+ "J(\\pi)=\\mathbb{E}_{\\tau\\sim\\pi}\\Big[\\sum_{t}\\gamma^{t}\\,r(s_t,a_t)\\Big]",
+ ["asymmetric-actor-critic","direct-motor-command-control","curriculum-learning"]],
+["asymmetric-actor-critic","algo","Asymmetric actor-critic",
+ "The critic sees privileged simulator state; the actor sees only what the real vehicle will have.",
+ [["flysec","names the asymmetric actor-critic architecture as a core contribution"]],
+ "The critic is scaffolding: it exists only during training and is discarded at deployment, so it may cheat freely — full state, no noise. A well-informed critic gives low-variance gradients; the actor still learns under real-world constraints. Free accuracy with no transfer penalty.",
+ "\\underbrace{V_\\varphi(s^{\\text{priv}}_t)}_{\\text{critic, sim-only}}\\qquad\\underbrace{\\pi_\\theta(a_t\\,|\\,o_t)}_{\\text{actor, deployable}}",
+ ["end-to-end-rl","teacher-student-distillation"]],
+["tiny-policy-architecture","algo","Tiny policy architecture",
+ "Deliberately minimal networks: less overfitting, trivial onboard compute.",
+ [["raptor","3 layers, 2,084 parameters"]],
+ "A network too small to memorize its training distribution is forced to learn structure instead — and 2,084 parameters fit on any flight controller ever made. Capacity restraint doubles as a regularizer and a deployment strategy.",
+ null,["in-context-adaptation-recurrent","microcontroller-deployment"]],
+["neural-pose-estimation-kalman","input","Neural pose estimation + Kalman",
+ "A learned pose estimator from RGB fused with IMU through a Kalman filter.",
+ [["falcongym","its NPE + Kalman filter is the perception stack"]],
+ "Let the network do what networks are good at (reading pose out of pixels) and the filter do what filters are good at (fusing noisy measurements over time, optimally under known dynamics). The learned part is treated as just another sensor.",
+ "K_k=P_k^{-}H^{\\!\\top}\\big(HP_k^{-}H^{\\!\\top}+R\\big)^{-1},\\qquad \\hat{x}_k=\\hat{x}_k^{-}+K_k\\big(z_k-H\\hat{x}_k^{-}\\big)",
+ ["photorealistic-nerf-sim","self-attention-sensor-fusion","gate-segmentation-model-fusion"]],
+["gate-segmentation-model-fusion","input","Gate segmentation + model fusion",
+ "Segment known track geometry with a network; fuse with a drone dynamics model for robust monocular state estimation.",
+ [["monorace","combines neural gate segmentation with a drone model for state estimation"]],
+ "One camera cannot measure depth — but if you know the gates' true geometry, their appearance in the image pins your pose (the PnP idea). Between gate sightings, the dynamics model carries the estimate through blur, interference and dropped frames.",
+ "\\min_{R,t}\\sum_i\\big\\lVert x_i-\\pi\\big(K[R\\,|\\,t]\\,X_i\\big)\\big\\rVert^2",
+ ["neural-pose-estimation-kalman","system-identification"]],
+["self-attention-sensor-fusion","input","Self-attention sensor fusion",
+ "Attention adaptively weights visual features against pose estimates in the controller input.",
+ [["falcongym","uses a self-attention-based multi-modal controller"]],
+ "Sometimes the image is the better signal, sometimes the filtered pose; a fixed blend is wrong whenever conditions change. Attention lets the controller decide, frame by frame, which input currently deserves trust.",
+ "\\mathrm{Attention}(Q,K,V)=\\mathrm{softmax}\\!\\Big(\\tfrac{QK^{\\!\\top}}{\\sqrt{d_k}}\\Big)V",
+ ["neural-pose-estimation-kalman"]],
+["direct-motor-command-control","deploy","Direct motor-command control",
+ "The network outputs motor or RPM commands directly, bypassing inner-loop controllers.",
+ [["monorace","sends motor commands directly at 500 Hz"],["flysec","controls motor RPM directly"]],
+ "Every controller layer between the policy and the motors adds latency and hides dynamics the policy could have exploited. Going direct is the highest-authority, highest-risk interface: nothing softens the policy's mistakes, and nothing dilutes its skill.",
+ "a_t=\\pi(o_t)\\in\\mathbb{R}^{4}\\quad\\text{(one command per motor)}",
+ ["end-to-end-rl","microcontroller-deployment"]],
+["microcontroller-deployment","deploy","MCU / flight-controller deployment",
+ "The policy runs on the flight controller or microcontroller itself under real-time constraints.",
+ [["monorace","all compute runs onboard the flight controller"],["flysec","deployed on the Crazyflie's microcontroller with real-time guarantees"]],
+ "If the policy fits on the flight controller, the companion computer stops being a single point of failure and the control loop never crosses a serial link. The discipline this imposes — small nets, fixed timing — is itself a robustness feature.",
+ null,["tiny-policy-architecture","direct-motor-command-control"]],
+["sim-to-sim-validation","deploy","Sim-to-sim validation",
+ "Validate in a second, different simulator before touching hardware — cheap gap detection.",
+ [["e2efly","stage one of its two-stage validation"]],
+ "A policy can overfit its training simulator exactly the way a model overfits a dataset. A second simulator with different physics assumptions is a held-out test set for control: passing it does not prove transfer, but failing it predicts a crash for free.",
+ null,["hardware-in-the-loop","domain-randomization-dynamics"]],
+["hardware-in-the-loop","deploy","Hardware-in-the-loop testing",
+ "Run the real autopilot hardware against the simulator before flight.",
+ [["e2efly","stage two of its two-stage validation"]],
+ "Integration faults — timing, units, message ordering, saturations — live between the software and the hardware, exactly where pure simulation cannot see. HIL runs the real electronics against simulated physics, catching those faults while a crash still costs nothing. This project's I2.5 rung.",
+ null,["sim-to-sim-validation"]],
+["latency-compensation","latency","Latency compensation",
+ "Model or compensate the sensing-to-actuation delay explicitly.",
+ [["e2efly","lists latency compensation among its deployment methods"]],
+ "By the time the policy acts on a measurement, the world has moved on by the loop delay d. A policy trained on instant feedback learns corrections that arrive too late and destabilize. Give it the delayed observation plus its own recent actions, and it can implicitly predict the present before acting.",
+ "o_t=\\big(z_{t-d},\\,a_{t-d},\\dots,a_{t-1}\\big)",
+ ["direct-motor-command-control","sensor-noise-modelling"]]
 ];
 
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const byId={};METHODS.forEach(m=>byId[m[0]]=m);
 const grid=document.getElementById("methodGrid"), chips=document.getElementById("famChips");
 chips.innerHTML=`<button class="chip-btn on" data-fam="">All · ${METHODS.length}</button>`+
   Object.entries(FAMS).map(([k,v])=>{const n=METHODS.filter(m=>m[1]===k).length;
     return `<button class="chip-btn" data-fam="${k}">${v} · ${n}</button>`;}).join("");
 function draw(fam){
-  grid.innerHTML=METHODS.filter(m=>!fam||m[1]===fam).map((m,i)=>{
+  grid.innerHTML=METHODS.filter(m=>!fam||m[1]===fam).map(m=>{
     const idx=METHODS.indexOf(m);
     return `<button class="card clickable method-card" data-i="${idx}" aria-haspopup="dialog">
       <span class="mc-id">${m[0]}</span>
@@ -202,27 +409,125 @@ function draw(fam){
       <span class="mc-count">${m[4].length} / 5</span></span></button>`;}).join("");
 }
 draw("");
-chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b)return;
+chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b||!b.dataset)return;
+  if(b.dataset.fam===undefined)return;
   chips.querySelectorAll(".chip-btn").forEach(x=>x.classList.toggle("on",x===b));draw(b.dataset.fam);});
 
 const back=document.getElementById("modalBack"),modal=document.getElementById("methodModal");
-function openModal(m){
+function openMethod(m){
   document.getElementById("mmId").textContent=m[0];
   document.getElementById("mmTitle").textContent=m[2];
   document.getElementById("mmFam").textContent="Family: "+FAMS[m[1]];
   document.getElementById("mmWhat").textContent=m[3];
+  document.getElementById("mmIntuition").textContent=m[5];
+  const mathSec=document.getElementById("mmMathSec"),mathEl=document.getElementById("mmMath");
+  if(m[6]){mathSec.style.display="";mathEl.textContent="$$"+m[6]+"$$";
+    if(typeof renderMathInElement==="function")renderMathInElement(mathEl,{delimiters:[{left:"$$",right:"$$",display:true}],throwOnError:false});}
+  else{mathSec.style.display="none";}
   document.getElementById("mmMembers").innerHTML=m[4].map(([p,fact])=>
     `<li><a href="${PAPERS[p][0]}">${PAPERS[p][1]}</a> — ${esc(fact)}</li>`).join("");
+  document.getElementById("mmRelated").innerHTML=m[7].map(id=>
+    `<a href="#" class="mm-rel" data-m="${id}"><code>${id}</code></a>`).join(" · ");
   document.getElementById("mmCount").textContent=
-    `Used by ${m[4].length} of the 5 extracted papers. Count = distinct papers, not mentions; it is recomputed after every extraction batch and will sharpen as the corpus grows toward ~50.`;
+    `Used by ${m[4].length} of the 5 extracted papers. Count = distinct papers, not mentions; recomputed after every batch. "What it is" and the evidence lines are grounded in the papers' arXiv pages; the intuition is our explanation and the mathematics is a canonical concept form (notation ours), both labelled as such.`;
   back.classList.add("open");modal.classList.add("open");
   document.getElementById("mmClose").focus();
 }
 function closeModal(){back.classList.remove("open");modal.classList.remove("open");}
-grid.addEventListener("click",e=>{const c=e.target.closest(".method-card");if(c)openModal(METHODS[+c.dataset.i]);});
+grid.addEventListener("click",e=>{const c=e.target.closest(".method-card");if(c)openMethod(METHODS[+c.dataset.i]);});
+document.getElementById("methodModal").addEventListener("click",e=>{
+  const r=e.target.closest(".mm-rel");if(!r)return;e.preventDefault();openMethod(byId[r.dataset.m]);});
 back.addEventListener("click",closeModal);
 document.getElementById("mmClose").addEventListener("click",closeModal);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+
+/* ---- knowledge graph: papers <-> methods <-> families (edges = registry members) ---- */
+(function(){
+  const cv=document.getElementById("graphCanvas"),cx=cv.getContext("2d");
+  let W,H,hover=null,drag=null;
+  function themeColors(){const s=getComputedStyle(document.body);
+    return {ink:s.getPropertyValue("color")||"#333",
+      card:getComputedStyle(cv.parentElement).backgroundColor,
+      accent:getComputedStyle(document.querySelector(".brand span")).color,
+      line:"rgba(128,130,140,.35)",dim:"rgba(128,130,140,.9)"};}
+  const nodes=[],links=[];
+  Object.entries(FAMS).forEach(([k,v])=>nodes.push({id:"f:"+k,label:v,type:"fam",r:6}));
+  METHODS.forEach(m=>{nodes.push({id:"m:"+m[0],label:m[0],type:"method",r:7,m});
+    links.push(["m:"+m[0],"f:"+m[1]]);});
+  Object.entries(PAPERS).forEach(([k,[href,label]])=>nodes.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",r:11,href}));
+  METHODS.forEach(m=>m[4].forEach(([p])=>links.push(["p:"+p,"m:"+m[0]])));
+  const byNode={};nodes.forEach(n=>byNode[n.id]=n);
+  const edges=links.map(([a,b])=>({a:byNode[a],b:byNode[b]}));
+  const adj={};nodes.forEach(n=>adj[n.id]=new Set());
+  edges.forEach(l=>{adj[l.a.id].add(l.b.id);adj[l.b.id].add(l.a.id);});
+  function size(){const r=cv.parentElement.getBoundingClientRect();
+    cv.width=r.width*devicePixelRatio;cv.height=440*devicePixelRatio;
+    cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=r.width;H=440;}
+  function reset(){size();nodes.forEach((n,i)=>{const a=i/nodes.length*6.283;
+    const rad=n.type==="paper"?0.18:n.type==="method"?0.34:0.46;
+    n.x=W/2+Math.cos(a)*W*rad+(Math.random()-.5)*30;
+    n.y=H/2+Math.sin(a)*H*rad+(Math.random()-.5)*30;n.vx=0;n.vy=0;});}
+  reset();addEventListener("resize",reset);
+  document.getElementById("graphLegend").innerHTML=
+    `<span><i style="background:#8b93ff"></i>papers (click → page)</span>
+     <span><i style="background:#34b46a"></i>methods (click → deep-dive)</span>
+     <span><i style="background:#c08a2d"></i>families</span>`;
+  function color(n,C){return n.type==="paper"?"#8b93ff":n.type==="method"?"#34b46a":"#c08a2d";}
+  function step(){
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i],b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy+.01,d=Math.sqrt(d2);
+      if(d<150){const f=650/d2;dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;}}
+    edges.forEach(l=>{let dx=l.b.x-l.a.x,dy=l.b.y-l.a.y,d=Math.sqrt(dx*dx+dy*dy)+.01;
+      const f=(d-75)*.0022;dx/=d;dy/=d;
+      l.a.vx+=dx*f*d*.05;l.a.vy+=dy*f*d*.05;l.b.vx-=dx*f*d*.05;l.b.vy-=dy*f*d*.05;});
+    nodes.forEach(n=>{n.vx+=(W/2-n.x)*.0014;n.vy+=(H/2-n.y)*.0016;
+      if(n!==drag){n.vx*=.85;n.vy*=.85;n.x+=n.vx;n.y+=n.vy;}
+      n.x=Math.max(18,Math.min(W-18,n.x));n.y=Math.max(18,Math.min(H-18,n.y));});
+  }
+  function drawG(){
+    const C=themeColors();
+    cx.clearRect(0,0,W,H);
+    const hi=hover?adj[hover.id]:null;
+    edges.forEach(l=>{const on=hover&&(l.a===hover||l.b===hover);
+      cx.strokeStyle=on?"#8b93ff":C.line;cx.lineWidth=on?1.6:.8;cx.globalAlpha=on?1:.55;
+      cx.beginPath();cx.moveTo(l.a.x,l.a.y);cx.lineTo(l.b.x,l.b.y);cx.stroke();cx.globalAlpha=1;});
+    nodes.forEach(n=>{const dim=hover&&n!==hover&&!hi.has(n.id);
+      cx.globalAlpha=dim?.18:1;
+      cx.fillStyle=color(n,C);
+      cx.beginPath();cx.arc(n.x,n.y,n===hover?n.r+3:n.r,0,6.29);cx.fill();
+      if(n===hover){cx.strokeStyle=C.ink;cx.lineWidth=1.4;cx.stroke();}
+      if(!dim&&(n.type==="paper"||n===hover||(hover&&hi.has(n.id)))){
+        cx.fillStyle=C.ink;cx.font="11px Inter,system-ui,sans-serif";cx.textAlign="center";
+        cx.fillText(n.label.length>30?n.label.slice(0,28)+"…":n.label,n.x,n.y-n.r-6);}
+      cx.globalAlpha=1;});
+  }
+  /* run physics only while recently active; sleep when settled (saves CPU) */
+  let lastActive=performance.now(),raf=null;
+  function wake(){lastActive=performance.now();if(raf===null)raf=requestAnimationFrame(loop);}
+  function loop(){
+    step();drawG();
+    if(performance.now()-lastActive<5000){raf=requestAnimationFrame(loop);}
+    else{raf=null;}
+  }
+  wake();
+  new MutationObserver(()=>{wake();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  function pick(x,y){let best=null,bd=350;
+    nodes.forEach(n=>{const d=(n.x-x)**2+(n.y-y)**2;if(d<bd){bd=d;best=n;}});
+    return bd<((best?best.r:0)+8)**2?best:null;}
+  cv.addEventListener("mousemove",e=>{wake();const r=cv.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    if(drag){drag.x=x;drag.y=y;drag.vx=drag.vy=0;return;}
+    hover=pick(x,y);cv.style.cursor=hover?"pointer":"grab";});
+  cv.addEventListener("mousedown",()=>{wake();if(hover){drag=hover;cv.classList.add("grabbing");}});
+  addEventListener("mouseup",()=>{drag=null;cv.classList.remove("grabbing");});
+  cv.addEventListener("mouseleave",()=>{hover=null;wake();});
+  addEventListener("resize",wake);
+  cv.addEventListener("click",()=>{if(!hover||drag)return;
+    if(hover.type==="paper")location.href=hover.href;
+    else if(hover.type==="method")openMethod(hover.m);
+    else{const chip=[...chips.querySelectorAll(".chip-btn")].find(b=>b.dataset.fam===hover.id.slice(2));
+      if(chip){chip.click();document.getElementById("methods").scrollIntoView();}}});
+})();
 </script>
 <script src="assets/site.js"></script>
 <script src="assets/theme.js"></script>
