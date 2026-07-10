@@ -154,6 +154,11 @@ Everything needed to continue lives in this repository. On a new laptop:
    lane; the Claude-in-Chrome extension for NotebookLM/S5 browser automation.
 5. Cloud pieces travel with your accounts, not the machine: the NotebookLM notebook (Google login), GitHub,
    and GitHub Pages if enabled.
+5b. Skills: the project depends on NO machine-local skills. Claude Code's bundled skills (deep-research,
+   dataviz, …) exist on every install; user-installed ones (ui-ux-pro-max, aula-download) are machine-local
+   but not required to continue. The twelve project skills do not exist yet anywhere — Phase 0 creates them
+   in `.claude/skills/` INSIDE this repo, after which they are committed and travel with every clone. The
+   Understand-Anything plugin is per-machine (install command at the bottom of this file).
 6. Keep CLAUDE.md's status snapshot current — it is the cross-machine memory. Update it in the same commit
    as any status-changing work (the update protocol applies to it like everything else).
 
