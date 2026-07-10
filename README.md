@@ -140,6 +140,23 @@ Implementation: Begin I1 from docs/phd-implementation.md section 3
 with the ros2-px4-engineer agent, working the acceptance-test list
 top to bottom and committing evidence to experiments/logs/i1/.
 
+## Working from another machine
+
+Everything needed to continue lives in this repository. On a new laptop:
+
+1. `git clone https://github.com/wlaa41/PhD.git` (authenticate GitHub for pushing).
+2. Open the folder in Claude Code — **CLAUDE.md loads automatically** and carries the full project context:
+   the two laws, the status snapshot, the pipeline, the design mandates, the working rules. AGENTS.md carries
+   the same rules for Codex/other tools. No session memory from any previous machine is required.
+3. The site is static: open `site/index.html` directly in a browser, or serve the folder with any static
+   server (`npx http-server .`). Internet needed for the KaTeX/fonts CDNs.
+4. Optional per-machine installs: Codex CLI (`npm i -g @openai/codex`, then login) for the second-engineer
+   lane; the Claude-in-Chrome extension for NotebookLM/S5 browser automation.
+5. Cloud pieces travel with your accounts, not the machine: the NotebookLM notebook (Google login), GitHub,
+   and GitHub Pages if enabled.
+6. Keep CLAUDE.md's status snapshot current — it is the cross-machine memory. Update it in the same commit
+   as any status-changing work (the update protocol applies to it like everything else).
+
 ## Plugin install (once, inside Claude Code)
 
 /plugin marketplace add Egonex-AI/Understand-Anything
