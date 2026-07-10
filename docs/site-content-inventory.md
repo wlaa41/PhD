@@ -19,7 +19,7 @@ loses things — so rewrites now carry content by THIS checklist.
 |---|---|---|---|
 | 1 | Project status numbers (candidates / extracted / methods / gates) | index.html status cards + README status table | LIVE — must stay consistent |
 | 2 | Annotated paper cards (scales to 70; only extracted get pages) | index.html #papers | LIVE |
-| 3 | Per-paper annotated pages (TL;DR, figures, math, results, S5-verified limitations, relevance, provenance, BibTeX) | site/papers/{id}.html ×5 | LIVE |
+| 3 | Per-paper annotated pages (TL;DR, figures, math, results, limitations, relevance, provenance, BibTeX) | site/papers/{id}.html ×10 (batch 1 S5-verified; batch 2 S5 pending) | LIVE |
 | 4 | Knowledge graph (papers↔methods↔families, hover brief, node info cards) | index.html #graph | LIVE |
 | 5 | Method registry: 9 families, 22 cards, deep-dive modals (what / intuition / math / evidence / related / try-it resources) | index.html #methods | LIVE — families never change without permission |
 | 6 | Navigation map figure + footer site map on every page | index.html #map + all footers | LIVE |

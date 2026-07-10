@@ -55,8 +55,8 @@ Status: `web-verified` = adversarially verified with quotes · `web-found` = ID 
 | 2 | raptor-2025-foundation | RAPTOR: 2,084-param foundation policy, 10 real quadrotors · (confirm inst) | 2025 · arXiv | https://arxiv.org/pdf/2509.11481 | 25+25+20+8+15 = 93 | HW FRESH LINE | S2 | web-found |
 | 3 | bahnam-2026-monorace | MonoRace: monocular champion racing, won A2RL 2025 · TU Delft MAVLab | 2026 · arXiv | https://arxiv.org/pdf/2601.15222 | 25+25+20+8+15 = 93 | CHAMP LAB HW FRESH LINE | S2 | web-verified |
 | 4 | eschmann-2024-fly-seconds | Learning to Fly in Seconds, RL-to-firmware · NYU ARPL | 2024 · RA-L | https://arxiv.org/pdf/2311.13081 | 20+25+20+12+15 = 92 | LAB CODE HW VENUE | S2 | web-found |
-| 5 | geles-2024-pixels-no-state | Agile Flight from Pixels without State Estimation · UZH-RPG | 2024 · RSS | https://arxiv.org/abs/2406.12505 * | 20+25+20+10+15 = 90 | LAB VENUE LINE | S2 | knowledge* |
-| 6 | simpleflight-2024-what-matters | What Matters in Zero-Shot Sim-to-Real Quadrotor RL · Tsinghua | 2024 · arXiv | https://arxiv.org/pdf/2412.11764 | 20+25+20+8+15 = 88 | LAB CODE HW ADOPT | S2 | web-found |
+| 5 | geles-2024-pixels-no-state | Agile Flight from Pixels without State Estimation · UZH-RPG | 2024 · RSS | https://arxiv.org/abs/2406.12505 | 20+25+20+10+15 = 90 | LAB VENUE LINE | S2 | web-found (ID confirmed 10 Jul 2026; extracted, batch 2) |
+| 6 | simpleflight-2024-what-matters | What Matters in Zero-Shot Sim-to-Real Quadrotor RL · Tsinghua | 2024 · RA-L (venue confirmed 10 Jul 2026; was arXiv) | https://arxiv.org/pdf/2412.11764 | 20+25+20+12+15 = 92 (V raised with venue) | LAB CODE HW ADOPT VENUE | S2 | web-found (extracted, batch 2) |
 | 7 | kulkarni-2025-aerialgym | Aerial Gym Simulator + zero-shot depth navigation · NTNU-ARL | 2025 · arXiv | https://arxiv.org/pdf/2503.01471 | 25+15+20+8+15 = 83 | ADOPT CODE FRESH | S2 | web-found |
 | 8 | huang-2023-datt | DATT: Deep Adaptive Trajectory Tracking · UW | 2023 · CoRL | https://arxiv.org/abs/2310.09053 * | 12+25+20+10+15 = 82 | VENUE CODE | S2 | knowledge* |
 | 9 | zhang-2023-one-controller | One Near-Hover Controller for Vastly Different Quadcopters · Berkeley HiPeRLab | 2023 · ICRA | https://arxiv.org/abs/2209.09232 * | 12+25+20+10+15 = 82 | LAB HW | S2 | knowledge* |
@@ -71,7 +71,7 @@ Status: `web-verified` = adversarially verified with quotes · `web-found` = ID 
 
 | # | paper-id | Paper · institution | Year · Venue | Get it | Points R+H+Z+V+A | Strength | Cites | Status |
 |---|---|---|---|---|---|---|---|---|
-| 16 | he-2025-attention-legged | Attention-Based Map Encoding for Legged Locomotion · ETH-RSL | 2025 · Sci. Robotics | https://arxiv.org/pdf/2506.09588 | 25+25+20+15+8 = 93 | LAB VENUE HW FRESH | S2 | web-found |
+| 16 | he-2025-attention-legged | Attention-Based Map Encoding for Legged Locomotion · ETH-RSL | 2025 · arXiv pre-review draft (venue corrected 10 Jul 2026; was listed Sci. Robotics) | https://arxiv.org/pdf/2506.09588 | 25+25+20+8+8 = 86 (V lowered with venue) | LAB HW FRESH | S2 | web-found (extracted, batch 2) |
 | 17 | han-2025-wheeledlab | Wheeled Lab: Isaac Lab to low-cost wheeled robots · UW | 2025 · CoRL | https://arxiv.org/pdf/2502.07380 | 25+25+20+10+12 = 92 | CODE ADOPT FRESH | S2 | web-found |
 | 18 | hoeller-2024-anymal-parkour | ANYmal Parkour · ETH-RSL | 2024 · Sci. Robotics | https://arxiv.org/pdf/2306.14874 | 20+25+20+15+8 = 88 | LAB VENUE HW LINE | S2 | web-found |
 | 19 | radosavovic-2024-humanoid | Real-World Humanoid Locomotion with RL · Berkeley | 2024 · Sci. Robotics | https://arxiv.org/abs/2303.03381 * | 20+25+20+15+8 = 88 | LAB VENUE HW | S2 | knowledge* |
@@ -120,7 +120,7 @@ China's top robotics groups (Tsinghua, SJTU, Shanghai AI Laboratory, Shanghai Qi
 | # | paper-id | Paper · institution | Year · Venue | Get it | Points | Strength | Cites | Status |
 |---|---|---|---|---|---|---|---|---|
 | C1 | e2e-fly-2026 | E2E-Fly: integrated training-to-deployment for end-to-end quadrotor autonomy · SJTU (Danping Zou group; confirm on PDF) | 2026 · arXiv | https://arxiv.org/pdf/2604.12916 | 25+25+20+8+15 = 93 | LAB HW FRESH | S2 | web-found |
-| C2 | zhang-2025-diffphys-flight | Vision-based agile flight via differentiable physics · SJTU + Shanghai Qi Zhi | 2024/25 · NMI | https://arxiv.org/abs/2407.10648 * | 25+15+20+15+15 = 90 | LAB VENUE FRESH | S2 | knowledge* |
+| C2 | zhang-2025-diffphys-flight | Back to Newton's Laws: vision-based agile flight via differentiable physics · SJTU | 2025 · Nature Machine Intelligence (confirmed 10 Jul 2026) | https://arxiv.org/abs/2407.10648 | 25+15+20+15+15 = 90 | LAB VENUE FRESH | S2 | web-found (extracted, batch 2) |
 | C3 | long-2024-him | HIM: Hybrid Internal Model for agile legged locomotion · Shanghai AI Lab + SJTU | 2024 · ICLR | https://arxiv.org/abs/2312.11460 * | 20+25+20+12+8 = 85 | LAB VENUE CODE | S2 | knowledge* |
 | C4 | host-2025-standup | HoST: humanoid standing-up control across postures · Shanghai AI Lab (confirm inst) | 2025 · arXiv | https://arxiv.org/abs/2502.08378 * | 25+25+20+8+6 = 84 | LAB HW FRESH | S2 | knowledge* |
 | C5 | gu-2024-humanoid-gym | Humanoid-Gym: RL with zero-shot sim2real (Unitree H1) · SJTU + Shanghai Qi Zhi | 2024 · arXiv | https://arxiv.org/pdf/2404.05695 | 20+15+20+8+8 = 71 | LAB CODE ADOPT | S2 | web-found |

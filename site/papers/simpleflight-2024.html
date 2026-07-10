@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Matters in Learning a Zero-Shot Sim-to-Real RL Policy for Quadrotor Control? · annotated</title>
+<meta name="description" content="Annotated reading of SimpleFlight (Chen et al., Tsinghua, RA-L): a PPO-based ablation study identifying five critical factors for zero-shot sim-to-real quadrotor RL, halving tracking error on a Crazyflie.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../system.html">System</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="crumbs"><a href="../index.html">Overview</a> / <a href="../index.html#papers">Annotated papers</a> / <span>SimpleFlight</span></p>
+  <p class="eyebrow">Annotated paper · 10 of 10 · corpus rank #10</p>
+  <h1>What Matters in Learning A Zero-Shot Sim-to-Real RL Policy for Quadrotor Control? A Comprehensive Study</h1>
+  <p class="authors">Jiayu Chen, Chao Yu, Yuqing Xie, Feng Gao, Yinuo Chen, Shu'ang Yu, Wenhao Tang, Shilong Ji, Mo Mu, Yi Wu, Huazhong Yang &amp; Yu Wang</p>
+  <div class="meta-line">
+    Tsinghua University <span class="sep">·</span> arXiv v1 Dec 2024 · v4 May 2025 · accepted RA-L <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2412.11764" rel="noopener">arXiv:2412.11764</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 92 = 20+25+20+12+15 (venue corrected: RA-L)</span>
+    <span class="badge pending">S5 verification pending</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        The field's transfer folklore, put under a controlled lamp. Instead of proposing yet another trick,
+        this Tsinghua study asks <b>which tricks actually matter</b> for zero-shot sim-to-real quadrotor RL,
+        identifies <b>five critical factors</b>, and bundles them into a PPO-based framework called
+        <b>SimpleFlight</b>, trained in the GPU-based OmniDrones simulator. Deployed on a real Crazyflie with
+        no fine-tuning, it cuts trajectory tracking error by <b>more than 50% against state-of-the-art RL
+        baselines</b> — on smooth polynomial trajectories and on infeasible zigzags where the baselines fail.
+        Of the ten papers annotated here, this is the one closest in spirit to this literature review itself:
+        an ablation-driven answer to a question every other page on this site raises implicitly.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        Every zero-shot sim-to-real paper ships a different bundle of transfer tricks — randomisation schemes,
+        observation choices, reward terms, action smoothing — and reports that the bundle worked. Almost none
+        of them report which ingredients carried the result. The recipes accumulate; the evidence for the
+        individual ingredients does not.
+      </p>
+      <p>
+        The abstract frames the standing tension: classical quadrotor control leans on flat trajectories or
+        time-consuming optimisation, which limits flexibility; RL policies map observations to actions
+        directly, but "often experience instability when deployed in real world". Between those two poles sits
+        an unexamined pile of folklore. Every paper annotated on this site uses a different subset of the
+        registry's methods, and until someone ran controlled comparisons, the field had no way of knowing
+        which subset was load-bearing. Someone had to ablate them. This paper did.
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 170" role="img" aria-label="SimpleFlight pipeline: the GPU-based OmniDrones simulator feeds a PPO training framework integrating five critical factors; the resulting policy is deployed zero-shot on a real Crazyflie.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="8" y="38" width="140" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="78" y="62" text-anchor="middle" font-weight="700">OmniDrones</text>
+            <text x="78" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">GPU-based simulator</text>
+            <text x="78" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">Tsinghua</text>
+
+            <rect x="178" y="30" width="200" height="80" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="278" y="54" text-anchor="middle" font-weight="700" fill="#1e3a8a">PPO + five factors</text>
+            <text x="278" y="71" text-anchor="middle" font-size="10.5" fill="#44403c">SimpleFlight training framework</text>
+            <text x="278" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">five factors: full list awaits</text>
+            <text x="278" y="100" text-anchor="middle" font-size="10.5" fill="#78716c">the full-PDF pass</text>
+
+            <rect x="408" y="38" width="130" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="473" y="62" text-anchor="middle" font-weight="700">Zero-shot</text>
+            <text x="473" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">deployed unchanged</text>
+            <text x="473" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">no real-world fine-tuning</text>
+
+            <rect x="568" y="38" width="124" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="630" y="62" text-anchor="middle" font-weight="700">Real Crazyflie</text>
+            <text x="630" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">smooth polynomial +</text>
+            <text x="630" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">infeasible zigzag tracking</text>
+
+            <line x1="148" y1="70" x2="174" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="378" y1="70" x2="404" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="538" y1="70" x2="564" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="280" y="146" text-anchor="middle" font-size="10.5" fill="#78716c">simulation</text>
+            <text x="600" y="146" text-anchor="middle" font-size="10.5" fill="#78716c">reality · zero-shot</text>
+            <line x1="8" y1="126" x2="540" y2="126" stroke="#e7e5e4" stroke-width="1"/>
+            <line x1="552" y1="126" x2="692" y2="126" stroke="#bbe3c8" stroke-width="2"/>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The SimpleFlight pipeline. Everything left of the green line happens in
+          the OmniDrones simulator; the policy crosses to the Crazyflie unchanged. The highlighted box is the
+          paper's contribution — five ablation-ranked factors folded into a PPO training framework. The five
+          names are not in the abstract; the full list awaits the full-PDF pass.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 The PPO backbone</h3>
+      <p>
+        The abstract states plainly that SimpleFlight is "a PPO-based training framework" — the five factors
+        are integrated around a standard on-policy core, not a bespoke algorithm. That makes the backbone the
+        familiar clipped surrogate:
+      </p>
+      <div class="math-block">
+        $$ L^{\text{CLIP}}(\theta) \;=\; \mathbb{E}_t\!\left[ \min\!\Big( r_t(\theta)\,\hat{A}_t,\;
+           \operatorname{clip}\!\big(r_t(\theta),\, 1-\epsilon,\, 1+\epsilon\big)\,\hat{A}_t \Big) \right],
+           \qquad r_t(\theta) \;=\; \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}. $$
+        <div class="eq-note">Notation ours — this is the canonical PPO clipped surrogate (Schulman et al.,
+          2017), reconstructed because the abstract only names the algorithm family. The paper's exact
+          objective, and how the five factors modify observations, rewards and training around it, awaits
+          the full-PDF pass.</div>
+      </div>
+      <p>
+        The contrast with the rest of the corpus is worth recording. <a href="fly-seconds-2024.html">Learning
+        to Fly in Seconds</a> was widely read as a PPO result until the S5 full-text pass revealed its trainer
+        is off-policy. With that correction on file, SimpleFlight becomes this corpus's cleanest exemplar of
+        PPO taken all the way to real hardware — the algorithm the field treats as the default, actually
+        validated end-to-end on a physical quadrotor.
+      </p>
+
+      <h3>3.2 Why an ablation study earns its place here</h3>
+      <div class="concept">
+        <span class="c-label">Concept · the epistemics of "what matters" studies</span>
+        <p>A literature review and an ablation study are the same experiment run in different media. The
+        review counts how often N papers use a technique and treats frequency as evidence of essentiality;
+        the ablation holds everything else fixed, removes the technique, and measures the damage. The first
+        is cheap and observational, the second expensive and causal. A "what matters" paper converts N
+        papers' worth of folklore into ranked, controlled evidence — which is precisely what this site's
+        method registry tries to approximate by counting. When the two agree, the frequency signal is
+        vindicated; when they disagree, the ablation wins and the registry's weighting should be revisited.</p>
+      </div>
+
+      <h3>3.3 The five factors — honestly flagged</h3>
+      <p>
+        The five critical factors are the paper's core contribution, and they are <em>not named in the
+        abstract</em>. Under this site's verification law, that means they cannot be listed here yet: no
+        secondary source is trusted to name them, and nothing is invented. The full list is flagged for the
+        S5 full-PDF pass, where the factors will be extracted verbatim and then checked, one by one, against
+        the method registry's frequency counts — the single most direct test this corpus can run of whether
+        counting predicts what controlled ablation confirms.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        Validation is on a real Crazyflie, and the headline is a relative one: SimpleFlight "achieves more
+        than a 50% reduction in trajectory tracking error compared to state-of-the-art RL baselines". The
+        abstract adds texture on where the margin comes from — the policy "consistently excels across both
+        smooth polynomial trajectories and challenging infeasible zigzag trajectories" on small
+        thrust-to-weight quadrotors, whereas "baseline methods struggle with high-speed or infeasible
+        trajectories". The infeasible-zigzag case is the telling one: a trajectory the platform cannot track
+        exactly punishes brittle policies hardest.
+      </p>
+      <figure>
+        <svg viewBox="0 0 640 128" role="img" aria-label="Relative trajectory tracking error: state-of-the-art RL baselines at 100 per cent reference versus SimpleFlight at less than 50 per cent, as claimed in the abstract.">
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <text x="8" y="26">SOTA RL baselines</text>
+            <rect x="180" y="14" width="392" height="14" fill="#d6d3d1" rx="2"/>
+            <text x="580" y="26">100%</text>
+            <text x="8" y="60">SimpleFlight</text>
+            <rect x="180" y="48" width="196" height="14" fill="#1a56db" rx="2"/>
+            <text x="384" y="60" fill="#1c1917" font-weight="700">&lt; 50%</text>
+            <line x1="180" y1="84" x2="612" y2="84" stroke="#e7e5e4"/>
+            <text x="396" y="100" text-anchor="middle" font-size="10.5" fill="#78716c">relative trajectory tracking error — baseline set to 100%</text>
+            <text x="396" y="116" text-anchor="middle" font-size="10.5" fill="#78716c">drawn from the abstract's "more than a 50% reduction" claim; absolute numbers await the full-PDF pass</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 2.</b> The headline claim, drawn to scale and nothing more. Only the relative
+          reduction is stated in the abstract; per-trajectory absolute errors and the baseline list await the
+          full-PDF pass.</figcaption>
+      </figure>
+      <p>
+        Two reproducibility facts round out the abstract: SimpleFlight is integrated into the GPU-based
+        OmniDrones simulator, and the authors provide <b>open-source access to both the code and the model
+        checkpoints</b>. For a study whose value lies in being checked and reused, that is the right release
+        posture — and it is what makes the reproduction options in section 6 realistic.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors:</b> none in the abstract — it contains no limitations statement. Recorded
+          as such rather than paraphrased around; the paper's own limitations section, if one exists, will be
+          quoted after the S5 full-PDF pass.</li>
+        <li><b>Ours:</b> validation is Crazyflie-only. A palm-sized platform with a small thrust-to-weight
+          ratio is the gentlest possible hardware test, and the same scale question already raised for
+          <a href="fly-seconds-2024.html">Learning to Fly in Seconds</a> applies here: do the five factors keep
+          their ranking on heavier, faster airframes?</li>
+        <li><b>Ours:</b> the five factors were identified and ablated inside one simulator. Whether their
+          ranking is a property of quadrotor sim-to-real transfer in general, or partly a property of
+          OmniDrones, is exactly the kind of question a second simulator — an Isaac-based or
+          differentiable-physics stack — would answer.</li>
+      </ul>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          Potentially the highest-leverage paper in the corpus for this project. First, if the five factors
+          turn out to overlap with the method registry's high-count entries, the registry's frequency analysis
+          gains independent experimental confirmation — an ablation study agreeing with a literature count is
+          the strongest validation this review can get. Second, OmniDrones (Tsinghua, GPU-based) is a concrete
+          candidate for the second simulator in sim-to-sim validation — the E2E-Fly pipeline stage this
+          project adopted as I2.4. Third, open code <em>and</em> open checkpoints on a Crazyflie make
+          SimpleFlight a possible secondary reproduction target alongside the designated Learning to Fly in
+          Seconds baseline: same airframe, opposite algorithm family.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>custom-high-performance-simulator</code></a>
+        <br>OmniDrones is counted under <code>custom-high-performance-simulator</code>; the merge judgement is
+        logged in the registry. The list is expected to grow once the five factors are named at S5.
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4-lite</b> — built from the paper's arXiv abstract page (fetched 10 July 2026)
+        plus clearly-labelled concept reconstructions. Venue upgrade recorded at this fetch: the earlier corpus
+        snapshot listed the paper as arXiv-only, but the abstract page now states "Accepted by RA-L", so the
+        triage score was corrected from 88 (20+25+20+8+15) to 92 (20+25+20+12+15). Equations marked "notation
+        ours" are canonical forms, not the paper's own. This page is promoted to <b>verified</b> only after the
+        full-PDF pass and the NotebookLM five-question cross-check (pipeline stage S5), where the five factors
+        will be extracted and checked against the method registry.
+      </div>
+      <div class="cite">@article{chen2024simpleflight,
+  title   = {What Matters in Learning A Zero-Shot Sim-to-Real RL Policy for Quadrotor Control? A Comprehensive Study},
+  author  = {Chen, Jiayu and Yu, Chao and Xie, Yuqing and Gao, Feng and Chen, Yinuo and Yu, Shu'ang and Tang, Wenhao and Ji, Shilong and Mu, Mo and Wu, Yi and Yang, Huazhong and Wang, Yu},
+  journal = {IEEE Robotics and Automation Letters},
+  year    = {2024},
+  eprint  = {2412.11764},
+  archivePrefix = {arXiv},
+  url     = {https://arxiv.org/abs/2412.11764}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="diffphys-2025.html"><span class="dir">← Previous</span>Back to Newton's Laws: agile flight via differentiable physics</a>
+      <a href="../index.html#papers" style="text-align:right"><span class="dir">Reading list →</span>Back to the reading list</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="falcongym-2025.html">01 · FalconGym</a>
+      <a href="raptor-2026.html">02 · RAPTOR</a>
+      <a href="monorace-2026.html">03 · MonoRace</a>
+      <a href="e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="attention-legged-2025.html">06 · Attention Legged</a>
+      <a href="wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="pixels-2024.html">08 · Flight from Pixels</a>
+      <a href="diffphys-2025.html">09 · Newton's Laws</a>
+      <a href="simpleflight-2024.html">10 · SimpleFlight</a></div>
+    <div><b>Explore</b>
+      <a href="../index.html#graph">Knowledge graph</a>
+      <a href="../index.html#methods">Method registry</a>
+      <a href="../corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="../system.html#pipeline">The pipeline S1–S9</a>
+      <a href="../system.html#counting">Scoring &amp; counting</a>
+      <a href="../system.html#agents">The agents</a>
+      <a href="../system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>

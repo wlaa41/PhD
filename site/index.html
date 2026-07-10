@@ -81,9 +81,9 @@
   <div class="grid g4" style="margin-top:1.8rem" aria-label="Project status">
     <a class="card clickable status-card" href="corpus.html"><b>70</b>
       <span class="sc-label">candidate papers seeded</span><span class="sc-go">see the ranked corpus →</span></a>
-    <a class="card clickable status-card" href="#papers"><b>5</b>
+    <a class="card clickable status-card" href="#papers"><b>10</b>
       <span class="sc-label">extracted &amp; annotated</span><span class="sc-go">read the annotations →</span></a>
-    <a class="card clickable status-card" href="#methods"><b>22</b>
+    <a class="card clickable status-card" href="#methods"><b>23</b>
       <span class="sc-label">methods in 9 families</span><span class="sc-go">explore the registry →</span></a>
     <a class="card clickable status-card" href="system.html"><b>S1–S9</b>
       <span class="sc-label">pipeline, 3 human gates</span><span class="sc-go">how the system works →</span></a>
@@ -94,8 +94,9 @@
 
   <h2 class="section-label" id="papers">Annotated papers</h2>
   <p class="section-sub">
-    Only extracted papers get a page; the other 65 candidates live in the
-    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. Each page brings the
+    Only extracted papers get a page; the other 60 candidates live in the
+    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. Batch 2 (06–10) is
+    freshly extracted from the papers' arXiv pages; its NotebookLM cross-check (S5) is the next step. Each page brings the
     full content: the pipeline as a figure, the mathematics, results, stated limitations and hardware relevance.
   </p>
   <div class="grid g3">
@@ -134,10 +135,45 @@
       <p>18 seconds of training to a flying policy; deployed on a Crazyflie microcontroller. Open source — this project's I2 baseline.</p>
       <span class="pc-go">Read the annotation →</span>
     </a>
+    <a class="card clickable paper-card" href="papers/attention-legged-2025.html">
+      <span class="pc-top"><span class="pc-rank">#06</span><span class="badge zero">zero-shot</span><span class="badge">score 86 · venue corrected</span></span>
+      <h3>Attention-based map encoding for generalized legged locomotion</h3>
+      <span class="pc-meta">He, Zhang, Jenelten et al. · ETH · arXiv 2025 (pre-review)</span>
+      <p>Attention over the terrain map, conditioned on proprioception, learns to focus on steppable footholds — one recipe on a quadruped AND a humanoid.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/wheeledlab-2025.html">
+      <span class="pc-top"><span class="pc-rank">#07</span><span class="badge zero">zero-shot</span><span class="badge">score 92</span></span>
+      <h3>Wheeled Lab: modern sim2real for low-cost wheeled robotics</h3>
+      <span class="pc-meta">Han et al. · UW · CoRL 2025</span>
+      <p>Isaac Lab to cheap open-source RC cars: three zero-shot policies — controlled drifting, elevation traversal, visual navigation.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/pixels-2024.html">
+      <span class="pc-top"><span class="pc-rank">#08</span><span class="badge zero">zero-shot*</span><span class="badge">score 90</span></span>
+      <h3>Agile flight from pixels, without state estimation</h3>
+      <span class="pc-meta">Geles et al. · UZH-RPG · RSS 2024</span>
+      <p>No state estimator anywhere: gate-edge abstraction during training, a Swin gate detector at deployment, 40 km/h and 2 g from raw pixels.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/diffphys-2025.html">
+      <span class="pc-top"><span class="pc-rank">#09</span><span class="badge zero">zero-shot</span><span class="badge verified">Nature MI · confirmed</span></span>
+      <h3>Back to Newton's Laws: agile flight via differentiable physics</h3>
+      <span class="pc-meta">Zhang, Hu, Song, Zou &amp; Lin · SJTU · Nature MI 2025</span>
+      <p>A point-mass differentiable model beats deep pipelines: 90% success vs 60% SOTA, 20 m/s, deployed on a $21 computer.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/simpleflight-2024.html">
+      <span class="pc-top"><span class="pc-rank">#10</span><span class="badge zero">zero-shot</span><span class="badge">score 92 · venue corrected</span></span>
+      <h3>What matters in zero-shot sim-to-real quadrotor RL</h3>
+      <span class="pc-meta">Chen et al. · Tsinghua · RA-L</span>
+      <p>The ablation study the field needed: five critical factors, 50% tracking-error reduction, open code and checkpoints.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
     <a class="card paper-card ghost" href="corpus.html">
       <span class="pc-top"><span class="badge pending">in triage</span></span>
-      <h3>+ 65 candidates awaiting extraction</h3>
-      <p>Ranked and scored, extracted in weekly batches of ten, verified before anything is trusted.</p>
+      <h3>+ 60 candidates awaiting extraction</h3>
+      <p>Ranked and scored, extracted in weekly batches, verified before anything is trusted.</p>
       <span class="pc-go">Browse the corpus →</span>
     </a>
   </div>
@@ -256,7 +292,12 @@
       <a href="papers/raptor-2026.html">02 · RAPTOR</a>
       <a href="papers/monorace-2026.html">03 · MonoRace</a>
       <a href="papers/e2e-fly-2026.html">04 · E2E-Fly</a>
-      <a href="papers/fly-seconds-2024.html">05 · Fly in Seconds</a></div>
+      <a href="papers/fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="papers/attention-legged-2025.html">06 · Attention Legged</a>
+      <a href="papers/wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="papers/pixels-2024.html">08 · Flight from Pixels</a>
+      <a href="papers/diffphys-2025.html">09 · Newton's Laws</a>
+      <a href="papers/simpleflight-2024.html">10 · SimpleFlight</a></div>
     <div><b>Explore</b>
       <a href="#graph">Knowledge graph</a>
       <a href="#methods">Method registry</a>
@@ -289,7 +330,12 @@ const PAPERS={
   raptor:["papers/raptor-2026.html","RAPTOR (NYU ARPL, 2026)"],
   monorace:["papers/monorace-2026.html","MonoRace (TU Delft, 2026)"],
   e2efly:["papers/e2e-fly-2026.html","E2E-Fly (SJTU, 2026)"],
-  flysec:["papers/fly-seconds-2024.html","Learning to Fly in Seconds (NYU ARPL, RA-L 2024)"]};
+  flysec:["papers/fly-seconds-2024.html","Learning to Fly in Seconds (NYU ARPL, RA-L 2024)"],
+  attn:["papers/attention-legged-2025.html","Attention-Based Map Encoding (ETH, arXiv 2025)"],
+  wheeled:["papers/wheeledlab-2025.html","Wheeled Lab (UW, CoRL 2025)"],
+  pixels:["papers/pixels-2024.html","Agile Flight from Pixels (UZH-RPG, RSS 2024)"],
+  diffphys:["papers/diffphys-2025.html","Back to Newton's Laws (SJTU, Nature MI 2025)"],
+  simpleflight:["papers/simpleflight-2024.html","SimpleFlight (Tsinghua, RA-L)"]};
 
 /* [id, family, name, what, members[[paper,fact]], intuition, mathLatex|null, related[]] */
 const METHODS=[
@@ -302,12 +348,13 @@ const METHODS=[
 ["custom-high-performance-simulator","sim","Custom high-throughput simulator",
  "A purpose-built fast dynamics simulator drives sample cost toward zero.",
  [["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"],
-  ["raptor","trains its 1,000 teachers and student in the 'L2F simulator' (S5-verified quote)"]],
+  ["raptor","trains its 1,000 teachers and student in the 'L2F simulator' (S5-verified quote)"],
+  ["simpleflight","trained in OmniDrones, a purpose-built GPU drone simulator (merge judgement logged)"]],
  "RL's real currency is wall-clock time per sample. If the simulator produces months of flight per second, algorithmic sample-efficiency stops being the bottleneck and iteration speed becomes the superpower.",
  null,["end-to-end-rl","curriculum-learning"]],
 ["differentiable-physics-learning","sim","Differentiable physics learning",
  "Gradients flow through the dynamics model itself, giving first-order training signal beyond model-free RL.",
- [["e2efly","its simulator supports differentiable physics learning alongside RL"]],
+ [["e2efly","its simulator supports differentiable physics learning alongside RL"],["diffphys","learns vision-based flight through a differentiable point-mass simulation (Nature MI 2025)"]],
  "Model-free RL learns from 'that rollout scored 7.2' — a single number. If the simulator is differentiable, you also learn 'and here is exactly how each parameter would have changed the score', which is enormously more informative per sample.",
  "\\nabla_\\theta J=\\sum_t \\frac{\\partial J}{\\partial s_t}\\,\\frac{\\partial s_t}{\\partial \\theta},\\qquad s_{t+1}=f_\\psi(s_t,a_t)",
  ["end-to-end-rl","system-identification"]],
@@ -364,13 +411,13 @@ const METHODS=[
  ["photorealistic-nerf-sim","teacher-student-distillation"]],
 ["end-to-end-rl","algo","End-to-end reinforcement learning",
  "Model-free RL from observations to low-level commands, with no hand-built controller in the loop.",
- [["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"]],
- "Cascaded controllers encode decades of assumptions — and their limits. Letting one network map observations straight to motor commands removes every hand-tuned layer, at the price that the sim-to-real gap now has nowhere to hide. The most-used method in the extracted set: 4 of 5 papers.",
+ [["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"],["attn","trains the map-conditioned locomotion policies end-to-end with RL"],["wheeled","its three zero-shot policies are trained with RL in Isaac Lab"],["pixels","asymmetric actor-critic RL from abstracted observations to thrust and body rates"],["simpleflight","'PPO-based training framework' (verbatim)"]],
+ "Cascaded controllers encode decades of assumptions — and their limits. Letting one network map observations straight to motor commands removes every hand-tuned layer, at the price that the sim-to-real gap now has nowhere to hide. The most-used method in the extracted set: 8 of 10 papers.",
  "J(\\pi)=\\mathbb{E}_{\\tau\\sim\\pi}\\Big[\\sum_{t}\\gamma^{t}\\,r(s_t,a_t)\\Big]",
  ["asymmetric-actor-critic","direct-motor-command-control","curriculum-learning"]],
 ["asymmetric-actor-critic","algo","Asymmetric actor-critic",
  "The critic sees privileged simulator state; the actor sees only what the real vehicle will have.",
- [["flysec","names the asymmetric actor-critic architecture as a core contribution"]],
+ [["flysec","names the asymmetric actor-critic architecture as a core contribution"],["pixels","'asymmetric actor-critic with access to privileged information' (verbatim)"]],
  "The critic is scaffolding: it exists only during training and is discarded at deployment, so it may cheat freely — full state, no noise. A well-informed critic gives low-variance gradients; the actor still learns under real-world constraints. Free accuracy with no transfer penalty.",
  "\\underbrace{V_\\varphi(s^{\\text{priv}}_t)}_{\\text{critic, sim-only}}\\qquad\\underbrace{\\pi_\\theta(a_t\\,|\\,o_t)}_{\\text{actor, deployable}}",
  ["end-to-end-rl","teacher-student-distillation"]],
@@ -391,9 +438,15 @@ const METHODS=[
  "One camera cannot measure depth — but if you know the gates' true geometry, their appearance in the image pins your pose (the PnP idea). Between gate sightings, the dynamics model carries the estimate through blur, interference and dropped frames.",
  "\\min_{R,t}\\sum_i\\big\\lVert x_i-\\pi\\big(K[R\\,|\\,t]\\,X_i\\big)\\big\\rVert^2",
  ["neural-pose-estimation-kalman","system-identification"]],
+["training-time-sensor-abstraction","input","Training-time sensor abstraction",
+ "Train the policy against a cheap geometric abstraction of the sensor (gate inner edges) instead of rendered images; swap in a learned detector at deployment. The first NEW method the corpus forced into the registry since seeding (batch 2).",
+ [["pixels","gate inner edges serve as 'sensor abstraction' during training, avoiding image rendering entirely"]],
+ "Rendering photorealistic images for every training step is expensive and imports the pixel-level sim-to-real gap into training itself. If a compact abstraction carries the task-relevant information, train on the abstraction — cheap and gap-free — and let a separately trained detector produce it from real pixels at deployment.",
+ null,
+ ["self-attention-sensor-fusion","gate-segmentation-model-fusion","neural-pose-estimation-kalman"]],
 ["self-attention-sensor-fusion","input","Self-attention sensor fusion",
  "Attention adaptively weights visual features against pose estimates in the controller input.",
- [["falcongym","uses a self-attention-based multi-modal controller"]],
+ [["falcongym","uses a self-attention-based multi-modal controller"],["attn","attention-based map encoding conditioned on proprioception (merge judgement logged: same mechanism, different sensory domain)"]],
  "Sometimes the image is the better signal, sometimes the filtered pose; a fixed blend is wrong whenever conditions change. Attention lets the controller decide, frame by frame, which input currently deserves trust.",
  "\\mathrm{Attention}(Q,K,V)=\\mathrm{softmax}\\!\\Big(\\tfrac{QK^{\\!\\top}}{\\sqrt{d_k}}\\Big)V",
  ["neural-pose-estimation-kalman"]],
@@ -511,7 +564,7 @@ function draw(fam){
       <span class="mc-id">${m[0]}</span>
       <span class="mc-name">${esc(m[2])}</span>
       <span class="mc-foot"><span class="mc-fam">${FAMS[m[1]]}</span>
-      <span class="mc-count">${m[4].length} / 5</span></span></button>`;}).join("");
+      <span class="mc-count">${m[4].length} / 10</span></span></button>`;}).join("");
 }
 draw("");
 chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b||!b.dataset)return;
@@ -541,7 +594,7 @@ function openMethod(m){
   document.getElementById("mmRelated").innerHTML=m[7].map(id=>
     `<a href="#" class="mm-rel" data-m="${id}"><code>${id}</code></a>`).join(" · ");
   document.getElementById("mmCount").textContent=
-    `Used by ${m[4].length} of the 5 extracted papers. Count = distinct papers, not mentions; recomputed after every batch. "What it is" and the evidence lines are grounded in the papers' arXiv pages; the intuition is our explanation and the mathematics is a canonical concept form (notation ours), both labelled as such.`;
+    `Used by ${m[4].length} of the 10 extracted papers. Count = distinct papers, not mentions; recomputed after every batch. "What it is" and the evidence lines are grounded in the papers' arXiv pages; the intuition is our explanation and the mathematics is a canonical concept form (notation ours), both labelled as such.`;
   back.classList.add("open");modal.classList.add("open");
   document.getElementById("mmClose").focus();
 }
@@ -660,7 +713,12 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
     raptor:"NYU ARPL · 2026 · zero-shot · one 2,084-parameter policy, 10 real quadrotors",
     monorace:"TU Delft MAVLab · 2026 · won A2RL 2025 vs 3 human world champions (verified)",
     e2efly:"SJTU · 2026 · integrated training-to-deployment system, 6 real tasks",
-    flysec:"NYU ARPL · RA-L 2024 · 18-second training, MCU deployment · designated I2 baseline"};
+    flysec:"NYU ARPL · RA-L 2024 · 18-second training, MCU deployment · designated I2 baseline",
+    attn:"ETH · arXiv 2025 (pre-review) · attention map encoding on a quadruped AND a humanoid",
+    wheeled:"UW · CoRL 2025 · Isaac Lab to low-cost RC cars, three zero-shot policies",
+    pixels:"UZH-RPG · RSS 2024 · pixels to commands, no state estimator, 40 km/h at 2 g",
+    diffphys:"SJTU · Nature MI 2025 · point-mass differentiable physics, 90% vs 60% SOTA, $21 computer",
+    simpleflight:"Tsinghua · RA-L · the five-factor ablation, 50% tracking-error reduction"};
   const nodeModal=document.getElementById("nodeModal");
   function closeNode(){nodeModal.classList.remove("open");back.classList.remove("open");}
   function openNode(n){

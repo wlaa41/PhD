@@ -13,9 +13,9 @@ are labelled, never hidden.**
 | What | State |
 |---|---|
 | Candidate corpus | 70 papers seeded, scored against the fixed rubric; **awaiting Gate 1** (human corpus lock) |
-| Extracted & annotated | 5 papers, each with its own site page (figures, math, provenance) |
-| S5 verification | **Batch 1 passed** — NotebookLM cross-check, per-paper isolation; record in `docs/s5-notebooklm-2026-07-10.md`; 3 material corrections applied and visible on the pages |
-| Method registry | 22 canonical methods in 9 families; counts recomputed from full-text evidence (DR 4/5, latency handling 4/5) |
+| Extracted & annotated | **10 papers** (batches 1–2), each with its own site page (figures, math, provenance). Batch-2 venue corrections applied: ETH attention paper is an arXiv pre-review draft (93→86); SimpleFlight accepted at RA-L (88→92); Newton's-Laws confirmed Nature MI |
+| S5 verification | **Batch 1 passed** (record: `docs/s5-notebooklm-2026-07-10.md`; 3 material corrections applied). **Batch 2 pending** — add the five new papers to the notebook and run the five questions per source |
+| Method registry | 23 canonical methods in 9 families (batch 2 forced the first new method: training-time-sensor-abstraction); top counts: end-to-end RL 8/10, DR 4/10, latency handling 4/10 |
 | NotebookLM notebook | Live (notebook `d336f22d`, 5 full-text sources) — the standing S5 instrument; add each batch's papers on arrival |
 | Implementation track (I1–I3) | **Not started** — the 12-week clock has no start date yet |
 
@@ -62,7 +62,7 @@ enable GitHub Pages (Settings → Pages → main) and it serves as-is.
 | `site/index.html` | status cards · annotated-paper card grid (built for 70; only extracted papers get pages) · **knowledge graph** (Obsidian view: papers↔methods↔families; hover shows an on-canvas brief with connections; click opens an info card with the page/deep-dive action) · **method registry** as clickable cards opening deep-dive modals (what · intuition · mathematics "notation ours" · S5-verified evidence quotes · related methods · try-it-yourself open-source links, every URL existence-verified and dated) · navigation-map figure · footer site map |
 | `site/system.html` | **the whole system in one clickable map** (two tracks, three gates, registry hub, generated views — press any block to open the card that explains it) · S1–S9 stage cards with verbatim quotes · scoring rubric · method counting & categorization rules · 8 agent cards · registry schemas · I1–I3 · two-track 12-week timeline · the verification law |
 | `site/corpus.html` | 40 ranked candidates with per-paper R+H+Z+V+A breakdowns, strength signals, platform/source/year filters + search; annotated papers linked |
-| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, **author-stated limitations (S5-verified)**, relevance to this PhD, provenance status, BibTeX, prev/next. The five: `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024` |
+| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, author-stated limitations, relevance to this PhD, provenance status, BibTeX, prev/next. Batch 1 (S5-verified): `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024`. Batch 2 (S4-lite, S5 pending): `attention-legged-2025`, `wheeledlab-2025`, `pixels-2024`, `diffphys-2025`, `simpleflight-2024` |
 
 Design rules that keep the site honest and consistent:
 - Every fact card carries a `.src` source chip naming its file or record; statuses are

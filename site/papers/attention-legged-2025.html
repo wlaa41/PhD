@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attention-Based Map Encoding for Learning Generalized Legged Locomotion · annotated</title>
+<meta name="description" content="Annotated reading of He et al. (2025): attention-based elevation-map encoding conditioned on proprioception, trained end-to-end with RL, deployed on a 12-DoF quadruped and a 23-DoF humanoid.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../system.html">System</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="crumbs"><a href="../index.html">Overview</a> / <a href="../index.html#papers">Annotated papers</a> / <span>Attention-Based Map Encoding</span></p>
+  <p class="eyebrow">Annotated paper · 06 of 10 · corpus rank #5</p>
+  <h1>Attention-Based Map Encoding for Learning Generalized Legged Locomotion</h1>
+  <p class="authors">Junzhe He, Chong Zhang, Fabian Jenelten, Ruben Grandia, Moritz Bächer &amp; Marco Hutter</p>
+  <div class="meta-line">
+    arXiv 2025, pre-review draft <span class="sep">·</span> submitted 11 June 2025 <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2506.09588" rel="noopener">arXiv:2506.09588</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 86 = 25+25+20+8+8 (venue corrected)</span>
+    <span class="badge pending">S5 verification pending</span>
+  </div>
+  <p class="small">Badge caveat: the abstract reports real-world tests in scenarios "including ones unseen during
+    training"; whether the authors themselves use the term "zero-shot" is to be verified at S5.</p>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results in the real world</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        Instead of feeding a locomotion policy the whole elevation map, this paper learns an
+        <b>attention-based map encoding conditioned on the robot's proprioception</b>, trained as part of the
+        end-to-end controller with reinforcement learning. The network "learns to focus on steppable areas for
+        future footholds", giving learning-based control the foothold precision usually reserved for
+        model-based planners. The same recipe trains controllers for a <b>12-DoF quadruped</b> and a
+        <b>23-DoF humanoid</b>, both tested in the real world in challenging indoor and outdoor scenarios,
+        "including ones unseen during training". Caveat: this is an arXiv draft explicitly prior to peer review.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        Perceptive legged locomotion has an attention problem in the literal sense: the elevation map is large,
+        but at any instant only a few of its cells matter — the ones where the next feet must land. A policy
+        that ingests the whole map indiscriminately wastes capacity on irrelevant terrain and loses the
+        precision that sparse footholds demand.
+      </p>
+      <p>
+        The abstract frames the field as a three-way trade-off. Traditional model-based controllers "excel at
+        planning on complex terrains" but "struggle with real-world uncertainties". Learning-based controllers
+        are robust to those uncertainties "but often lack precision on terrains with sparse steppable areas".
+        Hybrid methods buy robustness on sparse terrain by combining both, at the price of being
+        "computationally demanding and constrained by the inherent limitations of model-based planners". The
+        open question is whether a pure learning-based controller can recover planner-like foothold precision
+        without inheriting a planner.
+      </p>
+      <p>
+        There is a second, quieter question underneath: does the answer depend on the body? The paper applies
+        one recipe to two very different morphologies — a 12-DoF quadruped and a 23-DoF humanoid — which makes
+        it a cross-embodiment data point as much as a locomotion one.
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 214" role="img" aria-label="Pipeline: an elevation map and robot proprioception feed an attention-based map encoder, trained end-to-end with an RL policy; the recipe produces controllers for a 12-DoF quadruped and a 23-DoF humanoid, tested in the real world including scenarios unseen during training.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="8" y="22" width="122" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="69" y="46" text-anchor="middle" font-weight="700">Elevation map</text>
+            <text x="69" y="63" text-anchor="middle" font-size="10.5" fill="#78716c">terrain height grid</text>
+
+            <rect x="8" y="104" width="122" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="69" y="128" text-anchor="middle" font-weight="700">Proprioception</text>
+            <text x="69" y="145" text-anchor="middle" font-size="10.5" fill="#78716c">joint + body state</text>
+
+            <rect x="176" y="54" width="140" height="76" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="246" y="78" text-anchor="middle" font-weight="700" fill="#1e3a8a">Attention encoder</text>
+            <text x="246" y="95" text-anchor="middle" font-size="10.5" fill="#44403c">map patches as tokens</text>
+            <text x="246" y="110" text-anchor="middle" font-size="10.5" fill="#44403c">conditioned on body state</text>
+
+            <rect x="352" y="54" width="104" height="76" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="404" y="82" text-anchor="middle" font-weight="700">RL policy</text>
+            <text x="404" y="99" text-anchor="middle" font-size="10.5" fill="#78716c">trained end-to-end</text>
+
+            <rect x="492" y="22" width="116" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="550" y="46" text-anchor="middle" font-weight="700">Quadruped</text>
+            <text x="550" y="63" text-anchor="middle" font-size="10.5" fill="#78716c">12 DoF</text>
+
+            <rect x="492" y="104" width="116" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="550" y="128" text-anchor="middle" font-weight="700">Humanoid</text>
+            <text x="550" y="145" text-anchor="middle" font-size="10.5" fill="#78716c">23 DoF</text>
+
+            <rect x="618" y="22" width="74" height="140" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="655" y="76" text-anchor="middle" font-weight="700">Real world</text>
+            <text x="655" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">indoor +</text>
+            <text x="655" y="106" text-anchor="middle" font-size="10.5" fill="#78716c">outdoor</text>
+            <text x="655" y="123" text-anchor="middle" font-size="10.5" fill="#78716c">incl. unseen</text>
+            <text x="655" y="136" text-anchor="middle" font-size="10.5" fill="#78716c">scenarios</text>
+
+            <line x1="130" y1="51" x2="172" y2="78" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="130" y1="133" x2="172" y2="106" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="316" y1="92" x2="348" y2="92" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="456" y1="80" x2="488" y2="56" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="456" y1="104" x2="488" y2="128" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="608" y1="51" x2="614" y2="51" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="608" y1="133" x2="614" y2="133" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <line x1="8" y1="186" x2="470" y2="186" stroke="#e7e5e4" stroke-width="1"/>
+            <line x1="482" y1="186" x2="692" y2="186" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="239" y="206" text-anchor="middle" font-size="10.5" fill="#78716c">training: simulation, end-to-end RL</text>
+            <text x="587" y="206" text-anchor="middle" font-size="10.5" fill="#78716c">reality · incl. unseen scenarios</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The pipeline as described in the abstract. The attention encoder is not a
+          separate perception module: it is trained jointly with the policy, so what the network attends to is
+          shaped entirely by the locomotion objective. One recipe, two controllers, two morphologies.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 Attention over map tokens, queried by the body</h3>
+      <p>
+        The abstract commits to an "attention-based map encoding conditioned on robot proprioception". The
+        canonical mechanism this implies is scaled dot-product attention, with the <em>query</em> derived from
+        the robot's proprioceptive state and the <em>keys and values</em> from patches of the elevation map:
+      </p>
+      <div class="math-block">
+        $$ \operatorname{Attention}(Q, K, V) \;=\; \operatorname{softmax}\!\Big( \frac{QK^{\top}}{\sqrt{d_k}} \Big) V $$
+        <div class="eq-note">Notation ours — this is the canonical scaled dot-product form, with \(Q\) from
+          proprioception and \(K, V\) from map patches as the natural reading of "conditioned on robot
+          proprioception". The paper's exact formulation (tokenisation of the map, number of heads, dimensions)
+          awaits the full-PDF pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why conditioning on body state selects footholds</span>
+        <p>The same terrain cell matters differently depending on how the robot is moving: a stone half a metre
+        ahead is everything at a fast trot and irrelevant when standing still. An unconditioned map encoder must
+        compress all cells equally well; letting proprioception form the query turns encoding into retrieval —
+        "given my current motion, which cells could carry my next feet?" That is precisely the behaviour the
+        authors report: the network "learns to focus on steppable areas for future footholds". A side benefit
+        they highlight is interpretability — the attention pattern "offers a way to interpret the topographical
+        perception of a neural network".</p>
+      </div>
+
+      <h3>3.2 The end-to-end RL objective</h3>
+      <p>
+        The encoder is not pre-trained on foothold labels or supervised terrain data; it is "trained as part of
+        the end-to-end controller using reinforcement learning". Attention therefore emerges from whatever
+        maximises the locomotion return:
+      </p>
+      <div class="math-block">
+        $$ J(\pi) \;=\; \mathbb{E}_{\tau \sim \pi} \Big[ \textstyle\sum_{t=0}^{T} \gamma^{t}\, r(s_t, a_t) \Big] $$
+        <div class="eq-note">Notation ours — the generic discounted-return objective. The reward terms, the RL
+          algorithm and the training curriculum are not in the abstract and await the full-PDF pass.</div>
+      </div>
+      <p class="small">
+        Registry merge note: this paper's attention use is counted under the existing
+        <a href="../index.html#methods"><code>self-attention-sensor-fusion</code></a> entry rather than a new
+        method (merge judgement logged) — it is the same mechanism as FalconGym's adaptive input weighting,
+        applied to a different sensory domain.
+      </p>
+
+      <h3>3.3 Cross-embodiment: one recipe, two morphologies</h3>
+      <p>
+        The abstract is precise here: "We have trained two controllers for a 12-DoF quadrupedal robot and a
+        23-DoF humanoid robot respectively". This is not one policy spanning both embodiments — it is one
+        training recipe producing a separate controller per platform. That is still notable: foothold-precise
+        perceptive locomotion recipes rarely survive contact with a second morphology unchanged. Whether the
+        two controllers share the encoder architecture, hyperparameters or any weights, and what changed
+        between the quadruped and humanoid configurations, awaits the full-PDF pass.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results in the real world</h2>
+      <p>
+        The abstract-level evidence: both controllers were "tested … in the real world under various
+        challenging indoor and outdoor scenarios, including ones unseen during training", and the synthesised
+        behaviours "exhibit robustness against uncertainties while enabling precise and agile traversal of
+        sparse terrains". The pairing is the point — robustness is the learning-based controller's usual
+        strength, precision on sparse footholds its usual weakness, and the claim is that attention over the
+        map buys both at once.
+      </p>
+      <p>
+        <b>No quantitative metrics appear in the abstract.</b> Success rates, tracking errors, terrain
+        difficulty measures and baseline comparisons are all unknown at this extraction stage and await the
+        full-PDF pass.
+      </p>
+      <figure>
+        <svg viewBox="0 0 640 210" role="img" aria-label="Concept illustration: attention weight bars over elevation-map cells along a stepping-stone terrain profile, peaking on the steppable stones where the robot's future footholds must land and near zero over gaps.">
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <text x="48" y="30" font-size="10.5" fill="#78716c">attention weight per map cell</text>
+            <text x="608" y="30" text-anchor="end" font-size="10.5" fill="#78716c">direction of travel →</text>
+
+            <line x1="40" y1="118" x2="616" y2="118" stroke="#e7e5e4" stroke-width="1"/>
+
+            <rect x="53" y="112" width="26" height="6" fill="#9ec5f4" rx="1"/>
+            <rect x="93" y="110" width="26" height="8" fill="#9ec5f4" rx="1"/>
+            <rect x="133" y="115" width="26" height="3" fill="#9ec5f4" rx="1"/>
+            <rect x="173" y="72" width="26" height="46" fill="#1a56db" rx="1"/>
+            <rect x="213" y="115" width="26" height="3" fill="#9ec5f4" rx="1"/>
+            <rect x="253" y="78" width="26" height="40" fill="#1a56db" rx="1"/>
+            <rect x="293" y="115" width="26" height="3" fill="#9ec5f4" rx="1"/>
+            <rect x="333" y="92" width="26" height="26" fill="#9ec5f4" rx="1"/>
+            <rect x="373" y="115" width="26" height="3" fill="#9ec5f4" rx="1"/>
+            <rect x="413" y="104" width="26" height="14" fill="#9ec5f4" rx="1"/>
+            <rect x="453" y="115" width="26" height="3" fill="#9ec5f4" rx="1"/>
+            <rect x="493" y="111" width="26" height="7" fill="#9ec5f4" rx="1"/>
+            <rect x="533" y="113" width="26" height="5" fill="#9ec5f4" rx="1"/>
+            <rect x="573" y="114" width="26" height="4" fill="#9ec5f4" rx="1"/>
+
+            <rect x="48" y="158" width="36" height="20" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="88" y="158" width="36" height="20" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="168" y="150" width="36" height="28" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="248" y="144" width="36" height="34" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="328" y="150" width="36" height="28" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="408" y="156" width="36" height="22" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="488" y="158" width="36" height="20" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="528" y="158" width="36" height="20" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <rect x="568" y="158" width="36" height="20" fill="#e7e5e4" stroke="#d6d3d1"/>
+            <line x1="128" y1="178" x2="164" y2="178" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="208" y1="178" x2="244" y2="178" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="288" y1="178" x2="324" y2="178" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="368" y1="178" x2="404" y2="178" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="448" y1="178" x2="484" y2="178" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3 3"/>
+
+            <circle cx="106" cy="148" r="5" fill="#1a56db"/>
+            <text x="106" y="136" text-anchor="middle" font-size="10.5" fill="#78716c">robot</text>
+            <text x="186" y="194" text-anchor="middle" font-size="10.5" fill="#78716c">next footholds</text>
+            <text x="306" y="194" text-anchor="middle" font-size="10.5" fill="#78716c">gap</text>
+
+            <text x="320" y="209" text-anchor="middle" font-size="10.5" fill="#78716c">illustrative concept — attention values are ours, not measured data from the paper</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 2.</b> Our concept illustration of the paper's central claim: attention weight
+          concentrates on steppable cells where future footholds must land, and stays near zero over gaps.
+          The terrain profile and bar heights are illustrative, not data from the paper.</figcaption>
+      </figure>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors:</b> the abstract itself lists no limitations; the arXiv comments field,
+          however, flags the paper's status plainly — this is the "Original draft prior to peer review" and
+          "Significant revisions and new materials are expected after formal publication release".</li>
+        <li><b>Ours:</b> as a pre-review draft, every claim on this page carries extra uncertainty — results,
+          framing and even the method description may change in the published version.</li>
+        <li><b>Ours:</b> no quantitative metrics are available from the abstract; the strength of the
+          precision-plus-robustness claim cannot be judged until the full-PDF pass.</li>
+        <li><b>Ours:</b> the zero-shot badge rests on the "unseen during training" sentence; whether the
+          authors frame this as zero-shot generalisation, and how far the unseen scenarios depart from the
+          training distribution, is to be verified at S5.</li>
+      </ul>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          This is the strongest cross-embodiment evidence in the corpus so far: one recipe producing
+          real-world controllers for two morphologies as different as a quadruped and a humanoid. That maps
+          directly onto this project's drone-to-RoboMaster ambition — the question of whether a transfer
+          recipe, rather than a single policy, is the right unit of generalisation. Beyond embodiment, the
+          mechanism itself is a candidate for this project: attention-based input selection over a spatial
+          map, queried by the vehicle's own state, is exactly the shape of a terrain-aware UAV landing
+          module — "which cells could carry my touchdown?" is the aerial twin of "which cells could carry my
+          next feet?"
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>self-attention-sensor-fusion</code></a> ·
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4-lite</b> — built from the paper's arXiv abstract page (fetched 10 July 2026)
+        plus clearly-labelled concept reconstructions. Equations marked "notation ours" are canonical forms,
+        not the paper's own. <b>Venue correction:</b> an earlier corpus snapshot listed the venue as Science
+        Robotics; the arXiv record identifies this as an original draft prior to peer review, so the venue is
+        recorded honestly as "arXiv 2025, pre-review draft" and the triage score was corrected from 93 to 86
+        accordingly. This page is promoted to <b>verified</b> only after the full-PDF pass and the NotebookLM
+        five-question cross-check (pipeline stage S5).
+      </div>
+      <div class="cite">@misc{he2025attention,
+  title   = {Attention-Based Map Encoding for Learning Generalized Legged Locomotion},
+  author  = {He, Junzhe and Zhang, Chong and Jenelten, Fabian and Grandia, Ruben and B{\"a}cher, Moritz and Hutter, Marco},
+  year    = {2025},
+  eprint  = {2506.09588},
+  archivePrefix = {arXiv},
+  url     = {https://arxiv.org/abs/2506.09588}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="fly-seconds-2024.html"><span class="dir">← Previous</span>Learning to Fly in Seconds</a>
+      <a href="wheeledlab-2025.html" style="text-align:right"><span class="dir">Next →</span>Wheeled Lab: modern sim2real for low-cost wheeled robotics</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="falcongym-2025.html">01 · FalconGym</a>
+      <a href="raptor-2026.html">02 · RAPTOR</a>
+      <a href="monorace-2026.html">03 · MonoRace</a>
+      <a href="e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="attention-legged-2025.html">06 · Attention Map Encoding</a>
+      <a href="wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="pixels-2024.html">08 · Pixels</a>
+      <a href="diffphys-2025.html">09 · DiffPhys</a>
+      <a href="simpleflight-2024.html">10 · SimpleFlight</a></div>
+    <div><b>Explore</b>
+      <a href="../index.html#graph">Knowledge graph</a>
+      <a href="../index.html#methods">Method registry</a>
+      <a href="../corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="../system.html#pipeline">The pipeline S1–S9</a>
+      <a href="../system.html#counting">Scoring &amp; counting</a>
+      <a href="../system.html#agents">The agents</a>
+      <a href="../system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>
