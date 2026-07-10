@@ -3,232 +3,228 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zero-Shot UAV · a working literature review</title>
-<meta name="description" content="Simulation-trained UAV control deployed to real hardware without retraining: an annotated, self-learning literature review for an MPhil to PhD transfer.">
+<title>Zero-Shot UAV · a verified literature platform</title>
+<meta name="description" content="Simulation-trained UAV control deployed to real hardware without retraining: a verified, self-learning research platform for an MPhil to PhD transfer.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
 
 <header class="masthead">
   <div class="masthead-inner">
-    <a class="brand" href="index.html">Zero-Shot UAV</a>
+    <a class="brand" href="index.html">Zero-Shot<span>UAV</span></a>
     <nav aria-label="Site">
       <a href="index.html">Overview</a>
-      <a href="index.html#papers">Reading list</a>
-      <a href="index.html#methods">Methods</a>
+      <a href="system.html">System</a>
       <a href="corpus.html">Corpus</a>
-      <a href="index.html#programme">Programme</a>
     </nav>
-    <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
   </div>
 </header>
 
 <main class="page">
   <p class="eyebrow">MPhil → PhD transfer · Robotics · City, University of London</p>
-  <h1 style="font-size:clamp(2.1rem,5vw,3.1rem);max-width:56rem;margin-bottom:1.1rem">
+  <h1 style="font-size:clamp(1.9rem,4.6vw,2.9rem);max-width:52rem;margin-bottom:1rem">
     Simulation-trained flight, deployed to real hardware without retraining.
   </h1>
   <p class="lede">
-    This is a working literature review you can read and learn from, not a folder of notes. It surveys how
-    robot control policies trained entirely in simulation are deployed zero-shot on real drones, extracts
-    every method that makes those deployments work, counts how often the field relies on each one, and uses
-    that frequency evidence to locate the gap a new control model can fill.
+    A working literature review you can learn from: annotated papers, a categorized method registry with
+    usage counts, transparent candidate scoring, and the pipeline that produces all of it.
+    <strong>Nothing on this platform is invented</strong> — every card carries its source, and every count
+    traces to a file in the repository.
   </p>
 
-  <div class="stats" aria-label="Project status">
-    <div class="stat"><b>70</b><span>candidate papers seeded</span></div>
-    <div class="stat"><b>5</b><span>extracted &amp; annotated</span></div>
-    <div class="stat"><b>22</b><span>methods · 9 families</span></div>
-    <div class="stat"><b>3</b><span>human decision gates</span></div>
-    <div class="stat"><b>12</b><span>weeks to submission</span></div>
+  <div class="grid g4" style="margin-top:1.8rem" aria-label="Project status">
+    <a class="card clickable status-card" href="corpus.html"><b>70</b>
+      <span class="sc-label">candidate papers seeded</span><span class="sc-go">see the ranked corpus →</span></a>
+    <a class="card clickable status-card" href="#papers"><b>5</b>
+      <span class="sc-label">extracted &amp; annotated</span><span class="sc-go">read the annotations →</span></a>
+    <a class="card clickable status-card" href="#methods"><b>22</b>
+      <span class="sc-label">methods in 9 families</span><span class="sc-go">explore the registry →</span></a>
+    <a class="card clickable status-card" href="system.html"><b>S1–S9</b>
+      <span class="sc-label">pipeline, 3 human gates</span><span class="sc-go">how the system works →</span></a>
   </div>
-  <p class="small" style="margin-top:.7rem">Updated 7 July 2026 · every count on this page traces to a file in the
-    <a href="https://github.com/wlaa41/PhD" rel="noopener">repository</a>; nothing is hand-waved.</p>
+  <p class="small" style="margin-top:.8rem">Status of 7 July 2026 ·
+    <span class="src">docs/corpus-acquisition.md</span>
+    <span class="src pending">extractions are first-pass; NotebookLM verification pending (S5)</span></p>
 
-  <h2 class="section-label" id="papers">The reading list · 5 of ~50</h2>
-  <p style="max-width:var(--measure);color:var(--ink-2)">
-    Each paper below has a full annotated page: the problem, the pipeline from simulator to airframe as a
-    figure, the mathematics behind the key ideas, results, stated limitations, and what it means for this
-    project's hardware. Extractions are from the papers' arXiv pages (first pass); every page carries its
-    provenance and verification status honestly.
+  <h2 class="section-label" id="papers">Annotated papers</h2>
+  <p class="section-sub">
+    Only extracted papers get a page; the other 65 candidates live in the
+    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. Each page brings the
+    full content: the pipeline as a figure, the mathematics, results, stated limitations and hardware relevance.
   </p>
+  <div class="grid g3">
+    <a class="card clickable paper-card" href="papers/falcongym-2025.html">
+      <span class="pc-top"><span class="pc-rank">#01</span><span class="badge zero">zero-shot</span><span class="badge">score 95</span></span>
+      <h3>FalconGym: photorealistic simulation for zero-shot vision-based flight</h3>
+      <span class="pc-meta">Miao, Shen &amp; Mitra · UIUC · IROS 2025</span>
+      <p>NeRF-built simulator, imitation learning, NPE + Kalman perception: 95.8% gate success over 30 real flights.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/raptor-2026.html">
+      <span class="pc-top"><span class="pc-rank">#02</span><span class="badge zero">zero-shot</span><span class="badge">score 93</span></span>
+      <h3>RAPTOR: one tiny foundation policy for any quadrotor</h3>
+      <span class="pc-meta">Eschmann, Albani &amp; Loianno · NYU ARPL · 2026</span>
+      <p>2,084-parameter recurrent student distilled from 1,000 teachers flies 10 real platforms, 32 g to 2.4 kg.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/monorace-2026.html">
+      <span class="pc-top"><span class="pc-rank">#03</span><span class="badge zero">zero-shot</span><span class="badge verified">A2RL win verified</span></span>
+      <h3>MonoRace: champion-level racing with one camera</h3>
+      <span class="pc-meta">Bahnam et al. · TU Delft MAVLab · 2026</span>
+      <p>Won A2RL 2025 against three human world champions at up to 100 km/h — monocular camera + IMU, fully onboard.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/e2e-fly-2026.html">
+      <span class="pc-top"><span class="pc-rank">#04</span><span class="badge zero">zero-shot</span><span class="badge">score 93</span></span>
+      <h3>E2E-Fly: an integrated training-to-deployment system</h3>
+      <span class="pc-meta">Sun et al. · SJTU · 2026</span>
+      <p>Differentiable-physics simulator, sysid, DR, latency compensation, then sim-to-sim and HIL validation. Six real tasks.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/fly-seconds-2024.html">
+      <span class="pc-top"><span class="pc-rank">#05</span><span class="badge zero">zero-shot</span><span class="badge acc">designated baseline</span></span>
+      <h3>Learning to Fly in Seconds</h3>
+      <span class="pc-meta">Eschmann, Albani &amp; Loianno · NYU ARPL · RA-L 2024</span>
+      <p>18 seconds of training to a flying policy; deployed on a Crazyflie microcontroller. Open source — this project's I2 baseline.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card paper-card ghost" href="corpus.html">
+      <span class="pc-top"><span class="badge pending">in triage</span></span>
+      <h3>+ 65 candidates awaiting extraction</h3>
+      <p>Ranked and scored, extracted in weekly batches of ten, verified before anything is trusted.</p>
+      <span class="pc-go">Browse the corpus →</span>
+    </a>
+  </div>
 
-  <ol class="paper-list">
-    <li class="paper-item">
-      <span class="no">01</span>
-      <div>
-        <h3><a href="papers/falcongym-2025.html">FalconGym: photorealistic simulation for zero-shot vision-based flight</a></h3>
-        <div class="meta-line">Miao, Shen &amp; Mitra <span class="sep">·</span> UIUC <span class="sep">·</span> IROS 2025
-          <span class="badge zero">zero-shot</span> <span class="badge">score 95</span></div>
-        <p>Builds the flight space as a Neural Radiance Field, trains a visual policy on unlimited synthetic
-          images, and flies it on a real quadrotor with no fine-tuning: 95.8% gate-crossing success over 30
-          live flights with roughly 10&nbsp;cm error.</p>
-        <a class="readmore" href="papers/falcongym-2025.html">Read the annotated paper →</a>
-      </div>
-    </li>
-    <li class="paper-item">
-      <span class="no">02</span>
-      <div>
-        <h3><a href="papers/raptor-2026.html">RAPTOR: one tiny foundation policy for any quadrotor</a></h3>
-        <div class="meta-line">Eschmann, Albani &amp; Loianno <span class="sep">·</span> NYU ARPL <span class="sep">·</span> arXiv 2026
-          <span class="badge zero">zero-shot</span> <span class="badge">score 93</span></div>
-        <p>A single recurrent policy with 2,084 parameters flies ten physically different real quadrotors,
-          from 32&nbsp;g to 2.4&nbsp;kg, adapting in-context within milliseconds. Trained by distilling 1,000
-          simulated specialist teachers into one student.</p>
-        <a class="readmore" href="papers/raptor-2026.html">Read the annotated paper →</a>
-      </div>
-    </li>
-    <li class="paper-item">
-      <span class="no">03</span>
-      <div>
-        <h3><a href="papers/monorace-2026.html">MonoRace: winning champion-level drone racing with one camera</a></h3>
-        <div class="meta-line">Bahnam et al. <span class="sep">·</span> TU Delft MAVLab <span class="sep">·</span> arXiv 2026
-          <span class="badge zero">zero-shot</span> <span class="badge">score 93</span> <span class="badge verified">A2RL win verified</span></div>
-        <p>Won the 2025 A2RL championship in Abu Dhabi against every AI team and three human world champions,
-          at up to 100&nbsp;km/h, using only a monocular rolling-shutter camera and an IMU, with motor commands
-          computed onboard at 500&nbsp;Hz.</p>
-        <a class="readmore" href="papers/monorace-2026.html">Read the annotated paper →</a>
-      </div>
-    </li>
-    <li class="paper-item">
-      <span class="no">04</span>
-      <div>
-        <h3><a href="papers/e2e-fly-2026.html">E2E-Fly: an integrated training-to-deployment system</a></h3>
-        <div class="meta-line">Sun et al. <span class="sep">·</span> SJTU <span class="sep">·</span> arXiv 2026
-          <span class="badge zero">zero-shot</span> <span class="badge">score 93</span></div>
-        <p>One stack from a differentiable-physics simulator through system identification, domain
-          randomization and latency compensation to a two-stage validation ladder and six real-hardware
-          tasks. The closest published blueprint to this project's own implementation plan.</p>
-        <a class="readmore" href="papers/e2e-fly-2026.html">Read the annotated paper →</a>
-      </div>
-    </li>
-    <li class="paper-item">
-      <span class="no">05</span>
-      <div>
-        <h3><a href="papers/fly-seconds-2024.html">Learning to Fly in Seconds</a></h3>
-        <div class="meta-line">Eschmann, Albani &amp; Loianno <span class="sep">·</span> NYU ARPL <span class="sep">·</span> RA-L 2024
-          <span class="badge zero">zero-shot</span> <span class="badge">score 92</span> <span class="badge">designated baseline</span></div>
-        <p>An asymmetric actor-critic policy for direct motor control, trained in 18 seconds on a laptop
-          thanks to a simulator that runs five months of flight per wall-clock second, then deployed on a
-          Crazyflie's microcontroller. Open source, and the designated reproduction baseline for this project.</p>
-        <a class="readmore" href="papers/fly-seconds-2024.html">Read the annotated paper →</a>
-      </div>
-    </li>
-  </ol>
-
-  <h2 class="section-label" id="methods">The method registry · what makes deployment work</h2>
-  <p style="max-width:var(--measure);color:var(--ink-2)">
-    Every technique that contributes to a real-world deployment gets a canonical entry in one of nine
-    families. The count beside each method is how many of the extracted papers rely on it: frequency is the
-    essentiality signal, and it sharpens with every extraction batch. Counts below reflect the current 5 papers.
+  <h2 class="section-label" id="methods">The method registry</h2>
+  <p class="section-sub">
+    Every technique that makes a real deployment work gets a canonical card in one of nine families. The count
+    is how many extracted papers rely on it — frequency is the essentiality signal, recomputed every batch.
+    <strong>Press any card</strong> for what it is, the evidence, and its member papers.
+    <span class="src">counting rules: docs/phd-pipeline.md §3 · see <a href="system.html#counting">System</a></span>
   </p>
+  <div class="filter-chips" id="famChips" role="tablist" aria-label="Filter methods by family"></div>
+  <div class="grid g4" id="methodGrid"></div>
 
-  <div class="family">
-    <div><h3>Simulation &amp; fidelity</h3><p class="fam-note">What the policy trains inside, and how close it is to reality</p></div>
-    <div class="method-list">
-      <span class="method" title="NeRF scene reconstruction gives unlimited photorealistic training images (FalconGym)">photorealistic-nerf-sim <span class="n">1</span></span>
-      <span class="method" title="Purpose-built fast dynamics simulation: ~5 months of flight per second (Learning to Fly in Seconds)">custom-high-performance-simulator <span class="n">1</span></span>
-      <span class="method" title="Gradients flow through the dynamics model itself (E2E-Fly)">differentiable-physics-learning <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Randomization &amp; robustness</h3><p class="fam-note">Surviving what the simulator got wrong</p></div>
-    <div class="method-list">
-      <span class="method" title="Randomize physical parameters so the real vehicle is just another sample (E2E-Fly)">domain-randomization-dynamics <span class="n">1</span></span>
-      <span class="method" title="Inject empirically shaped sensor noise (E2E-Fly)">sensor-noise-modelling <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>System ID &amp; real-to-sim</h3><p class="fam-note">Measuring reality and folding it back into the simulator</p></div>
-    <div class="method-list">
-      <span class="method" title="Measure the real platform and align the simulator; includes MonoRace's calibration refinement from flight logs (merge decision logged)">system-identification <span class="n">2</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Adaptation mechanisms</h3><p class="fam-note">One policy adjusting to platforms it never saw</p></div>
-    <div class="method-list">
-      <span class="method" title="Sample 1,000 platform variants, train per-variant teachers, learn one generalising student (RAPTOR)">meta-imitation-multi-platform <span class="n">1</span></span>
-      <span class="method" title="Recurrent hidden state adapts within milliseconds at deployment (RAPTOR)">in-context-adaptation-recurrent <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Distillation &amp; curricula</h3><p class="fam-note">Compressing teachers or staged difficulty into a deployable student</p></div>
-    <div class="method-list">
-      <span class="method" title="Distil privileged or per-variant teachers into one student (RAPTOR)">teacher-student-distillation <span class="n">1</span></span>
-      <span class="method" title="Staged task difficulty for fast, stable training (Learning to Fly in Seconds)">curriculum-learning <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Training algorithms &amp; architecture</h3><p class="fam-note">The learning machinery itself</p></div>
-    <div class="method-list">
-      <span class="method" title="Model-free RL from observations to low-level commands (RAPTOR teachers, MonoRace, Learning to Fly in Seconds, E2E-Fly)">end-to-end-rl <span class="n">4</span></span>
-      <span class="method" title="Critic sees privileged simulator state; actor sees only deployable observations (Learning to Fly in Seconds)">asymmetric-actor-critic <span class="n">1</span></span>
-      <span class="method" title="Learning from demonstrations generated inside the simulator (FalconGym)">imitation-learning-sim <span class="n">1</span></span>
-      <span class="method" title="Deliberately minimal networks: 2,084 parameters, 3 layers (RAPTOR)">tiny-policy-architecture <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Abstraction &amp; input design</h3><p class="fam-note">What the policy actually sees; often where transfer is won</p></div>
-    <div class="method-list">
-      <span class="method" title="Learned pose estimator from RGB fused with IMU through a Kalman filter (FalconGym)">neural-pose-estimation-kalman <span class="n">1</span></span>
-      <span class="method" title="NN gate segmentation fused with a drone dynamics model (MonoRace)">gate-segmentation-model-fusion <span class="n">1</span></span>
-      <span class="method" title="Attention adaptively weights visual features vs pose estimates (FalconGym)">self-attention-sensor-fusion <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Deployment runtime</h3><p class="fam-note">Getting the network onto the vehicle, keeping it real-time</p></div>
-    <div class="method-list">
-      <span class="method" title="The network outputs motor commands directly, bypassing inner-loop controllers (MonoRace 500 Hz, Learning to Fly in Seconds)">direct-motor-command-control <span class="n">2</span></span>
-      <span class="method" title="Policy runs on the flight controller or MCU under real-time guarantees (MonoRace, Learning to Fly in Seconds)">microcontroller-deployment <span class="n">2</span></span>
-      <span class="method" title="Validate in a second simulator before hardware (E2E-Fly)">sim-to-sim-validation <span class="n">1</span></span>
-      <span class="method" title="Real autopilot hardware against the simulator before flight (E2E-Fly)">hardware-in-the-loop <span class="n">1</span></span>
-    </div>
-  </div>
-  <div class="family">
-    <div><h3>Latency &amp; delay handling</h3><p class="fam-note">The gap between command and consequence</p></div>
-    <div class="method-list">
-      <span class="method" title="Model or compensate sensing-to-actuation delay explicitly (E2E-Fly)">latency-compensation <span class="n">1</span></span>
-    </div>
-  </div>
-
-  <h2 class="section-label" id="programme">The programme · how this review is produced</h2>
-  <div style="max-width:var(--measure)">
-    <p style="color:var(--ink-2)">
-      Everything here is generated by a two-track pipeline with human decision gates, specified in full in the
-      repository's <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs</a>.
-      The <b>literature track</b> discovers and triages ~120 candidates, extracts the top ~50 in weekly batches
-      of ten, verifies every extraction against a second independent reader (NotebookLM) before it is trusted,
-      and clusters the papers' stated limitations into the gap analysis. The <b>implementation track</b> runs in
-      parallel from week&nbsp;1: infrastructure bring-up, reproduction of a published baseline through to a
-      tethered flight, then a pilot experiment on the selected gap, so the transfer report contains real
-      hardware evidence rather than only a survey.
-    </p>
-    <p style="color:var(--ink-2)">
-      Three gates are never delegated: corpus lock (Gate&nbsp;1), direction and pilot approval (Gate&nbsp;2),
-      and report sign-off after a clean citation audit (Gate&nbsp;3). Every claim on this site resolves to a
-      source in under a minute: sentence → paper id → registry entry → PDF page.
-    </p>
-  </div>
-
-  <h2 class="section-label" id="colophon">Colophon</h2>
-  <div style="max-width:var(--measure)">
-    <p class="small">
-      Static site, no framework: semantic HTML, one stylesheet, minimal JavaScript. Typeset in Crimson Pro and
-      Atkinson Hyperlegible; mathematics rendered with KaTeX. Candidate ranking, method registry and download
-      manifest live in <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/</a>; this
-      site is a generated view of that data and is updated by the six-step protocol in the README. The previous
-      dashboard-style hub is preserved at <code>archive/transfer-hub-v1.html</code>.
-    </p>
+  <h2 class="section-label">How this platform is produced</h2>
+  <p class="section-sub">The full machinery — approach, pipeline stages, agents, data schemas, scoring and
+    categorization rules — has its own page, with the specification documents quoted directly.</p>
+  <div class="grid g3">
+    <a class="card clickable status-card" href="system.html#pipeline"><b>S1–S9</b>
+      <span class="sc-label">The pipeline: discovery to submitted report, every stage a contract</span>
+      <span class="sc-go">system → pipeline →</span></a>
+    <a class="card clickable status-card" href="system.html#agents"><b>8</b>
+      <span class="sc-label">Agents with one writer for the registry and an adversarial reviewer</span>
+      <span class="sc-go">system → agents →</span></a>
+    <a class="card clickable status-card" href="system.html#counting"><b>R+H+Z+V+A</b>
+      <span class="sc-label">How papers are scored and methods are categorized and counted</span>
+      <span class="sc-go">system → data &amp; scoring →</span></a>
   </div>
 </main>
 
+<div class="modal-back" id="modalBack"></div>
+<div class="modal" id="methodModal" role="dialog" aria-modal="true" aria-labelledby="mmTitle">
+  <div class="modal-card">
+    <button class="mm-close" id="mmClose" aria-label="Close">✕</button>
+    <span class="mm-id" id="mmId"></span>
+    <h3 id="mmTitle"></h3>
+    <span class="small" id="mmFam"></span>
+    <div class="mm-section"><span class="mm-label">What it is</span><p id="mmWhat"></p></div>
+    <div class="mm-section"><span class="mm-label">Evidence · member papers</span><ul id="mmMembers"></ul></div>
+    <div class="mm-section"><span class="mm-label">Count &amp; honesty</span><p id="mmCount"></p></div>
+  </div>
+</div>
+
 <footer class="site-foot">
   <div class="site-foot-inner">
-    <span>Zero-Shot UAV · MPhil → PhD transfer · updated 7 July 2026</span>
-    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span>Zero-Shot UAV · updated 7 July 2026 · <a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
   </div>
 </footer>
 
+<script>
+/* ---- method registry (evidence-linked; counts = distinct extracted papers) ---- */
+const FAMS={sim:"Simulation & fidelity",rand:"Randomization & robustness",ident:"System ID & real-to-sim",
+  adapt:"Adaptation",distill:"Distillation & curricula",algo:"Algorithms & architecture",
+  input:"Input design",deploy:"Deployment runtime",latency:"Latency handling"};
+const PAPERS={
+  falcongym:["papers/falcongym-2025.html","FalconGym (UIUC, IROS 2025)"],
+  raptor:["papers/raptor-2026.html","RAPTOR (NYU ARPL, 2026)"],
+  monorace:["papers/monorace-2026.html","MonoRace (TU Delft, 2026)"],
+  e2efly:["papers/e2e-fly-2026.html","E2E-Fly (SJTU, 2026)"],
+  flysec:["papers/fly-seconds-2024.html","Learning to Fly in Seconds (NYU ARPL, RA-L 2024)"]};
+/* member facts are taken from each paper's arXiv page (fetched 2026-07-07); see the paper pages for provenance */
+const METHODS=[
+["photorealistic-nerf-sim","sim","NeRF photorealistic simulation","Reconstruct the flight space as a Neural Radiance Field, giving effectively unlimited photorealistic training images; visual fidelity attacks the perception half of the sim-to-real gap.",[["falcongym","trains its visual policy entirely inside a NeRF environment"]]],
+["custom-high-performance-simulator","sim","Custom high-throughput simulator","A purpose-built fast dynamics simulator drives sample cost toward zero.",[["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"]]],
+["differentiable-physics-learning","sim","Differentiable physics learning","Gradients flow through the dynamics model itself, giving first-order training signal beyond model-free RL.",[["e2efly","its simulator supports differentiable physics learning alongside RL"]]],
+["domain-randomization-dynamics","rand","Domain randomization (dynamics)","Randomize physical parameters during training so the real vehicle is just another sample from the training distribution.",[["e2efly","lists domain randomization among its deployment methods"]]],
+["sensor-noise-modelling","rand","Sensor noise modelling","Inject empirically shaped sensor noise so perception in simulation degrades the way reality does.",[["e2efly","lists sensor noise modeling among its deployment methods"]]],
+["system-identification","ident","System identification","Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Merge decision (logged): MonoRace's offline calibration refinement from flight logs is counted here — same mechanism, real data → model parameters.",[["e2efly","lists system identification among its deployment methods"],["monorace","refines calibration parameters offline using known gate geometry and onboard flight data"]]],
+["meta-imitation-multi-platform","adapt","Meta-imitation across platforms","Sample many platform variants, train per-variant teachers, and learn one student that generalizes across all of them.",[["raptor","samples 1,000 quadrotor variants and distils their RL teachers into one policy"]]],
+["in-context-adaptation-recurrent","adapt","In-context adaptation (recurrent)","A recurrent hidden state adapts to the platform during flight, with no gradient updates on the vehicle.",[["raptor","reports adaptation to unseen platforms within milliseconds via recurrent hidden layers"]]],
+["teacher-student-distillation","distill","Teacher–student distillation","Distil privileged or per-variant teachers into one deployable student policy.",[["raptor","distils 1,000 specialist teachers into a single 2,084-parameter student"]]],
+["curriculum-learning","distill","Curriculum learning","Staged task difficulty keeps fast training stable.",[["flysec","uses a curriculum as part of its 18-second training recipe"]]],
+["imitation-learning-sim","algo","Imitation learning in simulation","Learn from expert demonstrations generated inside the simulator.",[["falcongym","trains by imitation learning entirely in simulation"]]],
+["end-to-end-rl","algo","End-to-end reinforcement learning","Model-free RL from observations to low-level commands, with no hand-built controller in the loop.",[["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"]]],
+["asymmetric-actor-critic","algo","Asymmetric actor-critic","The critic sees privileged simulator state; the actor sees only what the real vehicle will have.",[["flysec","names the asymmetric actor-critic architecture as a core contribution"]]],
+["tiny-policy-architecture","algo","Tiny policy architecture","Deliberately minimal networks: less overfitting, trivial onboard compute.",[["raptor","3 layers, 2,084 parameters"]]],
+["neural-pose-estimation-kalman","input","Neural pose estimation + Kalman","A learned pose estimator from RGB fused with IMU through a Kalman filter.",[["falcongym","its NPE + Kalman filter is the perception stack"]]],
+["gate-segmentation-model-fusion","input","Gate segmentation + model fusion","Segment known track geometry with a network; fuse with a drone dynamics model for robust monocular state estimation.",[["monorace","combines neural gate segmentation with a drone model for state estimation"]]],
+["self-attention-sensor-fusion","input","Self-attention sensor fusion","Attention adaptively weights visual features against pose estimates in the controller input.",[["falcongym","uses a self-attention-based multi-modal controller"]]],
+["direct-motor-command-control","deploy","Direct motor-command control","The network outputs motor or RPM commands directly, bypassing inner-loop controllers.",[["monorace","sends motor commands directly at 500 Hz"],["flysec","controls motor RPM directly"]]],
+["microcontroller-deployment","deploy","MCU / flight-controller deployment","The policy runs on the flight controller or microcontroller itself under real-time constraints.",[["monorace","all compute runs onboard the flight controller"],["flysec","deployed on the Crazyflie's microcontroller with real-time guarantees"]]],
+["sim-to-sim-validation","deploy","Sim-to-sim validation","Validate in a second, different simulator before touching hardware — cheap gap detection.",[["e2efly","stage one of its two-stage validation"]]],
+["hardware-in-the-loop","deploy","Hardware-in-the-loop testing","Run the real autopilot hardware against the simulator before flight.",[["e2efly","stage two of its two-stage validation"]]],
+["latency-compensation","latency","Latency compensation","Model or compensate the sensing-to-actuation delay explicitly.",[["e2efly","lists latency compensation among its deployment methods"]]]
+];
+
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const grid=document.getElementById("methodGrid"), chips=document.getElementById("famChips");
+chips.innerHTML=`<button class="chip-btn on" data-fam="">All · ${METHODS.length}</button>`+
+  Object.entries(FAMS).map(([k,v])=>{const n=METHODS.filter(m=>m[1]===k).length;
+    return `<button class="chip-btn" data-fam="${k}">${v} · ${n}</button>`;}).join("");
+function draw(fam){
+  grid.innerHTML=METHODS.filter(m=>!fam||m[1]===fam).map((m,i)=>{
+    const idx=METHODS.indexOf(m);
+    return `<button class="card clickable method-card" data-i="${idx}" aria-haspopup="dialog">
+      <span class="mc-id">${m[0]}</span>
+      <span class="mc-name">${esc(m[2])}</span>
+      <span class="mc-foot"><span class="mc-fam">${FAMS[m[1]]}</span>
+      <span class="mc-count">${m[4].length} / 5</span></span></button>`;}).join("");
+}
+draw("");
+chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b)return;
+  chips.querySelectorAll(".chip-btn").forEach(x=>x.classList.toggle("on",x===b));draw(b.dataset.fam);});
+
+const back=document.getElementById("modalBack"),modal=document.getElementById("methodModal");
+function openModal(m){
+  document.getElementById("mmId").textContent=m[0];
+  document.getElementById("mmTitle").textContent=m[2];
+  document.getElementById("mmFam").textContent="Family: "+FAMS[m[1]];
+  document.getElementById("mmWhat").textContent=m[3];
+  document.getElementById("mmMembers").innerHTML=m[4].map(([p,fact])=>
+    `<li><a href="${PAPERS[p][0]}">${PAPERS[p][1]}</a> — ${esc(fact)}</li>`).join("");
+  document.getElementById("mmCount").textContent=
+    `Used by ${m[4].length} of the 5 extracted papers. Count = distinct papers, not mentions; it is recomputed after every extraction batch and will sharpen as the corpus grows toward ~50.`;
+  back.classList.add("open");modal.classList.add("open");
+  document.getElementById("mmClose").focus();
+}
+function closeModal(){back.classList.remove("open");modal.classList.remove("open");}
+grid.addEventListener("click",e=>{const c=e.target.closest(".method-card");if(c)openModal(METHODS[+c.dataset.i]);});
+back.addEventListener("click",closeModal);
+document.getElementById("mmClose").addEventListener("click",closeModal);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+</script>
 <script src="assets/site.js"></script>
+<script src="assets/theme.js"></script>
 </body>
 </html>

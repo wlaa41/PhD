@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The System · Zero-Shot UAV</title>
+<meta name="description" content="How this platform is produced: the pipeline, the agents, the data schemas, and the scoring and categorization rules — with the specification documents quoted directly.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="system.html">System</a>
+      <a href="corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <p class="eyebrow">The system</p>
+  <h1 style="font-size:clamp(1.8rem,4.2vw,2.6rem);max-width:52rem;margin-bottom:1rem">
+    How this platform is produced
+  </h1>
+  <p class="lede">
+    The approach, the nine-stage pipeline, the eight agents, the data schemas, and the exact rules by which
+    papers are scored and methods are categorized and counted. Blue blocks are <strong>verbatim quotes</strong>
+    from the specification documents in <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/</a>;
+    every card names its source file.
+  </p>
+
+  <!-- ============ PRINCIPLE ============ -->
+  <h2 class="section-label" id="principle">One registry, many views <span class="src">docs/phd-architecture.md §1–§2</span></h2>
+  <p class="section-sub">Facts live in exactly one place — seven JSON registry files. The Obsidian vault, the
+    dashboard, this site and the transfer report are generated views of that registry.</p>
+  <blockquote>"Nothing is written twice. Paper notes, method counts, pipeline diagrams, gap clusters: all
+    generated from the registry. Edit the registry, regenerate the views."
+    <span class="q-src">docs/phd-architecture.md, section 1</span></blockquote>
+  <div class="grid g3" style="margin-top:1rem">
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.95rem">Claude Code · orchestrator</h3>
+      <p class="small" style="margin-top:.3rem">Runs all skills and agents; the only tool that writes the registry.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.95rem">NotebookLM · second reader</h3>
+      <p class="small" style="margin-top:.3rem">All PDFs in one notebook; answers the five verification questions. Never writes anything.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.95rem">Codex · second engineer</h3>
+      <p class="small" style="margin-top:.3rem">Builds and reviews webapp code against spec; two implementations surface bugs.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.95rem">Antigravity · browser E2E</h3>
+      <p class="small" style="margin-top:.3rem">Clicks through every page in a real browser and files fix tasks.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.95rem">Understand-Anything · graph</h3>
+      <p class="small" style="margin-top:.3rem">Generates the knowledge graph over the wikilinked vault.</p></div>
+    <div class="card" style="padding:1rem 1.15rem"><h3 style="font-size:.95rem">Obsidian · human layer</h3>
+      <p class="small" style="margin-top:.3rem">Where the researcher reads, annotates and thinks; annotations promote back into the registry.</p></div>
+  </div>
+  <blockquote style="margin-top:1rem">"Rule: Claude Code owns the registry. Codex and Antigravity own the webapp
+    code. NotebookLM owns verification. No tool crosses lanes."
+    <span class="q-src">docs/phd-architecture.md, section 2</span></blockquote>
+
+  <!-- ============ PIPELINE ============ -->
+  <h2 class="section-label" id="pipeline">The pipeline · S1–S9 <span class="src">docs/phd-pipeline.md §1–§2</span></h2>
+  <p class="section-sub">Every paper is a tracked object that is always in exactly one state:
+    <code>candidate → triaged → acquired → extracted → verified → integrated</code>, with failure branches
+    <code>rejected</code>, <code>unavailable</code> and <code>quarantined</code>. Only verified and integrated
+    papers ever render anywhere. Press a stage.</p>
+
+  <details class="x-card"><summary><span class="xc-key">S1</span><span class="xc-title">Discover</span><span class="xc-hint">Claude Code + NotebookLM</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Input</dt><dd>The literature-review brief: 2022 onwards, zero-shot focus, drones first.</dd>
+      <dt>Process</dt><dd>Search arXiv, Semantic Scholar, Google Scholar and venue proceedings; NotebookLM source discovery in parallel; snowball from reference lists of anchor papers.</dd>
+      <dt>Output</dt><dd>~100–120 rows in candidates.json with one-line relevance notes.</dd>
+      <dt>Failure path</dt><dd>Too few drone-specific hits in a category → widen to adjacent platforms and flag the thinness as a finding.</dd>
+    </dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">S2</span><span class="xc-title">Triage</span><span class="xc-hint">fixed 0–100 rubric · ends at Gate 1</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body">
+      <blockquote>"Recency: 2025 to 26 = 25, 2024 = 20, 2023 = 12, 2022 = 6 · Real-hardware evidence: strong = 25,
+      moderate = 15, weak = 5, none = 0 · Zero-shot status: zero = 20, semi = 12, no = 0 · Venue tier and
+      citation velocity: up to 15 · Drone relevance (or cross-platform anchor value): up to 15"
+      <span class="q-src">docs/phd-pipeline.md, section 2, S2 (formatting condensed)</span></blockquote>
+      <dl class="kv"><dt>Output</dt><dd>Ranked list: top ~50 proposed, next 15 held as reserves.</dd>
+      <dt>Gate 1</dt><dd>"approve, veto, or swap papers. Vetoes recorded with reason." — the human decision no agent may take.</dd></dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">S3</span><span class="xc-title">Acquire</span><span class="xc-hint">filename = paper id everywhere</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Process</dt><dd>Download PDFs to docs/literature/pdfs/{paper-id}.pdf; upload the identical set to one NotebookLM notebook. The repo, NotebookLM, registry, vault and webapp all join on the paper id.</dd>
+      <dt>Failure path</dt><dd>Paywalled → arXiv version, author page, lab page. Still nothing → mark unavailable, promote the top reserve, log the swap. Credentials are never stored anywhere.</dd>
+    </dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">S4</span><span class="xc-title">Extract</span><span class="xc-hint">batches of 5, parallel, strict schema</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Process</dt><dd>One extractor agent per paper, five in parallel. Full schema entry per paper plus a pipeline stage array with provisional method tags.</dd>
+      <dt>Rule</dt><dd>"not stated" over guessing; every quantitative claim carries a page or section reference in a provenance field.</dd>
+      <dt>Failure path</dt><dd>Scanned or unreadable PDF → OCR pass; still failing → quarantine with reason.</dd>
+    </dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">S5</span><span class="xc-title">Verify · the anti-hallucination gate</span><span class="xc-hint">five fixed questions</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body">
+      <p>For each extracted paper, NotebookLM answers five fixed questions grounded only in that PDF —
+      platform/hardware, zero-shot status, methods used, headline result, stated limitations — and the answers
+      are compared field by field with the extraction. All five consistent → verified. Any mismatch →
+      quarantined with the discrepancy logged.</p>
+      <blockquote>"Why it works: two independent models reading the same PDF rarely hallucinate the same fact.
+      Agreement is strong evidence; disagreement is a flag, cheap to check."
+      <span class="q-src">docs/phd-pipeline.md, section 2, S5</span></blockquote></div></details>
+  <details class="x-card"><summary><span class="xc-key">S6</span><span class="xc-title">Integrate</span><span class="xc-hint">single writer merges the batch</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Process</dt><dd>The registrar merges provisional method tags through the alias table, recomputes every usage count and trend, and validates that every pipeline stage references a registered method id.</dd>
+      <dt>Failure path</dt><dd>Ambiguous method → decision logged in methods-decisions.md, applied consistently forever after.</dd>
+    </dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">S7</span><span class="xc-title">Analyse</span><span class="xc-hint">runs at ≥80% integrated · ends at Gate 2</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Process</dt><dd>Methods split into essential (count ≥ 8), common (3–7), rare (1–2); per-method synthesis notes; limitations pooled and clustered with recurrence counts; hardware-feasibility and novelty filters applied.</dd>
+      <dt>Output</dt><dd>Ranked shortlist of 3 gaps + 1 recommended direction, each with a minimum-viable pilot sketch. A gap without a 3-week-feasible pilot is demoted.</dd>
+      <dt>Gate 2</dt><dd>The researcher picks the direction AND approves its pilot together.</dd>
+    </dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">S8</span><span class="xc-title">Render</span><span class="xc-hint">idempotent: run twice, same output</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Vault, knowledge graph and dashboard regenerate from the registry; Codex reviews
+      generator changes; Antigravity runs the browser E2E checklist. Never hand-edit generated files.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">S9</span><span class="xc-title">Write</span><span class="xc-hint">ends at Gate 3</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Report sections draft only from the registry and synthesis notes; every claim carries
+      a paper id.</p>
+      <blockquote>"every claim resolves to a verified paper; 10 random claims per section spot-checked against
+      NotebookLM. Fail → the sentence is rewritten or cut. No exceptions."
+      <span class="q-src">docs/phd-pipeline.md, section 2, S9 / Gate 3 (arrow typography adapted)</span></blockquote></div></details>
+
+  <!-- ============ SCORING & COUNTING ============ -->
+  <h2 class="section-label" id="counting">How data is calculated &amp; categorized <span class="src">docs/phd-pipeline.md §3</span></h2>
+  <p class="section-sub">The usage counts are the headline analysis, so the registry must not double-count or
+    fragment methods. Four rules keep the counting honest and reproducible.</p>
+  <div class="grid g2">
+    <div class="card" style="padding:1.15rem 1.3rem">
+      <h3 style="font-size:1rem">Canonical ids + alias table</h3>
+      <p class="small" style="margin:.4rem 0 0">Every method gets one kebab-case id. "dynamics randomization",
+      "DR over physical parameters" and "randomized dynamics" all map to
+      <code>domain-randomization-dynamics</code> through the alias table — a new phrasing gets an alias entry,
+      never a new method, unless it is genuinely distinct.</p></div>
+    <div class="card" style="padding:1.15rem 1.3rem">
+      <h3 style="font-size:1rem">The split test</h3>
+      <blockquote style="margin:.6rem 0 0">"two phrasings are the same method if swapping them in a paper's
+      pipeline changes nothing about what was built. If the mechanism differs (latent adaptation vs online
+      system ID), they stay separate."<span class="q-src">docs/phd-pipeline.md, section 3</span></blockquote></div>
+    <div class="card" style="padding:1.15rem 1.3rem">
+      <h3 style="font-size:1rem">Count = distinct papers</h3>
+      <blockquote style="margin:.6rem 0 0">"Count = number of distinct papers, not mentions. A paper using DR in
+      three places counts once for DR."<span class="q-src">docs/phd-pipeline.md, section 3</span></blockquote></div>
+    <div class="card" style="padding:1.15rem 1.3rem">
+      <h3 style="font-size:1rem">Every judgement logged</h3>
+      <p class="small" style="margin:.4rem 0 0">Each merge decision goes to <code>methods-decisions.md</code>
+      with one line of reasoning, so the counting is reproducible and defensible in the viva. Example already
+      logged: MonoRace's offline calibration refinement counted under <code>system-identification</code>.</p></div>
+  </div>
+
+  <!-- ============ AGENTS ============ -->
+  <h2 class="section-label" id="agents">The agents <span class="src">docs/phd-agents.md</span></h2>
+  <p class="section-sub">The orchestrator plans, dispatches and checks gates; it never does bulk work. Agents
+    write results to disk and return two-line summaries. Model economy: sonnet for bulk work, opus where
+    judgement quality is the product. Press an agent.</p>
+  <blockquote>"Single writer: extractors write only to staging; the registrar alone writes the registry.
+    Parallelism never touches shared files."<span class="q-src">docs/phd-agents.md, section 4</span></blockquote>
+
+  <details class="x-card"><summary><span class="xc-key">01</span><span class="xc-title">scout</span><span class="xc-hint">sonnet · S1–S2 · writes candidates.json only</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"You discover and score papers. You never extract them. […] Never invent
+      papers; every entry needs a resolvable arXiv id or DOI."<span class="q-src">docs/phd-agents.md, scout definition</span></blockquote></div></details>
+  <details class="x-card"><summary><span class="xc-key">02</span><span class="xc-title">extractor ×5</span><span class="xc-hint">sonnet · S4 · writes staging only, 5 in parallel</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"You extract exactly ONE paper per invocation. […] 'not stated' instead of
+      guessing. Never infer results. Every quantitative claim gets a provenance field (page or section)."
+      <span class="q-src">docs/phd-agents.md, extractor definition</span></blockquote></div></details>
+  <details class="x-card"><summary><span class="xc-key">03</span><span class="xc-title">verifier</span><span class="xc-hint">sonnet · S5 · sets verified or quarantined</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"Be strict: a near-match on numbers is a mismatch."
+      <span class="q-src">docs/phd-agents.md, verifier definition</span></blockquote>
+      <p>Also checks that the DOI or arXiv id resolves to the claimed title and authors.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">04</span><span class="xc-title">registrar</span><span class="xc-hint">sonnet · S6 · the ONLY registry writer</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"You own registry integrity. No other agent writes these files."
+      <span class="q-src">docs/phd-agents.md, registrar definition</span></blockquote>
+      <p>Maps aliases, applies the split test, recomputes counts and trends, validates referential integrity,
+      and reports violations rather than silently fixing them.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">05</span><span class="xc-title">gap-analyst</span><span class="xc-hint">opus · S7 · ranked gap shortlist</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"Be sceptical. Prefer a narrow, defensible gap over an impressive vague
+      one. This feeds a transfer viva."<span class="q-src">docs/phd-agents.md, gap-analyst definition</span></blockquote>
+      <p>Runs only at ≥ 80% corpus integration; a gap must recur in ≥ 3 papers and carry a 3-week-feasible pilot sketch.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">06</span><span class="xc-title">dashboard-engineer</span><span class="xc-hint">sonnet · S8 · webapp code only</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"NEVER hardcode paper or method content in components; if content is wrong,
+      the registry is wrong."<span class="q-src">docs/phd-agents.md, dashboard-engineer definition</span></blockquote></div></details>
+  <details class="x-card"><summary><span class="xc-key">07</span><span class="xc-title">thesis-reviewer</span><span class="xc-hint">opus · S9 · cold context, read-only</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"You are a sceptical transfer-viva examiner. You did not write this document
+      and you owe it nothing."<span class="q-src">docs/phd-agents.md, thesis-reviewer definition</span></blockquote>
+      <p>Sees only the finished text and the registry, never the drafting conversation. Outputs findings by
+      severity; after each pass it generates the five viva questions the draft is least prepared for.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">08</span><span class="xc-title">ros2-px4-engineer</span><span class="xc-hint">sonnet · I1–I3 · implementation track, from week 1</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><blockquote>"Never propose a real flight test without the staged ladder: unit test →
+      simulation → SITL → HITL → tethered → free flight. Every rung gets a written pass criterion before the
+      next."<span class="q-src">docs/phd-agents.md, ros2-px4-engineer definition (arrow typography adapted)</span></blockquote></div></details>
+
+  <!-- ============ DATA ============ -->
+  <h2 class="section-label" id="data">The registry schemas <span class="src">docs/phd-architecture.md §3–§5 · docs/phd-implementation.md §2</span></h2>
+  <p class="section-sub">Seven JSON files, one writer each, referential integrity validated on every merge.
+    The one join key: <code>paper-id</code> — the PDF filename, NotebookLM source, registry entry, vault note
+    and site page all join on it. Press a file.</p>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">papers.json</span><span class="xc-hint">writer: registrar · the paper state machine</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Key fields</dt><dd><code>id</code> · title/authors/year/venue · <code>doi_or_arxiv</code> (must resolve) · <code>status</code> (candidate…integrated) · platform[] · simulator_stack[] · <code>methods[]</code> → methods.json · <code>zero_shot</code> (zero|semi|no) · observation/action space · deployment_compute · results_summary · <code>limitations_future_work[]</code> (drives the gap analysis) · relevance_to_phd · <code>pipeline_id</code> → pipelines.json · provenance per claim</dd>
+      <dt>Rule</dt><dd>Only verified and integrated papers render anywhere; quarantined papers sit in a work queue, never in the analysis.</dd></dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">methods.json</span><span class="xc-hint">writer: registrar · the frequency analysis</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>Key fields</dt><dd><code>id</code> (canonical kebab-case) · <code>aliases[]</code> (merge table) · <code>usage_count</code> (distinct papers) · <code>papers[]</code> · platforms[] · <code>trend</code> (rising|stable|fading)</dd>
+      <dt>Rule</dt><dd>Single-use methods stay in the registry with count 1 — rare methods are where novelty may live.</dd></dl></div></details>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">pipelines.json</span><span class="xc-hint">writer: registrar · ground truth for counting</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Per paper, the ordered end-to-end pipeline (sim setup → training → transfer step →
+      onboard runtime → hardware) as a stage array. Stage entries reference method ids, so pipelines are the
+      ground truth for frequency counting.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">gaps.json</span><span class="xc-hint">writer: registrar · where the thesis direction is decided</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Clustered limitations with recurrence counts and member papers, the hardware
+      feasibility filter, the novelty check against counted methods, the ranked shortlist of 3, the selected
+      direction and its pilot experiment id. A gap qualifies when it recurs in ≥ 3 papers.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">candidates.json</span><span class="xc-hint">writer: scout · awaiting Gate 1</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Discovery output: scored candidates with rubric breakdowns, strength signals and
+      citation counts (fetched at S2 via Semantic Scholar; low counts never penalize 2025-26 papers).
+      Rejections are kept with reasons for audit. Currently seeded with 70 entries.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">hardware-map.json</span><span class="xc-hint">writer: claude code · the feasibility filter</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Owned equipment (Holybro X500 V2 + Pixhawk 6X + Jetson Orin Nano, RTX A4000
+      workstation, DJI RoboMaster EP, Meta Quest 3, Bambu H2C) mapped to the methods and experiments each item
+      enables. Every candidate method and gap is filtered against this file.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">·</span><span class="xc-title">experiments.json</span><span class="xc-hint">writer: registrar · the experiment state machine</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><dl class="kv">
+      <dt>States</dt><dd><code>planned → simulated → sitl → hitl → tethered → flown → analyzed → reported</code></dd>
+      <dt>Key fields</dt><dd>rq/hypothesis (falsifiable) · <code>gap_id</code> · methods_kept[] · novel_component · baseline · metrics with targets · seeds ≥ 3 · real trials ≥ 5 · pass criteria per rung · <code>kill_condition</code> stated in advance · results_ref · safety_review</dd>
+      <dt>Rule</dt><dd>No state skipped, no result without its rung's written pass criterion. Figures regenerate from committed logs.</dd></dl></div></details>
+
+  <!-- ============ IMPLEMENTATION ============ -->
+  <h2 class="section-label" id="implementation">The implementation track · I1–I3 <span class="src">docs/phd-implementation.md</span></h2>
+  <p class="section-sub">Runs in parallel with the literature track from week 1, so the transfer report contains
+    real hardware evidence rather than only a survey.</p>
+  <details class="x-card"><summary><span class="xc-key">I1</span><span class="xc-title">Infrastructure bring-up</span><span class="xc-hint">weeks 1–3 · 8 acceptance-tested items</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>WSL2 + CUDA on the A4000, Isaac Lab, Aerial Gym, PX4 SITL + ROS 2 + XRCE-DDS,
+      Jetson flash + TensorRT, Jetson–Pixhawk bridge, X500 bench bring-up (no props), logging conventions.
+      Each item is done only when its acceptance test passes and the evidence is committed to
+      experiments/logs/i1/.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">I2</span><span class="xc-title">Baseline reproduction</span><span class="xc-hint">weeks 3–6 · ends at a tethered flight</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>Reproduce one published zero-shot pipeline end to end — the designated candidate is
+      <a href="papers/fly-seconds-2024.html">Learning to Fly in Seconds</a> (open code, tiny compute): train
+      3 seeds, export ONNX → TensorRT with a numerical parity check, benchmark latency on the Orin Nano (the
+      number every later method choice filters against), SITL, HITL, tethered flight. The tethered hover is the
+      minimum Chapter 4 headline.</p></div></details>
+  <details class="x-card"><summary><span class="xc-key">I3</span><span class="xc-title">Pilot experiment</span><span class="xc-hint">weeks 7–9 · after Gate 2</span><span class="xc-caret">›</span></summary>
+    <div class="xc-body"><p>The minimum viable experiment on the selected gap: the I2 stack unchanged except the
+      one novel component. One variable at a time; the comparison against the I2 baseline is the result. A
+      negative pilot with a diagnosed cause is valid transfer evidence; a missing pilot is not.</p></div></details>
+  <blockquote>Flight ladder, never skipped: "unit test → simulation → SITL → HITL → tethered → free flight.
+    Every rung gets a written pass criterion before the next."
+    <span class="q-src">docs/phd-agents.md · docs/phd-implementation.md §6 (arrow typography adapted)</span></blockquote>
+
+  <!-- ============ PROGRAMME ============ -->
+  <h2 class="section-label" id="programme">The 12-week programme <span class="src">docs/phd-pipeline.md §4</span></h2>
+  <div class="table-wrap"><table>
+    <caption>Two tracks share nothing until Gate 2, so neither blocks the other. Chapter 2 drafts from week 4, keeping writing off the critical path.</caption>
+    <thead><tr><th>Weeks</th><th>Literature track</th><th>Implementation track</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1–2</td><td>S1–S2 discover + triage · <b>Gate 1</b></td><td>I1 infrastructure bring-up</td></tr>
+      <tr><td class="num">3</td><td>S3–S4 acquire, first extractions</td><td>I1 finish · I2 training starts</td></tr>
+      <tr><td class="num">4–5</td><td>S4–S6 batches, verify, integrate · Ch. 2 drafting starts</td><td>I2 TensorRT, Orin benchmark, SITL, HITL</td></tr>
+      <tr><td class="num">6</td><td>S7 analysis · <b>Gate 2</b> (direction + pilot together)</td><td>I2 tethered flight</td></tr>
+      <tr><td class="num">7–9</td><td>S8 render · Ch. 2 revision</td><td>I3 pilot experiment</td></tr>
+      <tr><td class="num">10–11</td><td>S9 write Ch. 3–5, two cold reviews, citation audit</td><td>results analysis, figures from logs</td></tr>
+      <tr><td class="num">12</td><td colspan="2">Checklist · <b>Gate 3</b> · freeze, format, submit (+ buffer)</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ THE LAW ============ -->
+  <h2 class="section-label" id="law">Verification &amp; the law <span class="src">docs/phd-pipeline.md §5</span></h2>
+  <p class="section-sub">The standing rule of this project: everything published is quoted or verified; nothing
+    is invented. Unverified items are labelled, never hidden.</p>
+  <div class="grid g2">
+    <div class="card" style="padding:1.15rem 1.3rem">
+      <h3 style="font-size:1rem">Status vocabulary</h3>
+      <p class="small" style="margin:.5rem 0 0">
+        <span class="badge verified">web-verified</span> independently checked with a verbatim quote on file ·
+        <span class="badge">web-found</span> the identifier resolves; claims not yet cross-checked ·
+        <span class="badge pending">to confirm</span> from model knowledge; must be existence-checked before use ·
+        <span class="badge pending">S4-lite</span> extracted from the arXiv page; full-PDF pass and NotebookLM
+        verification (S5) still ahead. Reconstructed equations on paper pages are labelled "notation ours".</p></div>
+    <div class="card" style="padding:1.15rem 1.3rem">
+      <h3 style="font-size:1rem">The provenance chain</h3>
+      <blockquote style="margin:.6rem 0 0">"Report sentence → paper id → papers.json entry → provenance
+      (page/section) → PDF in repo → NotebookLM verification record. If an examiner challenges any claim in the
+      transfer report, the chain resolves in under a minute."
+      <span class="q-src">docs/phd-pipeline.md, section 5 (arrow typography adapted)</span></blockquote></div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span>Zero-Shot UAV · updated 7 July 2026 · <a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script src="assets/theme.js"></script>
+</body>
+</html>

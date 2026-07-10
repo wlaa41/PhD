@@ -34,7 +34,8 @@ remains the registry-driven data dashboard, built at S8.
 
 | Page | Contents |
 |---|---|
-| `site/index.html` | overview + stats strip, the reading list (annotated papers), the categorized method registry with usage counts, the programme summary, colophon |
+| `site/index.html` | overview + clickable status cards, annotated-paper card grid (built for 70: only extracted papers get pages), method registry as clickable cards with evidence modals, system teasers |
+| `site/system.html` | how the platform is produced: tool lanes, S1-S9 pipeline as expanding cards, scoring rubric, method counting + categorization rules, 8 agents, registry schemas, I1-I3, 12-week programme, the verification LAW — with docs/ quoted verbatim |
 | `site/corpus.html` | ranked candidates, per-paper score breakdown (R+H+Z+V+A), strength signals, platform/source/year filters + search |
 | `site/papers/falcongym-2025.html` | annotated paper 01 · NeRF sim, NPE + Kalman, attention fusion |
 | `site/papers/raptor-2026.html` | annotated paper 02 · meta-imitation, 2,084-param recurrent student |
