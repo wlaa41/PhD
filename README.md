@@ -1,7 +1,24 @@
-# PhD Zero-Shot UAV: Bootstrap
+# PhD Zero-Shot UAV
 
-Starter docs package for the MPhil to PhD transfer pipeline.
-Unzip into the repo root so the six files sit in `docs/`.
+MPhil to PhD transfer: pipeline specs, candidate corpus, and the reading platform.
+
+## Repository structure
+
+```
+docs/       pipeline specifications + corpus files (reading order below)
+site/       the website: an academic self-learning reading platform
+  index.html          overview, reading list, method registry, programme
+  corpus.html         ranked candidates with transparent scoring + filters
+  papers/{id}.html    one full annotated page per extracted paper
+                      (math via KaTeX, SVG figures, provenance notes)
+  assets/             site.css (design system) + site.js (no framework)
+archive/    superseded artefacts (transfer-hub-v1.html, the old dashboard hub)
+```
+
+Tech note: the site is deliberately static, framework-free HTML/CSS/JS
+(Crimson Pro + Atkinson Hyperlegible, KaTeX for math) so it serves from
+GitHub Pages with zero build. The React app in phd-architecture.md section 6
+remains the registry-driven data dashboard, built at S8.
 
 ## Files and reading order
 
@@ -13,36 +30,30 @@ Unzip into the repo root so the six files sit in `docs/`.
 6. `docs/sim2real-litreview-command.md`  The task brief: ~50 papers, 2022 onwards, zero-shot focus, method frequency counting, per-paper pipelines, pilot sketch per shortlisted gap, Obsidian vault output.
 7. `docs/corpus-candidates.md`  Seed candidate list from the 2026-07-07 deep-research sweep, ranked with rubric scores and per-paper verification status. Feeds candidates.json at Phase 1.
 8. `docs/corpus-acquisition.md`  Standalone download manifest (70 papers): direct links, per-paper point breakdown (R+H+Z+V+A) and citation column (filled at S2 via Semantic Scholar), institutional additions (MIT, Stanford, CMU, Berkeley, DeepMind), Chinese-institution block (SJTU, Shanghai AI Lab, Tsinghua, Qi Zhi, Fudan incl. 2026 entries), fresh-2026 block, lab-sweep directives (incl. Tel Aviv/Technion, Chinese 2026 and UK labs), and step-by-step instructions so any module or session can run the acquisition alone.
-9. `transfer-hub.html`  The project website: single self-contained file (no build step, works offline). Explains the whole system: approaches, S1-S9 pipeline, 12-week Gantt, skills installed vs pending, force-directed system graph, corpus table, weather-simulation hero. All content lives in the SITE_DATA block at the top of its script; renderers below it never change.
-
 ## Site map (canonical copy)
 
-The website mirrors this map in its Map section; this README copy is the source of truth.
+| Page | Contents |
+|---|---|
+| `site/index.html` | overview + stats strip, the reading list (annotated papers), the categorized method registry with usage counts, the programme summary, colophon |
+| `site/corpus.html` | ranked candidates, per-paper score breakdown (R+H+Z+V+A), strength signals, platform/source/year filters + search |
+| `site/papers/falcongym-2025.html` | annotated paper 01 · NeRF sim, NPE + Kalman, attention fusion |
+| `site/papers/raptor-2026.html` | annotated paper 02 · meta-imitation, 2,084-param recurrent student |
+| `site/papers/monorace-2026.html` | annotated paper 03 · monocular racing, A2RL champion (verified) |
+| `site/papers/e2e-fly-2026.html` | annotated paper 04 · integrated training-to-deployment system |
+| `site/papers/fly-seconds-2024.html` | annotated paper 05 · asymmetric actor-critic, designated I2 baseline |
 
-| Section | Anchor | Contents |
-|---|---|---|
-| Home | `#hero` | weather sim, programme at a glance |
-| System | `#system` | registry principle, generated views, five design loops |
-| Data | `#data` | registry schemas as cards: fields, join keys, writers, relations |
-| Tools | `#tools` | six tool lanes and their contracts |
-| Pipeline | `#pipeline` | S1-S9 contracts, paper states, I1-I3, flight ladder |
-| Gantt | `#gantt` | 12-week programme, three lanes, three gates |
-| Dash | `#dash` | KPI tiles + 4 corpus charts computed live from the table |
-| Methods | `#methods` | categorized method registry (9 families), live usage counts |
-| Papers | `#papers` | extracted papers; each opens its own page at `#paper/{id}` |
-| Skills | `#skills` | installed vs Phase 0 vs external; agent orchestration board |
-| Graph | `#graph` | force-directed map of the whole system |
-| Corpus | `#corpus` | seeded candidates with verification status |
-| Map | `#map` | site map mirror + update protocol |
+Every paper page carries: TL;DR, problem, pipeline figure, the mathematics
+(reconstructed concept forms are labelled "notation ours"), results, stated
+limitations, relevance to this PhD, provenance status, BibTeX, prev/next.
 
 ## Update protocol (run on EVERY tweak, in order)
 
 1. Edit the source of truth first: the relevant file in `docs/`. Never start with a generated view.
-2. If the change alters how the system works, record it as a new design loop in phd-architecture.md section 0.
-3. Update `transfer-hub.html`: edit the SITE_DATA block only; bump `meta.version` and `meta.updated`. Markup and renderers below the block never change.
-4. Update this README (site map, file list, reading order) if pages, sections or files changed.
+2. If the change alters how the system works, record it as a new design loop in docs/phd-architecture.md section 0.
+3. Update `site/`: the page whose content changed. Consistency sweep: the stats strip and method counts on index.html, the corpus table on corpus.html, and the "updated" date in page footers must all agree with docs/.
+4. Update this README (structure, site map, reading order) if pages or files changed.
 5. Update the Claude memory (`phd-transfer-pipeline`) if standing facts changed.
-6. After Phase 0 exists: regenerate views (`/vault-build`, `/dashboard-sync`) and commit, naming the loop.
+6. Commit and push (GitHub Pages redeploys the site automatically once enabled).
 
 ## Paper access (S3 acquire)
 

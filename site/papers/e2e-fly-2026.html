@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E2E-Fly: an integrated training-to-deployment system · annotated</title>
+<meta name="description" content="Annotated reading of E2E-Fly (Sun et al. 2026): one integrated stack from differentiable-physics/RL simulation through two-stage validation to zero-shot flight — six tasks, two real quadrotors.">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot UAV</a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../index.html#papers">Reading list</a>
+      <a href="../index.html#methods">Methods</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="eyebrow">Annotated paper · 04 of 05 · corpus rank #4</p>
+  <h1>E2E-Fly: An Integrated Training-to-Deployment System for End-to-End Quadrotor Autonomy</h1>
+  <p class="authors">Fangyu Sun, Fanxing Li, Linzuo Zhang, Yu Hu, Renbiao Jin, Shuyu Wu, Wenxian Yu &amp; Danping Zou</p>
+  <div class="meta-line">
+    SJTU (affiliation to confirm on PDF) <span class="sep">·</span> arXiv, v1 April 2026 <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2604.12916" rel="noopener">arXiv:2604.12916</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 93 = 25+25+20+8+15</span>
+    <span class="badge pending">S5 verification pending</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        The paper's answer to sim-to-real flight is a <b>whole system</b>, not a technique: one integrated
+        stack running from a high-performance simulator — supporting <b>both differentiable-physics learning
+        and reinforcement learning</b>, with structured rewards per task — through system identification,
+        sensor-noise modelling, domain randomization and latency compensation, into a <b>two-stage validation
+        gate</b> (sim-to-sim transfer, then hardware-in-the-loop), and out onto real vehicles: <b>six
+        end-to-end control tasks deployed on two physical quadrotor platforms</b>. The authors claim it is
+        the first work to systematically unify differentiable physical learning with training, validation
+        and real-world deployment.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        The gap this paper attacks is not a missing technique but the seams between existing ones. Rendering,
+        physical modelling, sensing and latency each leak a little reality on the way from simulator to
+        vehicle — and the leaks compound.
+      </p>
+      <p>
+        Each seam has a known symptom. Visual rendering is too slow to feed policy training at scale;
+        physical models mis-state mass, drag and actuator behaviour; sensors on the real vehicle carry noise
+        and bias the simulator never emitted; and the perception–action loop on hardware runs with delays
+        the training loop did not have. Point tools exist for every one of these — system identification,
+        domain randomization, latency compensation, noise models — but, the authors argue, no unified
+        platform stitches them into a single training-to-deployment workflow, and none integrates
+        differentiable physics learning into end-to-end training. The consequence they emphasise is
+        reproducibility: recent work demonstrates individual end-to-end tasks, yet few systems offer a
+        systematic zero-shot transfer pipeline that another laboratory could simply run.
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 520" role="img" aria-label="The E2E-Fly ladder: a training simulator with differentiable physics and reinforcement learning feeds real-to-sim alignment (system identification and sensor-noise modelling), then robustness measures (domain randomization and latency compensation), then two highlighted validation stages (sim-to-sim, then hardware-in-the-loop), and finally real deployment of six tasks on two quadrotors.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="160" y="10" width="380" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="350" y="32" text-anchor="middle" font-weight="700">Training simulator</text>
+            <text x="350" y="47" text-anchor="middle" font-size="10.5" fill="#78716c">differentiable physics + reinforcement learning</text>
+            <text x="350" y="60" text-anchor="middle" font-size="10.5" fill="#78716c">structured reward design per task</text>
+
+            <line x1="350" y1="68" x2="350" y2="94" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <rect x="160" y="98" width="380" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="350" y="120" text-anchor="middle" font-weight="700">Real-to-sim alignment</text>
+            <text x="350" y="135" text-anchor="middle" font-size="10.5" fill="#78716c">system identification</text>
+            <text x="350" y="148" text-anchor="middle" font-size="10.5" fill="#78716c">sensor-noise modelling</text>
+
+            <line x1="350" y1="156" x2="350" y2="182" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <rect x="160" y="186" width="380" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="350" y="208" text-anchor="middle" font-weight="700">Robustness measures</text>
+            <text x="350" y="223" text-anchor="middle" font-size="10.5" fill="#78716c">domain randomization</text>
+            <text x="350" y="236" text-anchor="middle" font-size="10.5" fill="#78716c">latency compensation</text>
+
+            <line x1="350" y1="244" x2="350" y2="270" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <rect x="160" y="274" width="380" height="58" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="350" y="296" text-anchor="middle" font-weight="700" fill="#1e3a8a">Validation stage 1 · sim-to-sim</text>
+            <text x="350" y="314" text-anchor="middle" font-size="10.5" fill="#44403c">policy re-run in a second simulator it was not trained in</text>
+
+            <line x1="350" y1="332" x2="350" y2="358" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <rect x="160" y="362" width="380" height="58" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="350" y="384" text-anchor="middle" font-weight="700" fill="#1e3a8a">Validation stage 2 · hardware-in-the-loop</text>
+            <text x="350" y="402" text-anchor="middle" font-size="10.5" fill="#44403c">real flight computer in the loop, vehicle still on the bench</text>
+
+            <line x1="350" y1="420" x2="350" y2="446" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="60" y1="433" x2="330" y2="433" stroke="#bbe3c8" stroke-width="2"/>
+            <line x1="370" y1="433" x2="640" y2="433" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="640" y="426" text-anchor="end" font-size="10.5" fill="#78716c">simulation &amp; bench above · reality below</text>
+
+            <rect x="160" y="450" width="380" height="58" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="350" y="472" text-anchor="middle" font-weight="700">Real deployment</text>
+            <text x="350" y="487" text-anchor="middle" font-size="10.5" fill="#78716c">six end-to-end control tasks</text>
+            <text x="350" y="500" text-anchor="middle" font-size="10.5" fill="#78716c">two physical quadrotor platforms · low-level control interface</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The E2E-Fly ladder from training to flight. The highlighted pair of
+          boxes is the paper's two-stage validation gate: nothing crosses the green line to a real vehicle
+          without passing sim-to-sim transfer and hardware-in-the-loop testing first.</figcaption>
+      </figure>
+      <p>
+        Read top to bottom, the system is a sequence of leak-plugging stages, each aimed at one of the seams
+        from §1: the simulator plugs the rendering-and-training seam, alignment plugs the modelling and
+        sensing seams, the robustness stage hedges whatever alignment missed, and the two validation stages
+        exist to catch anything that still slipped through — before it costs an airframe.
+      </p>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 Differentiable physics learning, with RL as the hedge</h3>
+      <p>
+        The training framework's distinctive ingredient is a simulator whose dynamics are differentiable, so
+        that policy learning can use analytic gradients through the physics rather than sampled estimates:
+      </p>
+      <div class="math-block">
+        $$ s_{t+1} = f_\psi(s_t,\, a_t), \qquad
+           \nabla_{\theta}\, J \;=\; \sum_{t} \frac{\partial J}{\partial s_t}\, \frac{\partial s_t}{\partial \theta} $$
+        <div class="eq-note">Notation ours (canonical form of backpropagation through a differentiable
+          simulator): \(f_\psi\) the simulated dynamics with physical parameters \(\psi\); the policy
+          parameters \(\theta\) enter through the actions \(a_t\), so \(\partial s_t / \partial \theta\)
+          unrolls through the dynamics. The paper's exact formulation awaits the full-PDF pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · first-order versus zeroth-order learning signals</span>
+        <p>Model-free RL estimates the policy gradient from returns alone — a zeroth-order signal whose
+        variance is paid for in samples. A differentiable simulator supplies first-order gradients directly,
+        which can be dramatically more sample-efficient. The catch is that those gradients are only as good
+        as the computation graph: through contacts, discontinuities or long horizons they can be biased or
+        exploding, and a first-order optimiser will happily follow a wrong gradient. Supporting <em>both</em>
+        paradigms in one simulator is therefore the pragmatic hedge, not an indulgence: use analytic
+        gradients where the physics is smooth, and fall back to model-free RL where it is not — same
+        environments, same rewards, same deployment path.</p>
+      </div>
+
+      <h3>3.2 Real-to-sim alignment: identify the model, model the sensors</h3>
+      <p>
+        Before any policy transfers, the simulator is pulled towards the specific vehicle. System
+        identification fits the simulator's physical parameters to logged real flight data:
+      </p>
+      <div class="math-block">
+        $$ \psi^{*} \;=\; \arg\min_{\psi}\; \sum_{t} \big\lVert\, s^{\mathrm{real}}_{t+1} \;-\; f_\psi\big(s^{\mathrm{real}}_{t},\, a^{\mathrm{real}}_{t}\big) \big\rVert^{2} $$
+        <div class="eq-note">Notation ours — one-step prediction error over real state–action logs; the
+          paper's identification procedure and parameter set await the full-PDF pass.</div>
+      </div>
+      <p>
+        Symmetrically, the observation channel is corrupted the way the real sensors corrupt it, with the
+        noise fitted empirically rather than assumed Gaussian by fiat:
+      </p>
+      <div class="math-block">
+        $$ z_t \;=\; h(s_t) + \varepsilon_t, \qquad \varepsilon_t \sim \text{empirical noise model} $$
+        <div class="eq-note">Notation ours: \(h\) the sensor map, \(\varepsilon_t\) drawn from a model fitted
+          to real sensor logs. The paper's noise families and fitting method await the full-PDF pass.</div>
+      </div>
+      <p>
+        The two fits address different seams: identification makes the simulated <em>vehicle</em> behave like
+        the real one; noise modelling makes the simulated <em>observations</em> look like the real ones. A
+        policy trained on clean simulated sensing meets, at deployment, an input distribution it has never
+        seen — alignment closes that gap on both sides of the state.
+      </p>
+
+      <h3>3.3 Robustness: randomize what identification missed, compensate the clock</h3>
+      <p>
+        Identification is never exact, so the residual uncertainty is randomized over during training —
+        the policy is asked to do well in expectation across a distribution of plausible worlds:
+      </p>
+      <div class="math-block">
+        $$ \max_{\theta}\;\; \mathbb{E}_{\xi \sim p(\xi)} \big[\, J(\theta;\, \xi) \,\big] $$
+        <div class="eq-note">Notation ours: \(\xi\) the randomized simulation parameters (dynamics, delays,
+          disturbances), \(p(\xi)\) centred on the identified model. The paper's randomization ranges await
+          the full-PDF pass.</div>
+      </div>
+      <p>
+        Latency is handled explicitly rather than randomized away: the policy acts on an observation that is
+        honest about being \(d\) steps old, augmented with the actions issued in the interim:
+      </p>
+      <div class="math-block">
+        $$ o_t \;=\; \big(\, z_{t-d},\; a_{t-d},\, \ldots,\, a_{t-1} \,\big) $$
+        <div class="eq-note">Notation ours: \(z_{t-d}\) the most recent sensing to have arrived, followed by
+          the action history since it was captured. The paper's compensation scheme awaits the full-PDF
+          pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why the action history restores what latency removes</span>
+        <p>With \(d\) steps of sensing-to-actuation delay, the vehicle the policy is steering is not the
+        vehicle it is looking at: by the time an action lands, the state has evolved for \(d\) further steps.
+        The policy must therefore implicitly <em>predict the present</em> from stale evidence. The missing
+        information is recoverable, because the controller itself caused most of the intervening evolution —
+        it knows every action it issued since \(z_{t-d}\) was captured. Appending
+        \(a_{t-d}, \ldots, a_{t-1}\) to the observation hands the network exactly the inputs a model-based
+        predictor would integrate forward, and lets it learn the roll-out implicitly. Trained this way in
+        simulation, the policy meets real latency as a familiar condition rather than a distribution shift.</p>
+      </div>
+
+      <h3>3.4 Two-stage validation: sim-to-sim, then hardware-in-the-loop</h3>
+      <p>
+        Between training and flight sit two deliberately cheap gates. First, the policy is transferred
+        <em>sim-to-sim</em> — run in a second simulator it was not trained in — which exposes overfitting to
+        the training simulator's particular integrator, contact model or timing quirks while a crash still
+        costs nothing. Second, <em>hardware-in-the-loop</em> testing runs the policy through the real flight
+        computer and control interface with the vehicle on the bench, which catches integration faults —
+        units, frames, timing, quantisation, the dedicated low-level interface itself — that no simulator
+        run can surface. Neither stage proves the policy will fly; each removes a class of failure whose
+        discovery in the air would cost an airframe, and both together are far cheaper than one crash.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        The abstract commits to breadth of demonstration, not to numbers: it states <em>what</em> was
+        deployed, not how well it tracked. No success rates, tracking errors or baseline comparisons appear
+        at the abstract level, and this page reports none.
+      </p>
+      <div class="table-wrap"><table>
+        <caption>What the abstract commits to; all numerical metrics await the full-PDF pass.</caption>
+        <thead><tr><th>Claim in the abstract</th><th>What is, and is not, stated</th></tr></thead>
+        <tbody>
+          <tr><td>Six end-to-end control tasks</td><td>The count is stated; the task list, per-task metrics
+            and baselines are not — they await the full-PDF pass.</td></tr>
+          <tr><td>Two physical quadrotor platforms</td><td>Deployment on real hardware via a dedicated
+            low-level control interface is stated; the platform models await the full-PDF pass.</td></tr>
+          <tr><td>Systematic zero-shot transfer pipeline</td><td>The pipeline (alignment, randomization,
+            latency compensation, noise modelling, two-stage validation) is stated as the contribution;
+            quantified transfer gaps are not in the abstract.</td></tr>
+          <tr><td>Unification claim</td><td>"To the best of our knowledge, this is the first work to
+            systematically unify differentiable physical learning with training, validation, and real-world
+            deployment for quadrotors" — the authors' own priority claim, reported here as such.</td></tr>
+        </tbody>
+      </table></div>
+      <figure>
+        <svg viewBox="0 0 700 320" role="img" aria-label="Two parallel ladders: E2E-Fly's validation ladder (training simulator, sim-to-sim, hardware-in-the-loop, real deployment) beside this project's flight ladder (unit, simulation, SITL, HITL, tethered, free flight), with sim-to-sim matched to SITL and hardware-in-the-loop matched to HITL.">
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <text x="170" y="18" text-anchor="middle" font-weight="700" font-size="11" fill="#78716c">E2E-FLY'S LADDER (THE PAPER)</text>
+            <text x="530" y="18" text-anchor="middle" font-weight="700" font-size="11" fill="#78716c">THIS PROJECT'S FLIGHT LADDER</text>
+
+            <rect x="50" y="74" width="240" height="30" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="170" y="94" text-anchor="middle">training simulator</text>
+            <line x1="170" y1="104" x2="170" y2="116" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="50" y="116" width="240" height="30" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="170" y="136" text-anchor="middle" font-weight="700" fill="#1e3a8a">sim-to-sim transfer</text>
+            <line x1="170" y1="146" x2="170" y2="158" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="50" y="158" width="240" height="30" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="170" y="178" text-anchor="middle" font-weight="700" fill="#1e3a8a">hardware-in-the-loop</text>
+            <line x1="170" y1="188" x2="170" y2="242" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="50" y="242" width="240" height="30" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="170" y="262" text-anchor="middle">real deployment · 6 tasks × 2 platforms</text>
+
+            <rect x="410" y="32" width="240" height="30" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="530" y="52" text-anchor="middle">unit tests</text>
+            <line x1="530" y1="62" x2="530" y2="74" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="410" y="74" width="240" height="30" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="530" y="94" text-anchor="middle">simulation</text>
+            <line x1="530" y1="104" x2="530" y2="116" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="410" y="116" width="240" height="30" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="530" y="136" text-anchor="middle" font-weight="700" fill="#1e3a8a">SITL</text>
+            <line x1="530" y1="146" x2="530" y2="158" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="410" y="158" width="240" height="30" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="530" y="178" text-anchor="middle" font-weight="700" fill="#1e3a8a">HITL</text>
+            <line x1="530" y1="188" x2="530" y2="200" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="410" y="200" width="240" height="30" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="530" y="220" text-anchor="middle">tethered flight</text>
+            <line x1="530" y1="230" x2="530" y2="242" stroke="#a8a29e" stroke-width="1.5"/>
+            <rect x="410" y="242" width="240" height="30" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="530" y="262" text-anchor="middle">free flight</text>
+
+            <line x1="290" y1="131" x2="410" y2="131" stroke="#1a56db" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="350" y="126" text-anchor="middle" font-size="10.5" fill="#1e3a8a">matched rung</text>
+            <line x1="290" y1="173" x2="410" y2="173" stroke="#1a56db" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="350" y="190" text-anchor="middle" font-size="10.5" fill="#1e3a8a">matched rung</text>
+
+            <text x="350" y="308" text-anchor="middle" font-size="10.5" fill="#78716c">rungs aligned by function, not by the paper's terminology</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 2.</b> The paper's validation ladder beside this project's flight ladder, with
+          the functionally matched rungs highlighted (sim-to-sim ↔ SITL, hardware-in-the-loop ↔ HITL). The
+          correspondence is our annotation, not the paper's; E2E-Fly's abstract does not mention unit
+          testing or tethered flight.</figcaption>
+      </figure>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors:</b> none listed in the abstract; the limitations section awaits the
+          full-PDF extraction pass.</li>
+        <li><b>Not in the abstract:</b> numerical performance of any kind — until the full PDF is read, the
+          paper's evidence is breadth (six tasks, two platforms, one pipeline), not measured accuracy — and
+          the two platform models, which remain unspecified.</li>
+        <li><b>Our open questions</b> (marked as ours, to be checked against the full text): does the
+          differentiable-physics path survive regimes that are contact-free but aggressively high-drag, where
+          the dynamics are smooth in principle yet stiff and strongly velocity-coupled in practice — or does
+          training quietly fall back to the RL path there? And how much real flight data does the system
+          identification stage require — the answer decides whether the pipeline is genuinely near-zero-shot
+          for a new airframe or zero-shot only after a non-trivial identification campaign.</li>
+      </ul>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          Of everything in the corpus, E2E-Fly is the closest published blueprint to this project's
+          implementation track: its validation ladder is this project's flight ladder with different names,
+          arrived at independently by a 2026 Chinese-institution group. That convergence is itself evidence
+          the staging is sound — and it makes the full PDF unusually actionable: reading it early
+          pressure-tests the I1–I3 plan against a group that has already run the same pipeline to real
+          flight, before this project commits hardware to it. Its framing of sim-to-real as a problem of
+          <em>seams rather than techniques</em> also supports the project's integration-first pipeline
+          design: the decision to build the stages together and validate the joints, rather than perfect any
+          single stage in isolation.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>differentiable-physics-learning</code></a> ·
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>system-identification</code></a> ·
+        <a href="../index.html#methods"><code>domain-randomization-dynamics</code></a> ·
+        <a href="../index.html#methods"><code>latency-compensation</code></a> ·
+        <a href="../index.html#methods"><code>sensor-noise-modelling</code></a> ·
+        <a href="../index.html#methods"><code>sim-to-sim-validation</code></a> ·
+        <a href="../index.html#methods"><code>hardware-in-the-loop</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4-lite</b> — built from the paper's arXiv abstract page (fetched 7 July 2026)
+        plus clearly-labelled concept reconstructions. Equations marked "notation ours" are canonical forms,
+        not the paper's own. This page is promoted to <b>verified</b> only after the full-PDF pass and the
+        NotebookLM five-question cross-check (pipeline stage S5).
+      </div>
+      <div class="cite">@misc{sun2026e2efly,
+  title   = {E2E-Fly: An Integrated Training-to-Deployment System for End-to-End Quadrotor Autonomy},
+  author  = {Sun, Fangyu and Li, Fanxing and Zhang, Linzuo and Hu, Yu and Jin, Renbiao and Wu, Shuyu and Yu, Wenxian and Zou, Danping},
+  year    = {2026},
+  eprint  = {2604.12916},
+  archivePrefix = {arXiv},
+  url     = {https://arxiv.org/abs/2604.12916}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="monorace-2026.html"><span class="dir">← Previous</span>MonoRace: winning champion-level drone racing with one camera</a>
+      <a href="fly-seconds-2024.html" style="text-align:right"><span class="dir">Next →</span>Learning to Fly in Seconds</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <span>Zero-Shot UAV · annotated reading list</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>

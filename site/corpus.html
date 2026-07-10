@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candidate corpus · Zero-Shot UAV</title>
+<meta name="description" content="Ranked candidate papers for the zero-shot UAV literature review, with transparent per-paper scoring.">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="index.html">Zero-Shot UAV</a>
+    <nav aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="index.html#papers">Reading list</a>
+      <a href="index.html#methods">Methods</a>
+      <a href="corpus.html">Corpus</a>
+      <a href="index.html#programme">Programme</a>
+    </nav>
+    <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<main class="page">
+  <p class="eyebrow">Candidate corpus · awaiting Gate 1</p>
+  <h1 style="font-size:clamp(1.9rem,4.5vw,2.6rem);margin-bottom:1rem">The ranked candidates</h1>
+  <p class="lede" style="margin-bottom:.8rem">
+    Seventy papers seeded so far; the forty ranked below are charted and filterable. Every score is earned
+    against a fixed rubric — recency (25) + real-hardware evidence (25) + zero-shot status (20) + venue and
+    citation velocity (15) + platform relevance (15) — and the breakdown is shown per paper, so no ranking is
+    taken on trust.
+  </p>
+  <p class="small" style="max-width:var(--measure)">
+    Because 2025-26 papers cannot yet show citation velocity, lab pedigree, competition wins, hardware evidence
+    and code releases carry that weight instead. Sources marked <span class="badge">to confirm</span> came from
+    model knowledge and must be existence-checked before acquisition; the full 70-entry manifest with download
+    instructions is <a href="https://github.com/wlaa41/PhD/blob/main/docs/corpus-acquisition.md" rel="noopener">docs/corpus-acquisition.md</a>.
+    Papers with an annotated page are linked directly.
+  </p>
+
+  <div class="filters" id="filters">
+    <span class="f-label">Platform</span>
+    <button class="fbtn on" data-f="plat" data-v="">all</button>
+    <button class="fbtn" data-f="plat" data-v="drone">drone</button>
+    <button class="fbtn" data-f="plat" data-v="legged">legged</button>
+    <button class="fbtn" data-f="plat" data-v="humanoid">humanoid</button>
+    <button class="fbtn" data-f="plat" data-v="manip">manipulation</button>
+    <button class="fbtn" data-f="plat" data-v="ground">ground</button>
+    <span class="f-label">Source</span>
+    <button class="fbtn on" data-f="st" data-v="">all</button>
+    <button class="fbtn" data-f="st" data-v="webv">verified</button>
+    <button class="fbtn" data-f="st" data-v="web">web-found</button>
+    <button class="fbtn" data-f="st" data-v="know">to confirm</button>
+    <span class="f-label">Year</span>
+    <button class="fbtn on" data-f="yr" data-v="">all</button>
+    <button class="fbtn" data-f="yr" data-v="fresh">2025–26</button>
+    <input class="fsearch" id="q" type="search" placeholder="Search title, lab, signal…" aria-label="Search corpus">
+    <span class="fcount" id="count"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table id="corpus">
+      <thead><tr>
+        <th>#</th><th>Paper</th><th>Institution</th><th>Year</th><th>Venue</th>
+        <th>ZS</th><th>Score · R+H+Z+V+A</th><th>Strength</th><th>Source</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="small">ZS = zero-shot status. Strength signals: LAB reputable lab · CHAMP competition win ·
+    HW strong hardware evidence · CODE open code · VENUE top venue · ADOPT stack adoption ·
+    LINE research-line momentum · FRESH 2025-26, judged by lab + venue + hardware rather than citations.
+    Citation counts are fetched at triage (S2) via Semantic Scholar and never penalize FRESH papers.</p>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <span>Zero-Shot UAV · candidate corpus · updated 7 July 2026</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script>
+/* row: [rank, title, year, venue, id, platform, zs, score, status, breakdown, strength, institution, pageFile] */
+const ROWS=[
+[1,"FalconGym: zero-shot vision gate-crossing via NeRF sim",2025,"IROS","2503.02198","drone","zero",95,"web","25+25+20+10+15","HW FRESH VENUE","UIUC","falcongym-2025"],
+[2,"RAPTOR: one 2,084-param foundation policy flies 10 real quadrotors",2025,"arXiv","2509.11481","drone","zero",93,"web","25+25+20+8+15","HW FRESH LINE","NYU ARPL","raptor-2026"],
+[3,"MonoRace: monocular champion racing, won A2RL 2025",2026,"arXiv","2601.15222","drone","zero",93,"webv","25+25+20+8+15","CHAMP LAB HW FRESH LINE","TU Delft MAVLab","monorace-2026"],
+[4,"E2E-Fly: integrated training-to-deployment quadrotor autonomy",2026,"arXiv","2604.12916","drone","zero",93,"web","25+25+20+8+15","LAB HW FRESH","SJTU","e2e-fly-2026"],
+[5,"Attention-Based Map Encoding for Generalized Legged Locomotion",2025,"Sci. Robotics","2506.09588","legged","zero",93,"web","25+25+20+15+8","LAB VENUE HW FRESH","ETH-RSL",""],
+[6,"Learning to Fly in Seconds: RL-to-firmware on a Crazyflie",2024,"RA-L","2311.13081","drone","zero",92,"web","20+25+20+12+15","LAB CODE HW VENUE","NYU ARPL","fly-seconds-2024"],
+[7,"Wheeled Lab: Isaac Lab to low-cost wheeled robots",2025,"CoRL","2502.07380","ground","zero",92,"web","25+25+20+10+12","CODE ADOPT FRESH","UW",""],
+[8,"Agile Flight from Pixels without State Estimation",2024,"RSS","2406.12505*","drone","zero",90,"know","20+25+20+10+15","LAB VENUE LINE","UZH-RPG",""],
+[9,"Vision-based agile flight via differentiable physics",2025,"NMI","2407.10648*","drone","zero",90,"know","25+15+20+15+15","LAB VENUE FRESH","SJTU + Qi Zhi",""],
+[10,"What Matters in Zero-Shot Sim-to-Real Quadrotor RL (SimpleFlight)",2024,"arXiv","2412.11764","drone","zero",88,"web","20+25+20+8+15","LAB CODE HW ADOPT","Tsinghua",""],
+[11,"ANYmal Parkour: perception and agility from sim only",2024,"Sci. Robotics","2306.14874","legged","zero",88,"web","20+25+20+15+8","LAB VENUE HW LINE","ETH-RSL",""],
+[12,"Real-World Humanoid Locomotion with RL",2024,"Sci. Robotics","2303.03381*","humanoid","zero",88,"know","20+25+20+15+8","LAB VENUE HW","Berkeley",""],
+[13,"Learning Agile Soccer Skills for a Bipedal Robot",2024,"Sci. Robotics","2304.13653*","humanoid","zero",86,"know","20+25+20+15+6","LAB VENUE HW","DeepMind",""],
+[14,"Agile But Safe: collision-free high-speed legged locomotion",2024,"RSS","2401.17583*","legged","zero",85,"know","20+25+20+12+8","LAB VENUE HW","CMU LeCAR",""],
+[15,"HIM: Hybrid Internal Model for agile legged locomotion",2024,"ICLR","2312.11460*","legged","zero",85,"know","20+25+20+12+8","LAB VENUE CODE","Shanghai AI Lab + SJTU",""],
+[16,"DTC: Deep Tracking Control",2024,"Sci. Robotics","2309.15462*","legged","zero",84,"know","20+25+20+11+8","LAB VENUE","ETH-RSL",""],
+[17,"HoST: humanoid standing-up control across postures",2025,"arXiv","2502.08378*","humanoid","zero",84,"know","25+25+20+8+6","LAB HW FRESH","Shanghai AI Lab",""],
+[18,"Aerial Gym Simulator: GPU-parallel sim + zero-shot depth navigation",2025,"arXiv","2503.01471","drone","zero",83,"web","25+15+20+8+15","ADOPT CODE FRESH","NTNU-ARL",""],
+[19,"Extreme Parkour with Legged Robots",2024,"ICRA","2309.14341","legged","zero",83,"web","20+25+20+10+8","LAB HW CODE LINE","CMU",""],
+[20,"HOVER: neural whole-body humanoid controller",2024,"arXiv","2410.21229*","humanoid","zero",83,"know","20+25+20+10+8","LAB LINE","NVIDIA GEAR",""],
+[21,"SkyJEPA: long-horizon world models for zero-shot quadrotor control",2026,"arXiv","2606.23444","drone","zero",83,"web","25+15+20+8+15","LAB FRESH LINE","Berkeley + NYU",""],
+[22,"Superhuman Safe and Agile Racing through Multi-Agent RL",2026,"arXiv","2605.22748","drone","zero",83,"web","25+15+20+8+15","FRESH","(confirm)",""],
+[23,"Bridging Performance and Generalization in RL for Agile Flight",2026,"arXiv","2606.27348","drone","zero",83,"web","25+15+20+8+15","FRESH","(confirm)",""],
+[24,"World-model generalization under environmental variability",2026,"arXiv","2606.05015","drone","zero",83,"web","25+15+20+8+15","FRESH","(confirm)",""],
+[25,"DATT: Deep Adaptive Trajectory Tracking",2023,"CoRL","2310.09053*","drone","zero",82,"know","12+25+20+10+15","VENUE CODE","UW",""],
+[26,"One Near-Hover Controller for Vastly Different Quadcopters",2023,"ICRA","2209.09232*","drone","zero",82,"know","12+25+20+10+15","LAB HW","Berkeley HiPeRLab",""],
+[27,"ASAP: Aligning Sim and Real Physics (humanoid delta-action)",2025,"arXiv","2502.01143*","humanoid","semi",80,"know","25+25+12+10+8","LAB FRESH LINE","CMU LeCAR + NVIDIA",""],
+[28,"Visual Dexterity: in-hand reorientation sim-to-real",2023,"Sci. Robotics","2211.11744*","manip","zero",80,"know","12+25+20+15+8","LAB VENUE HW","MIT",""],
+[29,"Bootstrapping RL with Imitation for Vision-Based Agile Flight",2024,"CoRL","2403.12203*","drone","zero",80,"know","20+15+20+10+15","LAB VENUE","UZH-RPG",""],
+[30,"Swift: champion-level drone racing (PPO + empirical residuals)",2023,"Nature","10.1038/s41586-023-06419-4","drone","semi",79,"webv","12+25+12+15+15","CHAMP LAB VENUE LINE","UZH-RPG",""],
+[31,"Reaching the Limit in Autonomous Racing: OC vs RL",2023,"Sci. Robotics","2310.10943*","drone","semi",79,"know","12+25+12+15+15","LAB VENUE LINE","UZH-RPG",""],
+[32,"DeXtreme: in-hand manipulation sim-to-real",2023,"ICRA","2210.13702*","manip","zero",79,"know","12+25+20+12+10","LAB HW","NVIDIA",""],
+[33,"Time-optimal quadcopter flight, end-to-end RL",2024,"arXiv","2311.16948*","drone","zero",78,"know","20+15+20+8+15","LAB LINE","TU Delft MAVLab",""],
+[34,"MuJoCo Playground (MJX; zero-shot state and pixels)",2025,"arXiv","2502.08844","multi","zero",78,"web","25+15+20+8+10","ADOPT CODE FRESH","DeepMind + Berkeley",""],
+[35,"Robot Parkour Learning",2023,"CoRL","2309.05665","legged","zero",77,"web","12+25+20+12+8","LAB VENUE CODE LINE","Qi Zhi + Stanford",""],
+[36,"DrEureka: LLM-designed rewards and DR for sim-to-real",2024,"RSS","2406.01967","legged","zero",75,"web","20+15+20+12+8","LAB VENUE CODE","UPenn + NVIDIA",""],
+[37,"DreamWaQ: implicit terrain, zero-shot on Unitree A1",2023,"ICRA","2301.10602","legged","zero",75,"web","12+25+20+10+8","LAB HW LINE","KAIST URL",""],
+[38,"Perceptive Locomotion in the Wild (teacher-student)",2022,"Sci. Robotics","2201.08117","legged","zero",74,"know","6+25+20+15+8","LAB VENUE HW LINE","ETH-RSL",""],
+[39,"Neural-Fly: rapid adaptation in strong winds",2022,"Sci. Robotics","10.1126/scirobotics.abm6597","drone","semi",73,"know","6+25+12+15+15","LAB VENUE HW","Caltech CAST",""],
+[40,"Walk These Ways: multiplicity of behaviour",2022,"CoRL","2212.03238*","legged","zero",71,"know","6+25+20+12+8","LAB CODE ADOPT","MIT Improbable AI",""]
+];
+const ST={webv:"verified",web:"web-found",know:"to confirm"};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const tbody=document.querySelector("#corpus tbody");
+tbody.innerHTML=ROWS.map(r=>{
+  const conf=r[4].endsWith("*"),clean=r[4].replace("*","");
+  const link=r[4].startsWith("10.")?"https://doi.org/"+clean:"https://arxiv.org/abs/"+clean;
+  const page=r[12]?` · <a href="papers/${r[12]}.html">annotated page</a>`:"";
+  return `<tr data-plat="${r[5]}" data-st="${r[8]}" data-yr="${r[2]>=2025?"fresh":""}"
+    data-q="${esc((r[1]+" "+r[11]+" "+r[10]).toLowerCase())}">
+    <td class="num">${r[0]}</td>
+    <td>${esc(r[1])}<br><span class="small"><a href="${link}" rel="noopener">${clean}</a>${conf?" · id to confirm":""}${page}</span></td>
+    <td>${esc(r[11])}</td><td class="num">${r[2]}</td><td>${r[3]}</td>
+    <td><span class="badge ${r[6]}">${r[6]}</span></td>
+    <td style="white-space:nowrap"><span class="scorebar"><i style="width:${r[7]}%"></i></span><b>${r[7]}</b>
+      <span class="small" style="display:block">${r[9]}</span></td>
+    <td><span class="small">${r[10]}</span></td>
+    <td><span class="badge ${r[8]==="webv"?"verified":r[8]==="know"?"pending":""}">${ST[r[8]]}</span></td>
+  </tr>`;}).join("");
+
+const state={plat:"",st:"",yr:"",q:""};
+const trs=[...tbody.querySelectorAll("tr")];
+function apply(){let n=0;
+  trs.forEach(tr=>{const ok=(!state.plat||tr.dataset.plat===state.plat)&&
+    (!state.st||tr.dataset.st===state.st)&&(!state.yr||tr.dataset.yr===state.yr)&&
+    (!state.q||tr.dataset.q.indexOf(state.q)>=0);
+    tr.style.display=ok?"":"none";if(ok)n++;});
+  document.getElementById("count").textContent="showing "+n+" of "+trs.length;}
+document.getElementById("filters").addEventListener("click",e=>{
+  const b=e.target.closest(".fbtn");if(!b)return;
+  state[b.dataset.f]=b.dataset.v;
+  document.querySelectorAll(`.fbtn[data-f="${b.dataset.f}"]`).forEach(x=>x.classList.toggle("on",x===b));
+  apply();});
+document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();apply();});
+apply();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

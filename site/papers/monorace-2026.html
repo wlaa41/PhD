@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonoRace: winning champion-level drone racing with one camera · annotated</title>
+<meta name="description" content="Annotated reading of MonoRace (Bahnam et al. 2026): a monocular rolling-shutter camera and an IMU, all compute onboard, winner of the 2025 A2RL competition against AI teams and three human world champions.">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot UAV</a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../index.html#papers">Reading list</a>
+      <a href="../index.html#methods">Methods</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="eyebrow">Annotated paper · 03 of 05 · corpus rank #3</p>
+  <h1>MonoRace: Winning Champion-Level Drone Racing with Robust Monocular AI</h1>
+  <p class="authors">Stavrow A. Bahnam, Robin Ferede, Till M. Blaha, Anton E. Lang, Erin Lucassen, Quentin Missinne, Aderik E.C. Verraest, Christophe De Wagter &amp; Guido C.H.E. de Croon</p>
+  <div class="meta-line">
+    TU Delft MAVLab <span class="sep">·</span> arXiv, v1 January 2026 <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2601.15222" rel="noopener">arXiv:2601.15222</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 93 = 25+25+20+8+15</span>
+    <span class="badge verified">A2RL win web-verified</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results: A2RL 2025</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        A racing quadrotor whose only sensors are <b>one monocular rolling-shutter camera and an IMU</b> —
+        every computation onboard, no external tracking of any kind — <b>won the 2025 Abu Dhabi Autonomous
+        Drone Racing Competition (A2RL)</b>, beating all competing AI teams and three human world-champion
+        pilots in a direct knockout tournament, at speeds up to 100&nbsp;km/h. The estimator fuses a
+        gate-segmentation network with a drone dynamics model; a control network bypasses the inner-loop
+        controllers entirely, sending <b>raw motor commands at 500&nbsp;Hz from the flight controller itself</b>.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        Drone racing is the adversarial benchmark for autonomous flight: an opponent, a clock, and a physical
+        system driven to its limits, with all perception and control squeezed onto a light-weight airframe
+        under hard real-time constraints.
+      </p>
+      <p>
+        The field's progression has been a steady removal of crutches. Early demonstrations of agile
+        autonomous flight leaned on external motion-capture systems that handed the vehicle a near-perfect
+        state estimate. The state of the art before this paper — as the authors characterize it — was a
+        system with a <em>stereo</em> camera and an IMU that beat human champions, but in a controlled indoor
+        environment. MonoRace removes both crutches at once: no external tracking, and no second camera.
+      </p>
+      <p>
+        A monocular rolling-shutter camera is arguably the hardest sensible sensor choice for this task. A
+        single camera provides no instantaneous depth, so metric scale must come from somewhere else; and a
+        rolling shutter exposes each image row at a slightly different instant, so at 100&nbsp;km/h the
+        vehicle's own motion warps the geometry of every frame. It is also the cheapest and lightest choice —
+        which is precisely the point: if champion-level racing survives this sensor budget, the hardware
+        barrier to agile autonomous flight is far lower than the field assumed.
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <p>
+        Three components carry the system: a robust state estimator that fuses neural-network gate
+        segmentation with a drone dynamics model; an offline optimization that exploits the known geometry of
+        the gates to refine calibration parameters from nothing but logged onboard flight data; and a small
+        guidance-and-control network that skips the classical cascade of inner-loop controllers, writing
+        motor commands directly at 500&nbsp;Hz. Everything runs onboard, in a loop:
+      </p>
+      <figure>
+        <svg viewBox="0 0 700 292" role="img" aria-label="The MonoRace onboard loop: a camera frame feeds a gate-segmentation neural network, whose output is fused with IMU data and a drone dynamics model into a state estimate; a guidance and control neural network then sends motor commands at 500 Hz to the airframe, which closes the loop back to the camera. Everything sits inside a box labelled everything onboard, no external tracking, above a green line annotated out-of-lab competition venue.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="10" y="16" width="680" height="232" rx="6" fill="none" stroke="#d6d3d1"/>
+
+            <rect x="26" y="36" width="146" height="62" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="99" y="58" text-anchor="middle" font-weight="700">Camera frame</text>
+            <text x="99" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">monocular</text>
+            <text x="99" y="90" text-anchor="middle" font-size="10.5" fill="#78716c">rolling shutter</text>
+
+            <rect x="193" y="36" width="146" height="62" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="266" y="58" text-anchor="middle" font-weight="700">Gate segmentation</text>
+            <text x="266" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">neural network</text>
+            <text x="266" y="90" text-anchor="middle" font-size="10.5" fill="#78716c">known gates → pixels</text>
+
+            <rect x="360" y="36" width="146" height="62" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="433" y="58" text-anchor="middle" font-weight="700">Model-aided fusion</text>
+            <text x="433" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">IMU + drone</text>
+            <text x="433" y="90" text-anchor="middle" font-size="10.5" fill="#78716c">dynamics model</text>
+
+            <rect x="527" y="36" width="146" height="62" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="600" y="58" text-anchor="middle" font-weight="700">State estimate</text>
+            <text x="600" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">pose · velocity</text>
+            <text x="600" y="90" text-anchor="middle" font-size="10.5" fill="#78716c">at control rate</text>
+
+            <rect x="527" y="156" width="146" height="66" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="600" y="177" text-anchor="middle" font-weight="700" fill="#1e3a8a">Guidance &amp; control</text>
+            <text x="600" y="192" text-anchor="middle" font-weight="700" fill="#1e3a8a">neural network</text>
+            <text x="600" y="208" text-anchor="middle" font-size="10.5" fill="#44403c">on the flight controller</text>
+
+            <rect x="276" y="158" width="146" height="62" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="349" y="180" text-anchor="middle" font-weight="700">Motor commands</text>
+            <text x="349" y="198" text-anchor="middle" font-size="10.5" fill="#78716c">500 Hz</text>
+            <text x="349" y="212" text-anchor="middle" font-size="10.5" fill="#78716c">bypasses inner loops</text>
+
+            <rect x="26" y="158" width="146" height="62" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="99" y="180" text-anchor="middle" font-weight="700">Airframe</text>
+            <text x="99" y="198" text-anchor="middle" font-size="10.5" fill="#78716c">quadrotor at up to</text>
+            <text x="99" y="212" text-anchor="middle" font-size="10.5" fill="#78716c">100 km/h</text>
+
+            <line x1="174" y1="67" x2="189" y2="67" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="341" y1="67" x2="356" y2="67" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="508" y1="67" x2="523" y2="67" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="600" y1="100" x2="600" y2="152" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="523" y1="189" x2="427" y2="189" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="272" y1="189" x2="177" y2="189" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="99" y1="154" x2="99" y2="103" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <text x="350" y="238" text-anchor="middle" font-size="10.5" font-weight="700" fill="#78716c" letter-spacing="1">everything onboard · no external tracking</text>
+            <line x1="10" y1="264" x2="690" y2="264" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="350" y="282" text-anchor="middle" font-size="10.5" fill="#78716c">out-of-lab competition venue · A2RL, Abu Dhabi · no motion capture</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The MonoRace onboard loop. Where earlier champion-beating systems ran in
+          a controlled indoor arena, everything here — perception, estimation, control — closes onboard, at a
+          competition venue with no external tracking. The offline calibration refinement (§3.3) sits outside
+          this loop, consuming its logs between flights.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 Model-aided monocular state estimation</h3>
+      <p>
+        The measurement model comes from the track itself. Race gates have known geometry and known
+        positions, so once the segmentation network localizes a gate's corners in the image, each detected
+        corner \(x_i\) can be compared against the reprojection of its known 3-D counterpart \(X_i\):
+      </p>
+      <div class="math-block">
+        $$ e_i \;=\; x_i \;-\; \pi\!\big( K\, [R \mid t]\, X_i \big), \qquad
+           (R^{*}, t^{*}) \;=\; \arg\min_{R,\,t} \sum_i \lVert e_i \rVert^{2} $$
+        <div class="eq-note">Notation ours (reconstructed from the abstract's description): \(\pi\) the
+          perspective projection, \(K\) the camera intrinsics, \([R \mid t]\) the camera pose. The paper's
+          exact formulation awaits the full-PDF pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why known track geometry substitutes for depth</span>
+        <p>A single camera cannot measure depth from one frame — every point along a viewing ray projects to
+        the same pixel. But if the 3-D coordinates of the observed points are already known, the ambiguity
+        collapses: this is the classic perspective-n-point (PnP) problem, and the four corners of a single
+        gate of known size and location are enough to pin down a metric camera pose. The published track map
+        does the job a second camera would otherwise do. The cost is generality — the trick only works where
+        the geometry is known in advance.</p>
+      </div>
+
+      <h3>3.2 Filtering with a dynamics model</h3>
+      <p>
+        Gate detections arrive at camera rate, and not reliably — a gate may leave the field of view, and the
+        competition environment produced camera interference. The estimator therefore behaves like a
+        model-based filter: a drone dynamics model propagates the state between visual updates, and the
+        segmentation-derived pose corrects it whenever one lands:
+      </p>
+      <div class="math-block">
+        $$ \dot{x} = f(x, u), \qquad
+           \hat{x}_k \;=\; \hat{x}_{k \mid k-1} \;+\; K_k \big( z_k - h(\hat{x}_{k \mid k-1}) \big) $$
+        <div class="eq-note">Notation ours: an EKF-style predict–update cycle, with \(f\) the drone model
+          driven by IMU and command inputs, and \(z_k\) the gate-derived pose measurement. Whether the paper
+          uses an EKF proper or another fusion scheme awaits the full-PDF pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why a drone model bridges the gaps between frames</span>
+        <p>The control network needs a state estimate at 500&nbsp;Hz; the camera delivers evidence far less
+        often, and sometimes not at all — interference dropouts, gates out of frame. A dynamics model turns
+        the IMU and the commands already issued into a prediction of where the drone must be now, so the
+        estimate degrades gracefully rather than freezing between detections. The same model helps with the
+        rolling shutter: each image row is exposed at a different instant, and a motion model is exactly what
+        is needed to account for where the camera was as each row was captured.</p>
+      </div>
+
+      <h3>3.3 Offline calibration refinement from flight logs</h3>
+      <p>
+        The abstract's quietly important contribution: an offline optimization that uses the known gate
+        geometry to refine <em>any</em> state-estimation parameter from onboard flight data alone. After a
+        flight, every logged gate observation is a constraint — the corners must reproject where the camera
+        actually saw them — so calibration parameters \(\theta\) can be re-estimated by minimizing the total
+        reprojection error over the logs:
+      </p>
+      <div class="math-block">
+        $$ \theta^{*} \;=\; \arg\min_{\theta} \sum_{\text{flights}} \sum_{i}
+           \big\lVert\, x_i - \pi_{\theta}(X_i) \,\big\rVert^{2} $$
+        <div class="eq-note">Notation ours: \(\pi_{\theta}\) the projection under calibration parameters
+          \(\theta\). The authors single out the external (extrinsic) camera calibration as the vital
+          parameter this procedure fine-tunes; the full parameterization awaits the full-PDF pass.</div>
+      </div>
+      <p>
+        No calibration rig, no motion capture — the track is the calibration target. A hard landing that
+        nudges the camera a degree would silently corrupt a fixed calibration; here the next flight's logs
+        repair it. In the method registry this procedure is filed under
+        <code>system-identification</code> rather than as a separate calibration family (merge decision
+        logged in the registry).
+      </p>
+
+      <h3>3.4 Direct motor-command control at 500 Hz</h3>
+      <p>
+        Guidance and control collapse into a single small network that foregoes the classical inner-loop
+        controllers altogether, mapping its observation directly to the four motor commands,
+        \(a_t = \pi(o_t) \in \mathbb{R}^{4}\) (here \(\pi\) denotes the control policy, distinct from the
+        projection above), executed on the flight controller itself at 500&nbsp;Hz. Removing the cascade of
+        attitude and rate loops removes their latency and their hand-tuning — but it also removes their
+        safety net, since nothing downstream will clean up a bad network output at racing speeds. That the
+        system nonetheless survived IMU saturation and camera interference in competition is the strongest
+        available evidence for the robustness claim in the title. How the network was trained is not detailed
+        in the abstract and awaits the full-PDF pass.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results: A2RL 2025</h2>
+      <p>
+        The headline result is a competition outcome rather than a benchmark table, which makes it unusually
+        resistant to overfitting — and unusually easy to verify externally:
+      </p>
+      <div class="table-wrap"><table>
+        <caption>Headline facts from the abstract; lap times, margins and per-round details await the full-PDF pass.</caption>
+        <thead><tr><th>Item</th><th>Reported</th></tr></thead>
+        <tbody>
+          <tr><td>Competition result</td><td>Winner, 2025 Abu Dhabi Autonomous Drone Racing Competition (A2RL) — outperformed all competing AI teams and three human world-champion pilots in a direct knockout tournament <span class="badge verified">web-verified</span></td></tr>
+          <tr><td>Top speed</td><td>up to 100 km/h on the competition track</td></tr>
+          <tr><td>Sensors</td><td>one monocular rolling-shutter camera + IMU</td></tr>
+          <tr><td>Compute</td><td>fully onboard; control network on the flight controller at 500 Hz</td></tr>
+          <tr><td>External tracking</td><td>none</td></tr>
+          <tr><td>Hurdles coped with</td><td>camera interference · IMU saturation</td></tr>
+        </tbody>
+      </table></div>
+      <figure>
+        <svg viewBox="0 0 640 168" role="img" aria-label="Typographic stat panel: three human world-champion pilots beaten alongside every competing AI team, and a top speed of 100 kilometres per hour shown on a meter bar with a 0 to 120 scale.">
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <text x="8" y="20" font-size="10.5" font-weight="700" fill="#78716c" letter-spacing="1">A2RL 2025 · DIRECT KNOCKOUT TOURNAMENT</text>
+
+            <text x="8" y="74" font-family="Crimson Pro,Georgia,serif" font-size="44" font-weight="600" fill="#1c1917">3</text>
+            <text x="8" y="94" font-size="11" fill="#78716c">human world-champion pilots beaten</text>
+            <text x="8" y="109" font-size="11" fill="#78716c">alongside every competing AI team</text>
+
+            <line x1="310" y1="40" x2="310" y2="106" stroke="#e7e5e4"/>
+
+            <text x="340" y="74" font-family="Crimson Pro,Georgia,serif" font-size="44" font-weight="600" fill="#1c1917">100<tspan font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="16" fill="#44403c"> km/h</tspan></text>
+            <text x="340" y="94" font-size="11" fill="#78716c">top speed on the competition track</text>
+            <text x="340" y="109" font-size="11" fill="#78716c">reported as a new milestone for the field</text>
+
+            <rect x="8" y="128" width="624" height="10" rx="2" fill="#efeeeb"/>
+            <rect x="8" y="128" width="520" height="10" rx="2" fill="#1a56db"/>
+            <text x="8" y="156" font-size="10.5" fill="#78716c">0</text>
+            <text x="268" y="156" text-anchor="middle" font-size="10.5" fill="#78716c">50</text>
+            <text x="528" y="156" text-anchor="middle" font-size="10.5" fill="#78716c">100</text>
+            <text x="632" y="156" text-anchor="end" font-size="10.5" fill="#78716c">120 km/h</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 2.</b> The two numbers the abstract commits to. The knockout-tournament claim
+          is independently web-verified (§7); lap times, winning margins and per-round results await the
+          full-PDF pass.</figcaption>
+      </figure>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Flagged by the authors:</b> camera interference and IMU saturation at the venue — presented in
+          the abstract as engineering hurdles the system successfully coped with, not as open failures. The
+          full limitations discussion awaits the full-PDF extraction pass.</li>
+        <li><b>Ours:</b> the estimator leans on a structured environment — gates of known geometry at known
+          positions. How the approach degrades on tracks without a published map, or in unstructured
+          environments generally, is untested here (and outside the paper's stated scope).</li>
+        <li><b>Ours:</b> the training regimen for the guidance-and-control network is not described in the
+          abstract, so the simulation-versus-real-data training split — the question this corpus most cares
+          about — is unknown until the full-PDF pass.</li>
+      </ul>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          MonoRace is the strongest evidence in the corpus that fully-onboard, monocular, agile autonomous
+          flight is competition-grade in 2025–26 — not a laboratory demonstration but a knockout-tournament
+          win over world-champion humans. Its hardware frugality reframes this project's budget: if a rolling-shutter
+          camera, an IMU and a flight controller suffice for champion-level racing, the project's Jetson Orin
+          Nano is generous rather than limiting. The model-aided estimation line — vision fused with a drone
+          model, refined offline from logs — pairs naturally with the planned PX4 offboard experiments, where
+          the same predict-with-model, correct-with-vision structure applies. And the TU Delft MAVLab lineage
+          (Ferede, De Wagter, de Croon) connects this paper directly to the time-optimal RL line already in
+          the corpus.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>gate-segmentation-model-fusion</code></a> ·
+        <a href="../index.html#methods"><code>system-identification</code></a> ·
+        <a href="../index.html#methods"><code>direct-motor-command-control</code></a> ·
+        <a href="../index.html#methods"><code>microcontroller-deployment</code></a> ·
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4-lite</b> — built from the paper's arXiv abstract page (fetched 7 July 2026)
+        plus clearly-labelled concept reconstructions. Equations marked "notation ours" are canonical forms,
+        not the paper's own. The competition claim was independently verified against three separate web
+        sources; quote on file: "The proposed approach won the 2025 Abu Dhabi Autonomous Drone Racing
+        Competition (A2RL), outperforming all competing AI teams and three human world champion pilots in a
+        direct knockout tournament." This page is promoted to <b>verified</b> only after the full-PDF pass
+        and the NotebookLM five-question cross-check (pipeline stage S5).
+      </div>
+      <div class="cite">@misc{bahnam2026monorace,
+  title   = {MonoRace: Winning Champion-Level Drone Racing with Robust Monocular AI},
+  author  = {Bahnam, Stavrow A. and Ferede, Robin and Blaha, Till M. and Lang, Anton E.
+             and Lucassen, Erin and Missinne, Quentin and Verraest, Aderik E.C.
+             and De Wagter, Christophe and de Croon, Guido C.H.E.},
+  year    = {2026},
+  eprint  = {2601.15222},
+  archivePrefix = {arXiv},
+  url     = {https://arxiv.org/abs/2601.15222}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="raptor-2026.html"><span class="dir">← Previous</span>RAPTOR: one tiny foundation policy for any quadrotor</a>
+      <a href="e2e-fly-2026.html" style="text-align:right"><span class="dir">Next →</span>E2E-Fly: an integrated training-to-deployment system</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <span>Zero-Shot UAV · annotated reading list</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>

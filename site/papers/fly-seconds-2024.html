@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning to Fly in Seconds · annotated</title>
+<meta name="description" content="Annotated reading of Learning to Fly in Seconds (Eschmann, Albani, Loianno, RA-L 2024): 18 seconds of training, direct RPM control, microcontroller deployment, flown on a Crazyflie.">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot UAV</a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../index.html#papers">Reading list</a>
+      <a href="../index.html#methods">Methods</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="eyebrow">Annotated paper · 05 of 05 · corpus rank #6</p>
+  <h1>Learning to Fly in Seconds</h1>
+  <p class="authors">Jonas Eschmann, Dario Albani &amp; Giuseppe Loianno</p>
+  <div class="meta-line">
+    NYU Agile Robotics and Perception Lab <span class="sep">·</span> IEEE RA-L 2024 <span class="sep">·</span> arXiv, v1 November 2023, v2 April 2024 <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2311.13081" rel="noopener">arXiv:2311.13081</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 92 = 20+25+20+12+15</span>
+    <span class="badge pending">S5 verification pending</span>
+    <span class="badge">designated I2 baseline</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        A deep-RL quadrotor controller trained end-to-end in <b>18 seconds on a consumer-grade laptop</b>,
+        commanding <b>motor RPMs directly</b> with no cascaded control stack underneath, and deployed on a
+        <b>microcontroller with real-time guarantees</b> aboard a Crazyflie nano quadrotor. The enabling
+        contribution is a purpose-built simulator that runs about <b>5 months of simulated flight per
+        second</b> on a laptop GPU — and the code and simulator are open source.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        Reinforcement learning for flight control is usually sample-starved and simulator-bound. Policies
+        need millions of environment interactions, general-purpose simulators deliver them slowly, and the
+        resulting wall-clock training cost — hours to days per run — gates how fast anyone can iterate on
+        rewards, observations or architectures.
+      </p>
+      <p>
+        There is a second, quieter problem. Most "learned" flight controllers sit on top of a cascaded PID
+        stack: the policy outputs attitude or body-rate setpoints and conventional inner loops do the actual
+        motor-level work. That hides the interesting control problem inside hand-tuned loops and caps how
+        much the learned component can matter. Commanding motor RPMs directly removes the cascade — the
+        policy owns the whole problem — but it also raises the transfer stakes, because there are no inner
+        loops left to absorb model error between simulation and the real vehicle.
+      </p>
+      <p>
+        This paper attacks both at once: a simulator fast enough to make RL training nearly free, and a
+        training recipe that makes direct-RPM policies survive the trip to real hardware.
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 170" role="img" aria-label="Pipeline: an optimised simulator running about 5 months of flight per second feeds curriculum learning and asymmetric actor-critic PPO training lasting 18 seconds, producing a direct-RPM policy deployed on a microcontroller with real-time guarantees and flown on a Crazyflie.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="6" y="38" width="106" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="59" y="62" text-anchor="middle" font-weight="700">Simulator</text>
+            <text x="59" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">≈5 months flight/s</text>
+            <text x="59" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">on a laptop GPU</text>
+
+            <rect x="126" y="38" width="96" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="174" y="62" text-anchor="middle" font-weight="700">Curriculum</text>
+            <text x="174" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">task difficulty</text>
+            <text x="174" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">steps up</text>
+
+            <rect x="236" y="30" width="116" height="80" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="294" y="54" text-anchor="middle" font-weight="700" fill="#1e3a8a">PPO training</text>
+            <text x="294" y="71" text-anchor="middle" font-size="10.5" fill="#44403c">asymmetric</text>
+            <text x="294" y="86" text-anchor="middle" font-size="10.5" fill="#44403c">actor–critic</text>
+            <text x="294" y="101" text-anchor="middle" font-size="10.5" fill="#78716c">18 s wall-clock</text>
+
+            <rect x="366" y="38" width="104" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="418" y="62" text-anchor="middle" font-weight="700">Direct RPM</text>
+            <text x="418" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">motor commands</text>
+            <text x="418" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">no PID cascade</text>
+
+            <rect x="484" y="38" width="104" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="536" y="62" text-anchor="middle" font-weight="700">Deployment</text>
+            <text x="536" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">microcontroller</text>
+            <text x="536" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">real-time bounds</text>
+
+            <rect x="602" y="38" width="92" height="64" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="648" y="62" text-anchor="middle" font-weight="700">Crazyflie</text>
+            <text x="648" y="79" text-anchor="middle" font-size="10.5" fill="#78716c">nano quadrotor</text>
+            <text x="648" y="93" text-anchor="middle" font-size="10.5" fill="#78716c">real flight</text>
+
+            <line x1="112" y1="70" x2="122" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="222" y1="70" x2="232" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="352" y1="70" x2="362" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="470" y1="70" x2="480" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="588" y1="70" x2="598" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="6" y1="126" x2="352" y2="126" stroke="#e7e5e4" stroke-width="1"/>
+            <line x1="366" y1="126" x2="694" y2="126" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="179" y="146" text-anchor="middle" font-size="10.5" fill="#78716c">simulation · 18 s wall-clock</text>
+            <text x="530" y="146" text-anchor="middle" font-size="10.5" fill="#78716c">deployment · real time</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The training-to-deployment pipeline. The simulator's throughput —
+          about five months of simulated flight per second — is what makes the 18-second training figure
+          possible; the trained policy is exported to a microcontroller and flown on a Crazyflie. Both
+          wall-clock figures are from the abstract.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 The training algorithm: PPO with a clipped surrogate</h3>
+      <p>
+        The policy is trained with Proximal Policy Optimization, maximising the clipped surrogate objective
+        over trajectories collected in the simulator:
+      </p>
+      <div class="math-block">
+        $$ L^{\text{CLIP}}(\theta) \;=\; \mathbb{E}_t\!\left[ \min\!\Big( \rho_t(\theta)\,\hat{A}_t,\;
+           \operatorname{clip}\!\big(\rho_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon\big)\,\hat{A}_t \Big) \right],
+           \qquad
+           \rho_t(\theta) \;=\; \frac{\pi_\theta(a_t \mid o_t)}{\pi_{\theta_{\text{old}}}(a_t \mid o_t)}. $$
+        <div class="eq-note">Notation ours — this is the canonical PPO form; the paper's exact objective,
+          hyperparameters and any modifications await the full-PDF pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · what the clip buys you</span>
+        <p>PPO reuses each batch of experience for several gradient steps, so the policy being updated,
+        \(\pi_\theta\), drifts away from the policy that collected the data, \(\pi_{\theta_{\text{old}}}\).
+        The ratio \(\rho_t\) measures that drift per action. Left unchecked, a large ratio lets one batch
+        push the policy arbitrarily far, and performance collapses. The clip removes any incentive to move
+        \(\rho_t\) outside \([1-\varepsilon,\, 1+\varepsilon]\): beyond that band the objective goes flat,
+        so gradients vanish and the update stays near the data-collecting policy. It is a cheap, first-order
+        stand-in for a trust region — exactly the property you want when training must finish in seconds
+        rather than hours.</p>
+      </div>
+
+      <h3>3.2 Asymmetric actor–critic: let the critic cheat</h3>
+      <p>
+        The architecture is asymmetric: the critic and the actor see different worlds. The critic is trained
+        on privileged simulator state, while the actor is restricted to observations the real vehicle will
+        actually have at deployment:
+      </p>
+      <div class="math-block">
+        $$ V_\phi\big(s_t^{\text{priv}}\big) \;\approx\; \mathbb{E}\Big[ \textstyle\sum_{k \ge 0} \gamma^{k}\, r_{t+k} \;\Big|\; s_t^{\text{priv}} \Big],
+           \qquad
+           a_t \sim \pi_\theta\big(\cdot \mid o_t\big). $$
+        <div class="eq-note">Notation ours — \(s_t^{\text{priv}}\) the privileged simulator state,
+          \(o_t\) the deployable observation. The paper's exact observation and state definitions await the
+          full-PDF pass.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why the critic may cheat</span>
+        <p>The critic's only job is to estimate values that reduce the variance of the actor's policy
+        gradient during training — and it is discarded at deployment. It can therefore be fed anything the
+        simulator knows (exact velocities, disturbance terms, motor states) without breaking transfer,
+        because nothing privileged ever reaches the network that ships. A better-informed critic gives
+        cleaner advantage estimates, which means fewer samples and shorter training; the actor, meanwhile,
+        is forced from the first gradient step to work only with what the Crazyflie can measure. The
+        asymmetry is a free lunch precisely because the two networks have different lifespans.</p>
+      </div>
+
+      <h3>3.3 Curriculum learning</h3>
+      <p>
+        Training follows a curriculum: the task distribution starts easy and is stepped towards the full
+        problem as the policy improves, which keeps early gradients informative instead of drowning them in
+        failures. Schematically, tasks are drawn from a sequence of distributions indexed by a curriculum
+        stage \(k\):
+      </p>
+      <div class="math-block">
+        $$ \text{task} \sim p_k(\text{task}), \qquad k = 0, 1, 2, \dots $$
+        <div class="eq-note">Notation ours — the abstract confirms that curriculum learning is used; what
+          exactly is stepped (initial-state spread, reward terms, trajectory difficulty) and on what
+          schedule awaits the full-PDF pass.</div>
+      </div>
+
+      <h3>3.4 The simulator is the real contribution</h3>
+      <p>
+        The headline number is 18 seconds of training, but the load-bearing number is the simulator's
+        throughput: about <b>5 months of simulated flight per second</b> on a laptop GPU. At that rate the
+        18-second run corresponds to roughly seven and a half years of flight experience (our arithmetic
+        from the two stated figures). The point is economic: for multirotor RL, sample cost — not algorithm
+        novelty — was the binding constraint, and once samples are effectively free, an entirely standard
+        algorithm (PPO) with two careful engineering choices (asymmetry, curriculum) is sufficient. The
+        simulator is purpose-built and optimised for this workload rather than general-purpose, and it is
+        open-sourced, which is what makes the result reproducible rather than merely impressive.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        The abstract's claims are unusually concrete for wall-clock and deployment, and deliberately
+        qualitative for tracking accuracy:
+      </p>
+      <div class="table-wrap"><table>
+        <caption>Headline claims from the abstract; quantitative tracking comparisons await the full-PDF pass.</caption>
+        <thead><tr><th>Claim</th><th>As stated</th></tr></thead>
+        <tbody>
+          <tr><td>Training wall-clock</td><td>18 seconds on a consumer-grade laptop</td></tr>
+          <tr><td>Simulator throughput</td><td>about 5 months of simulated flight per second, laptop GPU</td></tr>
+          <tr><td>Action interface</td><td>direct RPM control — no cascaded attitude/rate loops</td></tr>
+          <tr><td>Deployment target</td><td>microcontrollers, with real-time guarantees</td></tr>
+          <tr><td>Platform validated</td><td>Crazyflie nano quadrotor</td></tr>
+          <tr><td>Tracking performance</td><td>competitive with state-of-the-art controllers — the quantitative comparison awaits the full-PDF pass</td></tr>
+          <tr><td>Artefacts</td><td>simulator and code open-sourced</td></tr>
+        </tbody>
+      </table></div>
+      <figure>
+        <svg viewBox="0 0 640 100" role="img" aria-label="Illustrative training wall-clock comparison on a log scale: this paper at 18 seconds versus typical prior RL pipelines at hours to days.">
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <text x="8" y="26">this paper</text>
+            <rect x="180" y="14" width="90" height="14" fill="#1a56db" rx="2"/>
+            <text x="278" y="26" fill="#1c1917" font-weight="700">18 s</text>
+            <text x="8" y="60">typical prior RL pipeline</text>
+            <rect x="180" y="48" width="390" height="14" fill="#d6d3d1" rx="2"/>
+            <text x="578" y="60">hours – days</text>
+            <line x1="180" y1="76" x2="612" y2="76" stroke="#e7e5e4"/>
+            <text x="396" y="92" text-anchor="middle" font-size="10.5" fill="#78716c">training wall-clock, log scale — grey bar illustrative; only 18 s is from the paper</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 2.</b> Training wall-clock on a log scale. Only the 18-second figure is from
+          the paper; the grey bar is illustrative context for typical prior RL flight-control pipelines, not
+          a measurement drawn from any single source.</figcaption>
+      </figure>
+      <p>
+        The deployment claim deserves emphasis: the policy runs on a <b>microcontroller with real-time
+        guarantees</b>, not on a companion computer. For a direct-RPM controller this is the difference
+        between a demo and a controller — missed deadlines at the motor level are crashes, not latency.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors:</b> none listed in the abstract; the limitations section awaits the
+          full-PDF extraction pass.</li>
+        <li><b>Our open questions</b> (marked as ours, to be checked against the full text): validation in
+          the abstract is Crazyflie-only — does the recipe scale to 500&nbsp;g+ platforms with brushless
+          motors and ESCs, where the RPM interface is mediated by another controller? How do direct-RPM
+          policies cope with battery sag, which shifts the RPM-to-thrust map over a single flight? And the
+          zero-shot wording: the abstract claims sim-to-real transfer and deployment, but whether transfer
+          is strictly without any real-world fine-tuning is to be confirmed at S5.</li>
+      </ul>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          This is the project's <b>designated I2 reproduction baseline</b> — the paper whose numbers we
+          reproduce, not merely cite. Open code, tiny compute and a purpose-built simulator make it the
+          fastest honest route from a simulator install to a tethered flight, which is precisely the arc the
+          transfer report's Chapter&nbsp;4 needs. The open-source simulator and checkpoints de-risk the
+          A4000 training stage: if 18 seconds on a consumer laptop is real, training cost disappears as a
+          risk from the project plan entirely. Its microcontroller deployment path maps directly onto this
+          project's Pixhawk&nbsp;6X&nbsp;/&nbsp;Orin&nbsp;Nano split — low-level control on the flight
+          controller, everything else as headroom. Reproducing its training-time and tracking numbers is the
+          current headline candidate for Chapter&nbsp;4 of the transfer report.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>custom-high-performance-simulator</code></a> ·
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>asymmetric-actor-critic</code></a> ·
+        <a href="../index.html#methods"><code>curriculum-learning</code></a> ·
+        <a href="../index.html#methods"><code>direct-motor-command-control</code></a> ·
+        <a href="../index.html#methods"><code>microcontroller-deployment</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4-lite</b> — built from the paper's arXiv abstract page (fetched 7 July 2026)
+        plus clearly-labelled concept reconstructions. Equations marked "notation ours" are canonical forms,
+        not the paper's own. The <b>zero-shot</b> badge is inferred from the abstract's sim-to-real transfer
+        and deployment claims rather than stated in those words — <b>to verify at S5</b>. This page is
+        promoted to <b>verified</b> only after the full-PDF pass and the NotebookLM five-question
+        cross-check (pipeline stage S5).
+      </div>
+      <div class="cite">@article{eschmann2024learning,
+  title   = {Learning to Fly in Seconds},
+  author  = {Eschmann, Jonas and Albani, Dario and Loianno, Giuseppe},
+  journal = {IEEE Robotics and Automation Letters},
+  year    = {2024},
+  eprint  = {2311.13081},
+  archivePrefix = {arXiv},
+  url     = {https://arxiv.org/abs/2311.13081}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="e2e-fly-2026.html"><span class="dir">← Previous</span>E2E-Fly: an integrated training-to-deployment system</a>
+      <a href="../index.html#papers" style="text-align:right"><span class="dir">Reading list →</span>Back to the reading list</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <span>Zero-Shot UAV · annotated reading list</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>
