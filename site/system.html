@@ -7,6 +7,15 @@
 <meta name="description" content="How this platform is produced: the pipeline, the agents, the data schemas, and the scoring and categorization rules — with the specification documents quoted directly.">
 <script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/site.css">
+<style>
+  /* clickable diagram affordances */
+  svg a{cursor:pointer}
+  svg a rect,svg a path{transition:stroke .15s,stroke-width .15s,filter .15s}
+  svg a:hover rect,svg a:focus-visible rect{stroke:#4f46e5;stroke-width:2;filter:brightness(1.02)}
+  svg a:hover path,svg a:focus-visible path{filter:brightness(1.15)}
+  svg a:focus{outline:none}
+  details.x-card.flash{border-color:var(--accent);box-shadow:0 0 0 3px var(--wash)}
+</style>
 </head>
 <body>
 
@@ -39,6 +48,136 @@
     from the specification documents in <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/</a>;
     every card names its source file.
   </p>
+  <nav class="quick-nav" aria-label="Jump to" style="display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.3rem">
+    <a class="chip-btn" href="#workflow">The map</a>
+    <a class="chip-btn" href="#pipeline">Pipeline</a>
+    <a class="chip-btn" href="#counting">Scoring &amp; counting</a>
+    <a class="chip-btn" href="#agents">Agents</a>
+    <a class="chip-btn" href="#data">Schemas</a>
+    <a class="chip-btn" href="#implementation">Implementation</a>
+    <a class="chip-btn" href="#programme">Programme</a>
+    <a class="chip-btn" href="#law">The law</a>
+  </nav>
+
+  <!-- ============ THE MAP (big picture, clickable) ============ -->
+  <h2 class="section-label" id="workflow">The whole system, one map</h2>
+  <p class="section-sub"><strong>Press any block</strong> — it takes you to the exact card that explains it.
+    Two tracks run in parallel and meet only at the registry; amber diamonds are the three decisions no agent
+    may take; the highlighted S5 is the anti-hallucination gate.</p>
+  <figure class="wf-fig" style="margin:.4rem 0 1rem">
+    <svg class="wf-map" viewBox="0 0 880 372" role="img" aria-label="System map: the literature track runs S1 discover and triage through S5 verification to S9 write, with human gates after triage, analysis and writing; the implementation track runs I1 infrastructure, I2 baseline, I3 pilot; both feed the registry, which generates the vault, the dashboard, this site and the transfer report. Every block links to its explaining card.">
+      <defs><marker id="wfa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#9b9da6"/></marker></defs>
+      <g font-family="Inter,system-ui,sans-serif" font-size="11">
+        <!-- lane labels -->
+        <text x="10" y="30" fill="#71737c" font-size="10" font-weight="700" letter-spacing="1">LITERATURE TRACK</text>
+        <text x="10" y="148" fill="#71737c" font-size="10" font-weight="700" letter-spacing="1">IMPLEMENTATION TRACK · from week 1</text>
+
+        <!-- literature lane -->
+        <a href="#stage-s1" data-open="stage-s1" aria-label="S1 to S2: discover and triage">
+          <rect x="10" y="44" width="112" height="46" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="66" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S1–S2</text>
+          <text x="66" y="79" text-anchor="middle" fill="#3d3f46">discover · triage</text></a>
+        <a href="#stage-s3" data-open="stage-s3" aria-label="S3 to S4: acquire and extract">
+          <rect x="146" y="44" width="112" height="46" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="202" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S3–S4</text>
+          <text x="202" y="79" text-anchor="middle" fill="#3d3f46">acquire · extract</text></a>
+        <a href="#stage-s5" data-open="stage-s5" aria-label="S5: verify, the anti-hallucination gate">
+          <rect x="282" y="40" width="104" height="54" rx="8" fill="#eef0fe" stroke="#4f46e5" stroke-width="1.6"/>
+          <text x="334" y="61" text-anchor="middle" fill="#4f46e5" font-weight="700">S5 · VERIFY</text>
+          <text x="334" y="77" text-anchor="middle" fill="#3d3f46">second reader</text></a>
+        <a href="#stage-s6" data-open="stage-s6" aria-label="S6: integrate">
+          <rect x="410" y="44" width="92" height="46" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="456" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S6</text>
+          <text x="456" y="79" text-anchor="middle" fill="#3d3f46">integrate</text></a>
+        <a href="#stage-s7" data-open="stage-s7" aria-label="S7: analyse, ends at gate 2">
+          <rect x="526" y="44" width="92" height="46" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="572" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S7</text>
+          <text x="572" y="79" text-anchor="middle" fill="#3d3f46">analyse</text></a>
+        <a href="#stage-s8" data-open="stage-s8" aria-label="S8: render the views">
+          <rect x="642" y="44" width="92" height="46" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="688" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S8</text>
+          <text x="688" y="79" text-anchor="middle" fill="#3d3f46">render</text></a>
+        <a href="#stage-s9" data-open="stage-s9" aria-label="S9: write, ends at gate 3">
+          <rect x="758" y="44" width="92" height="46" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="804" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S9</text>
+          <text x="804" y="79" text-anchor="middle" fill="#3d3f46">write</text></a>
+        <line x1="122" y1="67" x2="142" y2="67" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="258" y1="67" x2="278" y2="67" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="386" y1="67" x2="406" y2="67" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="502" y1="67" x2="522" y2="67" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="618" y1="67" x2="638" y2="67" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="734" y1="67" x2="754" y2="67" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <!-- gates -->
+        <a href="#stage-s2" data-open="stage-s2" aria-label="Gate 1: you approve the corpus">
+          <path d="M110 36 L118 24 L126 36 L118 48 Z" fill="#b45309"/>
+          <text x="118" y="16" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 1 · you</text></a>
+        <a href="#stage-s7" data-open="stage-s7" aria-label="Gate 2: you pick the direction and its pilot">
+          <path d="M564 36 L572 24 L580 36 L572 48 Z" fill="#b45309"/>
+          <text x="572" y="16" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 2 · you</text></a>
+        <a href="#stage-s9" data-open="stage-s9" aria-label="Gate 3: you sign off after a clean citation audit">
+          <path d="M796 36 L804 24 L812 36 L804 48 Z" fill="#b45309"/>
+          <text x="804" y="16" text-anchor="middle" fill="#b45309" font-weight="700" font-size="10">GATE 3 · you</text></a>
+        <!-- NotebookLM feeder -->
+        <text x="334" y="116" text-anchor="middle" fill="#71737c" font-size="10">NotebookLM answers the 5 questions ↑</text>
+
+        <!-- implementation lane -->
+        <a href="#impl-i1" data-open="impl-i1" aria-label="I1: infrastructure bring-up, weeks 1 to 3">
+          <rect x="10" y="160" width="150" height="46" rx="8" fill="#fff" stroke="#bbe3c8"/>
+          <text x="85" y="179" text-anchor="middle" fill="#15803d" font-weight="700">I1 · infrastructure</text>
+          <text x="85" y="195" text-anchor="middle" fill="#3d3f46">sims · SITL · Jetson · bench</text></a>
+        <a href="#impl-i2" data-open="impl-i2" aria-label="I2: baseline reproduction ending in a tethered flight">
+          <rect x="184" y="160" width="150" height="46" rx="8" fill="#fff" stroke="#bbe3c8"/>
+          <text x="259" y="179" text-anchor="middle" fill="#15803d" font-weight="700">I2 · baseline</text>
+          <text x="259" y="195" text-anchor="middle" fill="#3d3f46">→ tethered flight (wk 6)</text></a>
+        <a href="#impl-i3" data-open="impl-i3" aria-label="I3: pilot experiment on the selected gap">
+          <rect x="358" y="160" width="150" height="46" rx="8" fill="#fff" stroke="#bbe3c8"/>
+          <text x="433" y="179" text-anchor="middle" fill="#15803d" font-weight="700">I3 · pilot</text>
+          <text x="433" y="195" text-anchor="middle" fill="#3d3f46">after Gate 2 · one variable</text></a>
+        <line x1="160" y1="183" x2="180" y2="183" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="334" y1="183" x2="354" y2="183" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <line x1="572" y1="94" x2="486" y2="156" stroke="#b45309" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#wfa)"/>
+        <text x="560" y="132" fill="#b45309" font-size="10">Gate 2 selects the pilot</text>
+
+        <!-- registry hub -->
+        <a href="#data" data-open="data" aria-label="The registry: seven JSON files, the single source of truth">
+          <rect x="606" y="150" width="244" height="66" rx="10" fill="#eef0fe" stroke="#4f46e5" stroke-width="1.6"/>
+          <text x="728" y="176" text-anchor="middle" fill="#4f46e5" font-weight="700" font-size="13">THE REGISTRY</text>
+          <text x="728" y="194" text-anchor="middle" fill="#3d3f46" font-size="10.5">papers · methods · pipelines · gaps ·</text>
+          <text x="728" y="207" text-anchor="middle" fill="#3d3f46" font-size="10.5">hardware · candidates · experiments</text></a>
+        <line x1="456" y1="94" x2="700" y2="146" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <text x="586" y="118" fill="#71737c" font-size="10">S6 merges · single writer</text>
+        <line x1="508" y1="192" x2="602" y2="188" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#wfa)"/>
+        <text x="536" y="180" fill="#71737c" font-size="10">results</text>
+
+        <!-- views row -->
+        <text x="10" y="266" fill="#71737c" font-size="10" font-weight="700" letter-spacing="1">GENERATED VIEWS · never hand-edited</text>
+        <a href="#principle" data-open="principle" aria-label="Generated view: the Obsidian vault">
+          <rect x="10" y="280" width="190" height="42" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="105" y="298" text-anchor="middle" fill="#3d3f46" font-weight="600">Obsidian vault</text>
+          <text x="105" y="313" text-anchor="middle" fill="#71737c" font-size="10">reading · thinking</text></a>
+        <a href="#principle" data-open="principle" aria-label="Generated view: the React dashboard">
+          <rect x="224" y="280" width="190" height="42" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="319" y="298" text-anchor="middle" fill="#3d3f46" font-weight="600">React dashboard</text>
+          <text x="319" y="313" text-anchor="middle" fill="#71737c" font-size="10">presenting · S8</text></a>
+        <a href="index.html" aria-label="Generated view: this reading platform">
+          <rect x="438" y="280" width="190" height="42" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="533" y="298" text-anchor="middle" fill="#3d3f46" font-weight="600">This platform</text>
+          <text x="533" y="313" text-anchor="middle" fill="#71737c" font-size="10">learning · verified</text></a>
+        <a href="#stage-s9" data-open="stage-s9" aria-label="Generated view: the transfer report">
+          <rect x="652" y="280" width="198" height="42" rx="8" fill="#fff" stroke="#d8d8de"/>
+          <text x="751" y="298" text-anchor="middle" fill="#3d3f46" font-weight="600">Transfer report</text>
+          <text x="751" y="313" text-anchor="middle" fill="#71737c" font-size="10">writing · Gate 3</text></a>
+        <line x1="680" y1="216" x2="140" y2="276" stroke="#9b9da6" stroke-width="1.2" marker-end="url(#wfa)"/>
+        <line x1="700" y1="216" x2="340" y2="276" stroke="#9b9da6" stroke-width="1.2" marker-end="url(#wfa)"/>
+        <line x1="728" y1="216" x2="545" y2="276" stroke="#9b9da6" stroke-width="1.2" marker-end="url(#wfa)"/>
+        <line x1="760" y1="216" x2="751" y2="276" stroke="#9b9da6" stroke-width="1.2" marker-end="url(#wfa)"/>
+        <text x="440" y="352" text-anchor="middle" fill="#71737c" font-size="10">edit the registry, regenerate the views — nothing is written twice</text>
+      </g>
+    </svg>
+    <figcaption><b>The system in one map.</b> Every block is a link to the card that explains it; the strip and
+      timeline below zoom into each track. Drawn on a constant light plate for both themes.</figcaption>
+  </figure>
 
   <!-- ============ PRINCIPLE ============ -->
   <h2 class="section-label" id="principle">One registry, many views <span class="src">docs/phd-architecture.md §1–§2</span></h2>
@@ -78,15 +217,15 @@
         <defs><marker id="pfa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M0,0 L10,5 L0,10 z" fill="#9b9da6"/></marker></defs>
         <g>
-          <rect x="8"   y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="41"  y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S1</text><text x="41"  y="78" text-anchor="middle" fill="#3d3f46">Discover</text>
-          <rect x="90"  y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="123" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S2</text><text x="123" y="78" text-anchor="middle" fill="#3d3f46">Triage</text>
-          <rect x="172" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="205" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S3</text><text x="205" y="78" text-anchor="middle" fill="#3d3f46">Acquire</text>
-          <rect x="254" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="287" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S4</text><text x="287" y="78" text-anchor="middle" fill="#3d3f46">Extract</text>
-          <rect x="336" y="42" width="72" height="48" rx="7" fill="#eef0fe" stroke="#4f46e5" stroke-width="1.5"/><text x="372" y="61" text-anchor="middle" fill="#4f46e5" font-weight="700">S5</text><text x="372" y="76" text-anchor="middle" fill="#3d3f46">Verify</text>
-          <rect x="424" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="457" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S6</text><text x="457" y="78" text-anchor="middle" fill="#3d3f46">Integrate</text>
-          <rect x="506" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="539" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S7</text><text x="539" y="78" text-anchor="middle" fill="#3d3f46">Analyse</text>
-          <rect x="588" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="621" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S8</text><text x="621" y="78" text-anchor="middle" fill="#3d3f46">Render</text>
-          <rect x="670" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="703" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S9</text><text x="703" y="78" text-anchor="middle" fill="#3d3f46">Write</text>
+          <a href="#stage-s1" data-open="stage-s1"><rect x="8"   y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="41"  y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S1</text><text x="41"  y="78" text-anchor="middle" fill="#3d3f46">Discover</text></a>
+          <a href="#stage-s2" data-open="stage-s2"><rect x="90"  y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="123" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S2</text><text x="123" y="78" text-anchor="middle" fill="#3d3f46">Triage</text></a>
+          <a href="#stage-s3" data-open="stage-s3"><rect x="172" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="205" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S3</text><text x="205" y="78" text-anchor="middle" fill="#3d3f46">Acquire</text></a>
+          <a href="#stage-s4" data-open="stage-s4"><rect x="254" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="287" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S4</text><text x="287" y="78" text-anchor="middle" fill="#3d3f46">Extract</text></a>
+          <a href="#stage-s5" data-open="stage-s5"><rect x="336" y="42" width="72" height="48" rx="7" fill="#eef0fe" stroke="#4f46e5" stroke-width="1.5"/><text x="372" y="61" text-anchor="middle" fill="#4f46e5" font-weight="700">S5</text><text x="372" y="76" text-anchor="middle" fill="#3d3f46">Verify</text></a>
+          <a href="#stage-s6" data-open="stage-s6"><rect x="424" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="457" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S6</text><text x="457" y="78" text-anchor="middle" fill="#3d3f46">Integrate</text></a>
+          <a href="#stage-s7" data-open="stage-s7"><rect x="506" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="539" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S7</text><text x="539" y="78" text-anchor="middle" fill="#3d3f46">Analyse</text></a>
+          <a href="#stage-s8" data-open="stage-s8"><rect x="588" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="621" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S8</text><text x="621" y="78" text-anchor="middle" fill="#3d3f46">Render</text></a>
+          <a href="#stage-s9" data-open="stage-s9"><rect x="670" y="46" width="66" height="40" rx="7" fill="#fff" stroke="#d8d8de"/><text x="703" y="63" text-anchor="middle" fill="#4f46e5" font-weight="700">S9</text><text x="703" y="78" text-anchor="middle" fill="#3d3f46">Write</text></a>
           <line x1="74"  y1="66" x2="86"  y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
           <line x1="156" y1="66" x2="168" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
           <line x1="238" y1="66" x2="250" y2="66" stroke="#9b9da6" stroke-width="1.3" marker-end="url(#pfa)"/>
@@ -106,14 +245,14 @@
     <figcaption><b>The pipeline at a glance.</b> Amber flags are the three human gates no agent may pass. Drawn on a constant light plate; details per stage in the cards below.</figcaption>
   </figure>
 
-  <details class="x-card"><summary><span class="xc-key">S1</span><span class="xc-title">Discover</span><span class="xc-hint">Claude Code + NotebookLM</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s1"><summary><span class="xc-key">S1</span><span class="xc-title">Discover</span><span class="xc-hint">Claude Code + NotebookLM</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><dl class="kv">
       <dt>Input</dt><dd>The literature-review brief: 2022 onwards, zero-shot focus, drones first.</dd>
       <dt>Process</dt><dd>Search arXiv, Semantic Scholar, Google Scholar and venue proceedings; NotebookLM source discovery in parallel; snowball from reference lists of anchor papers.</dd>
       <dt>Output</dt><dd>~100–120 rows in candidates.json with one-line relevance notes.</dd>
       <dt>Failure path</dt><dd>Too few drone-specific hits in a category → widen to adjacent platforms and flag the thinness as a finding.</dd>
     </dl></div></details>
-  <details class="x-card"><summary><span class="xc-key">S2</span><span class="xc-title">Triage</span><span class="xc-hint">fixed 0–100 rubric · ends at Gate 1</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s2"><summary><span class="xc-key">S2</span><span class="xc-title">Triage</span><span class="xc-hint">fixed 0–100 rubric · ends at Gate 1</span><span class="xc-caret">›</span></summary>
     <div class="xc-body">
       <blockquote>"Recency: 2025 to 26 = 25, 2024 = 20, 2023 = 12, 2022 = 6 · Real-hardware evidence: strong = 25,
       moderate = 15, weak = 5, none = 0 · Zero-shot status: zero = 20, semi = 12, no = 0 · Venue tier and
@@ -121,18 +260,18 @@
       <span class="q-src">docs/phd-pipeline.md, section 2, S2 (formatting condensed)</span></blockquote>
       <dl class="kv"><dt>Output</dt><dd>Ranked list: top ~50 proposed, next 15 held as reserves.</dd>
       <dt>Gate 1</dt><dd>"approve, veto, or swap papers. Vetoes recorded with reason." — the human decision no agent may take.</dd></dl></div></details>
-  <details class="x-card"><summary><span class="xc-key">S3</span><span class="xc-title">Acquire</span><span class="xc-hint">filename = paper id everywhere</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s3"><summary><span class="xc-key">S3</span><span class="xc-title">Acquire</span><span class="xc-hint">filename = paper id everywhere</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><dl class="kv">
       <dt>Process</dt><dd>Download PDFs to docs/literature/pdfs/{paper-id}.pdf; upload the identical set to one NotebookLM notebook. The repo, NotebookLM, registry, vault and webapp all join on the paper id.</dd>
       <dt>Failure path</dt><dd>Paywalled → arXiv version, author page, lab page. Still nothing → mark unavailable, promote the top reserve, log the swap. Credentials are never stored anywhere.</dd>
     </dl></div></details>
-  <details class="x-card"><summary><span class="xc-key">S4</span><span class="xc-title">Extract</span><span class="xc-hint">batches of 5, parallel, strict schema</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s4"><summary><span class="xc-key">S4</span><span class="xc-title">Extract</span><span class="xc-hint">batches of 5, parallel, strict schema</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><dl class="kv">
       <dt>Process</dt><dd>One extractor agent per paper, five in parallel. Full schema entry per paper plus a pipeline stage array with provisional method tags.</dd>
       <dt>Rule</dt><dd>"not stated" over guessing; every quantitative claim carries a page or section reference in a provenance field.</dd>
       <dt>Failure path</dt><dd>Scanned or unreadable PDF → OCR pass; still failing → quarantine with reason.</dd>
     </dl></div></details>
-  <details class="x-card"><summary><span class="xc-key">S5</span><span class="xc-title">Verify · the anti-hallucination gate</span><span class="xc-hint">five fixed questions</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s5"><summary><span class="xc-key">S5</span><span class="xc-title">Verify · the anti-hallucination gate</span><span class="xc-hint">five fixed questions</span><span class="xc-caret">›</span></summary>
     <div class="xc-body">
       <p>For each extracted paper, NotebookLM answers five fixed questions grounded only in that PDF —
       platform/hardware, zero-shot status, methods used, headline result, stated limitations — and the answers
@@ -141,21 +280,21 @@
       <blockquote>"Why it works: two independent models reading the same PDF rarely hallucinate the same fact.
       Agreement is strong evidence; disagreement is a flag, cheap to check."
       <span class="q-src">docs/phd-pipeline.md, section 2, S5</span></blockquote></div></details>
-  <details class="x-card"><summary><span class="xc-key">S6</span><span class="xc-title">Integrate</span><span class="xc-hint">single writer merges the batch</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s6"><summary><span class="xc-key">S6</span><span class="xc-title">Integrate</span><span class="xc-hint">single writer merges the batch</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><dl class="kv">
       <dt>Process</dt><dd>The registrar merges provisional method tags through the alias table, recomputes every usage count and trend, and validates that every pipeline stage references a registered method id.</dd>
       <dt>Failure path</dt><dd>Ambiguous method → decision logged in methods-decisions.md, applied consistently forever after.</dd>
     </dl></div></details>
-  <details class="x-card"><summary><span class="xc-key">S7</span><span class="xc-title">Analyse</span><span class="xc-hint">runs at ≥80% integrated · ends at Gate 2</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s7"><summary><span class="xc-key">S7</span><span class="xc-title">Analyse</span><span class="xc-hint">runs at ≥80% integrated · ends at Gate 2</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><dl class="kv">
       <dt>Process</dt><dd>Methods split into essential (count ≥ 8), common (3–7), rare (1–2); per-method synthesis notes; limitations pooled and clustered with recurrence counts; hardware-feasibility and novelty filters applied.</dd>
       <dt>Output</dt><dd>Ranked shortlist of 3 gaps + 1 recommended direction, each with a minimum-viable pilot sketch. A gap without a 3-week-feasible pilot is demoted.</dd>
       <dt>Gate 2</dt><dd>The researcher picks the direction AND approves its pilot together.</dd>
     </dl></div></details>
-  <details class="x-card"><summary><span class="xc-key">S8</span><span class="xc-title">Render</span><span class="xc-hint">idempotent: run twice, same output</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s8"><summary><span class="xc-key">S8</span><span class="xc-title">Render</span><span class="xc-hint">idempotent: run twice, same output</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><p>Vault, knowledge graph and dashboard regenerate from the registry; Codex reviews
       generator changes; Antigravity runs the browser E2E checklist. Never hand-edit generated files.</p></div></details>
-  <details class="x-card"><summary><span class="xc-key">S9</span><span class="xc-title">Write</span><span class="xc-hint">ends at Gate 3</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="stage-s9"><summary><span class="xc-key">S9</span><span class="xc-title">Write</span><span class="xc-hint">ends at Gate 3</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><p>Report sections draft only from the registry and synthesis notes; every claim carries
       a paper id.</p>
       <blockquote>"every claim resolves to a verified paper; 10 random claims per section spot-checked against
@@ -269,18 +408,18 @@
   <h2 class="section-label" id="implementation">The implementation track · I1–I3 <span class="src">docs/phd-implementation.md</span></h2>
   <p class="section-sub">Runs in parallel with the literature track from week 1, so the transfer report contains
     real hardware evidence rather than only a survey.</p>
-  <details class="x-card"><summary><span class="xc-key">I1</span><span class="xc-title">Infrastructure bring-up</span><span class="xc-hint">weeks 1–3 · 8 acceptance-tested items</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="impl-i1"><summary><span class="xc-key">I1</span><span class="xc-title">Infrastructure bring-up</span><span class="xc-hint">weeks 1–3 · 8 acceptance-tested items</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><p>WSL2 + CUDA on the A4000, Isaac Lab, Aerial Gym, PX4 SITL + ROS 2 + XRCE-DDS,
       Jetson flash + TensorRT, Jetson–Pixhawk bridge, X500 bench bring-up (no props), logging conventions.
       Each item is done only when its acceptance test passes and the evidence is committed to
       experiments/logs/i1/.</p></div></details>
-  <details class="x-card"><summary><span class="xc-key">I2</span><span class="xc-title">Baseline reproduction</span><span class="xc-hint">weeks 3–6 · ends at a tethered flight</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="impl-i2"><summary><span class="xc-key">I2</span><span class="xc-title">Baseline reproduction</span><span class="xc-hint">weeks 3–6 · ends at a tethered flight</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><p>Reproduce one published zero-shot pipeline end to end — the designated candidate is
       <a href="papers/fly-seconds-2024.html">Learning to Fly in Seconds</a> (open code, tiny compute): train
       3 seeds, export ONNX → TensorRT with a numerical parity check, benchmark latency on the Orin Nano (the
       number every later method choice filters against), SITL, HITL, tethered flight. The tethered hover is the
       minimum Chapter 4 headline.</p></div></details>
-  <details class="x-card"><summary><span class="xc-key">I3</span><span class="xc-title">Pilot experiment</span><span class="xc-hint">weeks 7–9 · after Gate 2</span><span class="xc-caret">›</span></summary>
+  <details class="x-card" id="impl-i3"><summary><span class="xc-key">I3</span><span class="xc-title">Pilot experiment</span><span class="xc-hint">weeks 7–9 · after Gate 2</span><span class="xc-caret">›</span></summary>
     <div class="xc-body"><p>The minimum viable experiment on the selected gap: the I2 stack unchanged except the
       one novel component. One variable at a time; the comparison against the I2 baseline is the result. A
       negative pilot with a diagnosed cause is valid transfer evidence; a missing pilot is not.</p></div></details>
@@ -372,6 +511,28 @@
   </div>
 </footer>
 
+<script>
+/* press any diagram block -> jump to, open, and highlight the card that explains it */
+document.addEventListener("click", function (event) {
+  var link = event.target.closest("a[data-open]");
+  if (!link) return;
+  var id = link.getAttribute("data-open");
+  var target = document.getElementById(id);
+  if (!target) return;
+  event.preventDefault();
+  if (target.tagName.toLowerCase() === "details") {
+    target.open = true;
+    target.scrollIntoView({ block: "center" });
+    target.classList.add("flash");
+    setTimeout(function () { target.classList.remove("flash"); }, 1600);
+    var summary = target.querySelector("summary");
+    if (summary) summary.focus();
+  } else {
+    target.scrollIntoView({ block: "start" });
+  }
+  history.replaceState(null, "", "#" + id);
+});
+</script>
 <script src="assets/site.js"></script>
 <script src="assets/theme.js"></script>
 </body>
