@@ -73,6 +73,10 @@ Design rules that keep the site honest and consistent:
 
 ## Update protocol (run on EVERY tweak, in order)
 
+0. **The removal rule (standing):** nothing is removed from the site or docs without the owner's explicit
+   permission. Before ANY redesign or rewrite, diff against `docs/site-content-inventory.md`; every live
+   content unit must survive or carry recorded approval to go. Removals are named in the commit message.
+   Silent drops are defects.
 1. Edit the source of truth first: the relevant file in `docs/`. Never start with a generated view.
 2. If the change alters how the system works, record it as a design loop in docs/phd-architecture.md §0.
 3. Update `site/`: the page whose content changed. Consistency sweep: index status cards and method counts,
