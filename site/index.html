@@ -216,8 +216,25 @@
     <div class="mm-section" id="mmMathSec"><span class="mm-label">The mathematics · concept form, notation ours</span>
       <div id="mmMath" style="overflow-x:auto"></div></div>
     <div class="mm-section"><span class="mm-label">Evidence · member papers</span><ul id="mmMembers"></ul></div>
+    <div class="mm-section"><span class="mm-label">Try it yourself · open-source starting points</span>
+      <ul id="mmResources"></ul>
+      <p class="small" id="mmResNote" style="margin-top:.4rem"></p></div>
     <div class="mm-section"><span class="mm-label">Related methods</span><p id="mmRelated"></p></div>
     <div class="mm-section"><span class="mm-label">Count &amp; honesty</span><p id="mmCount"></p></div>
+  </div>
+</div>
+
+<div class="modal" id="nodeModal" role="dialog" aria-modal="true" aria-labelledby="nnTitle">
+  <div class="modal-card" style="max-width:26rem">
+    <button class="mm-close" id="nnClose" aria-label="Close">✕</button>
+    <span class="mm-id" id="nnType"></span>
+    <h3 id="nnTitle" style="padding-right:2rem"></h3>
+    <p class="small" id="nnInfo" style="margin-top:.35rem"></p>
+    <div class="mm-section"><span class="mm-label">Connections</span><p class="small" id="nnLinks"></p></div>
+    <div class="mm-section" style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <a class="chip-btn on" id="nnGo" href="#">Open →</a>
+      <button class="chip-btn" id="nnDismiss">Back to the graph</button>
+    </div>
   </div>
 </div>
 
@@ -393,6 +410,75 @@ const METHODS=[
  ["direct-motor-command-control","sensor-noise-modelling"]]
 ];
 
+/* ---- open-source starting points per method ----
+   Every URL below was existence-verified by live web search on 2026-07-07;
+   descriptions come from the repositories' own summaries. Methods without a
+   verified resource say so rather than link to anything unchecked. */
+const RESOURCES={
+"photorealistic-nerf-sim":[
+  ["nerfstudio","https://github.com/nerfstudio-project/nerfstudio","modular PyTorch NeRF framework with a real-time web viewer; capture your own scene and train a NeRF"],
+  ["nerfstudio docs","https://docs.nerf.studio/","installation and first-capture walkthrough"]],
+"custom-high-performance-simulator":[
+  ["arplaboratory/learning-to-fly","https://github.com/arplaboratory/learning-to-fly","the paper's own simulator + training code; ships a Docker image with a web interface (docker run -p 8000:8000 arpllab/learning_to_fly)"],
+  ["rl-tools/learning-to-fly","https://github.com/rl-tools/learning-to-fly","the RLtools variant of the same system — tiny, dependency-light C++"]],
+"differentiable-physics-learning":[
+  ["google/brax","https://github.com/google/brax","fully differentiable physics engine in JAX; four pipelines including MJX"],
+  ["google-deepmind/mujoco","https://github.com/google-deepmind/mujoco","MuJoCo with MJX, including a differentiable-physics tutorial notebook"]],
+"domain-randomization-dynamics":[
+  ["leggedrobotics/legged_gym","https://github.com/leggedrobotics/legged_gym","per its README: includes the sim-to-real components — friction & mass randomization, noisy observations, random pushes"],
+  ["NVIDIA Isaac Lab","https://github.com/isaac-sim/IsaacLab","GPU-parallel robot learning framework with built-in domain-randomization tooling; this project's training stack"]],
+"sensor-noise-modelling":[
+  ["leggedrobotics/legged_gym","https://github.com/leggedrobotics/legged_gym","noisy-observation training is one of its shipped sim-to-real components"],
+  ["NVIDIA Isaac Lab","https://github.com/isaac-sim/IsaacLab","multi-frequency sensor simulation is a core framework feature"]],
+"system-identification":[
+  ["leggedrobotics/legged_gym","https://github.com/leggedrobotics/legged_gym","its actuator network is a learned system-identification component, per the README"],
+  ["PX4 simulation docs","https://docs.px4.io/main/en/simulation/","the SITL/SIH stack this project identifies against"]],
+"meta-imitation-multi-platform":[
+  ["RMA paper (the adaptation lineage)","https://arxiv.org/abs/2107.04034","Rapid Motor Adaptation — the closest published ancestor of platform-inference policies"],
+  ["antonilo/rl_locomotion","https://github.com/antonilo/rl_locomotion","training code for RL locomotion policies in this lineage"]],
+"in-context-adaptation-recurrent":[
+  ["RMA paper","https://arxiv.org/abs/2107.04034","base policy + adaptation module, trained in sim, deployed without fine-tuning"],
+  ["antonilo/rl_locomotion","https://github.com/antonilo/rl_locomotion","companion training code"]],
+"teacher-student-distillation":[
+  ["Improbable-AI/walk-these-ways","https://github.com/Improbable-AI/walk-these-ways","MIT's implementation of Walk These Ways, built on legged_gym — a complete sim-to-real training repo in this family"],
+  ["antonilo/rl_locomotion","https://github.com/antonilo/rl_locomotion","RL locomotion training code in the privileged-teacher lineage"]],
+"curriculum-learning":[
+  ["arplaboratory/learning-to-fly","https://github.com/arplaboratory/learning-to-fly","the 18-second recipe including its curriculum, runnable end to end"],
+  ["CleanRL docs","https://docs.cleanrl.dev/","single-file RL baselines to build curricula on top of"]],
+"imitation-learning-sim":null,
+"end-to-end-rl":[
+  ["vwxyzjn/cleanrl","https://github.com/vwxyzjn/cleanrl","single-file, readable implementations of PPO and friends — the best first codebase to study"],
+  ["The 37 Implementation Details of PPO","https://iclr-blog-track.github.io/2022/03/25/ppo-implementation-details/","why PPO implementations differ; essential before reproducing any RL paper"],
+  ["MuJoCo Playground","https://github.com/google-deepmind/mujoco_playground","50+ GPU-accelerated environments for locomotion and manipulation with sim-to-real focus"]],
+"asymmetric-actor-critic":[
+  ["arplaboratory/learning-to-fly","https://github.com/arplaboratory/learning-to-fly","implements the asymmetric actor-critic this project will reproduce (I2 baseline)"],
+  ["vwxyzjn/cleanrl","https://github.com/vwxyzjn/cleanrl","clean PPO reference to graft a privileged critic onto"]],
+"tiny-policy-architecture":[
+  ["rl-tools/learning-to-fly","https://github.com/rl-tools/learning-to-fly","RLtools: dependency-light C++ RL built for tiny deployable policies"],
+  ["arplaboratory/learning-to-fly","https://github.com/arplaboratory/learning-to-fly","trains-in-seconds policies small enough for a Crazyflie MCU"]],
+"neural-pose-estimation-kalman":[
+  ["Kalman and Bayesian Filters in Python","https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python","the intuition-first Jupyter book on filtering — run every example in the browser"],
+  ["rlabbe/filterpy","https://github.com/rlabbe/filterpy","the companion library: KF, EKF, UKF, particle filters"]],
+"gate-segmentation-model-fusion":[
+  ["OpenCV pose-estimation tutorial","https://docs.opencv.org/4.13.0/d7/d53/tutorial_py_pose.html","hands-on PnP: recover camera pose from known 3D points"],
+  ["OpenCV solvePnP reference","https://docs.opencv.org/3.4/d5/d1f/calib3d_solvePnP.html","the algorithm family behind known-geometry pose recovery"]],
+"self-attention-sensor-fusion":[
+  ["The Illustrated Transformer","https://jalammar.github.io/illustrated-transformer/","Jay Alammar's visual walkthrough of attention — the canonical intuition builder"]],
+"direct-motor-command-control":[
+  ["bitcraze/crazyflie-lib-python","https://github.com/bitcraze/crazyflie-lib-python","Python API to command a real Crazyflie — the cheapest way to try motor-level control"],
+  ["arplaboratory/learning-to-fly","https://github.com/arplaboratory/learning-to-fly","direct-RPM policies deployed on the Crazyflie, code included"]],
+"microcontroller-deployment":[
+  ["rl-tools/learning-to-fly","https://github.com/rl-tools/learning-to-fly","the RLtools MCU deployment path"],
+  ["bitcraze/crazyflie-lib-python","https://github.com/bitcraze/crazyflie-lib-python","host-side tooling for the Crazyflie ecosystem"],
+  ["dusty-nv/jetson-inference","https://github.com/dusty-nv/jetson-inference","NVIDIA's Hello-AI-World guide to TensorRT inference on Jetson — this project's Orin Nano path"]],
+"sim-to-sim-validation":[
+  ["PX4 simulation docs","https://docs.px4.io/main/en/simulation/","SITL with Gazebo or the zero-dependency SIH — a ready second simulator"],
+  ["MuJoCo Playground","https://github.com/google-deepmind/mujoco_playground","an independent physics stack to cross-validate against"]],
+"hardware-in-the-loop":[
+  ["PX4 HITL documentation","https://docs.px4.io/main/en/simulation/hitl","run simulation firmware on the real flight controller — exactly this project's I2.5 rung"],
+  ["NVIDIA TensorRT","https://github.com/NVIDIA/TensorRT","the inference runtime whose latency the HIL stage benchmarks on the Orin"]],
+"latency-compensation":null
+};
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
 const byId={};METHODS.forEach(m=>byId[m[0]]=m);
 const grid=document.getElementById("methodGrid"), chips=document.getElementById("famChips");
@@ -426,6 +512,13 @@ function openMethod(m){
   else{mathSec.style.display="none";}
   document.getElementById("mmMembers").innerHTML=m[4].map(([p,fact])=>
     `<li><a href="${PAPERS[p][0]}">${PAPERS[p][1]}</a> — ${esc(fact)}</li>`).join("");
+  const res=RESOURCES[m[0]];
+  const resEl=document.getElementById("mmResources"),resNote=document.getElementById("mmResNote");
+  if(res){resEl.innerHTML=res.map(([label,url,note])=>
+      `<li><a href="${url}" target="_blank" rel="noopener">${esc(label)} ↗</a> — ${esc(note)}</li>`).join("");
+    resNote.textContent="Links existence-verified by live search on 7 July 2026; descriptions follow the projects' own summaries.";}
+  else{resEl.innerHTML="";
+    resNote.textContent="No verified open-source resource logged for this method yet — rather than guess a link, this fills in as the corpus grows (the LAW: nothing invented).";}
   document.getElementById("mmRelated").innerHTML=m[7].map(id=>
     `<a href="#" class="mm-rel" data-m="${id}"><code>${id}</code></a>`).join(" · ");
   document.getElementById("mmCount").textContent=
@@ -522,11 +615,43 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
   addEventListener("mouseup",()=>{drag=null;cv.classList.remove("grabbing");});
   cv.addEventListener("mouseleave",()=>{hover=null;wake();});
   addEventListener("resize",wake);
-  cv.addEventListener("click",()=>{if(!hover||drag)return;
-    if(hover.type==="paper")location.href=hover.href;
-    else if(hover.type==="method")openMethod(hover.m);
-    else{const chip=[...chips.querySelectorAll(".chip-btn")].find(b=>b.dataset.fam===hover.id.slice(2));
-      if(chip){chip.click();document.getElementById("methods").scrollIntoView();}}});
+  /* click any node -> info card first (scales as the graph grows); the card
+     offers the dedicated page / deep-dive as an explicit action */
+  const PAPER_INFO={
+    falcongym:"UIUC · IROS 2025 · zero-shot · 95.8% gate success over 30 real flights",
+    raptor:"NYU ARPL · 2026 · zero-shot · one 2,084-parameter policy, 10 real quadrotors",
+    monorace:"TU Delft MAVLab · 2026 · won A2RL 2025 vs 3 human world champions (verified)",
+    e2efly:"SJTU · 2026 · integrated training-to-deployment system, 6 real tasks",
+    flysec:"NYU ARPL · RA-L 2024 · 18-second training, MCU deployment · designated I2 baseline"};
+  const nodeModal=document.getElementById("nodeModal");
+  function closeNode(){nodeModal.classList.remove("open");back.classList.remove("open");}
+  function openNode(n){
+    const t=document.getElementById("nnType"),ti=document.getElementById("nnTitle"),
+          inf=document.getElementById("nnInfo"),lk=document.getElementById("nnLinks"),
+          go=document.getElementById("nnGo");
+    const neigh=[...adj[n.id]].map(id=>byNode[id].label);
+    lk.textContent=neigh.slice(0,6).join(" · ")+(neigh.length>6?" · +"+(neigh.length-6)+" more":"");
+    if(n.type==="paper"){t.textContent="annotated paper";ti.textContent=n.label;
+      inf.textContent=PAPER_INFO[n.id.slice(2)]||"";go.textContent="Open the annotated page →";
+      go.onclick=null;go.href=n.href;}
+    else if(n.type==="method"){t.textContent="method · "+FAMS[n.m[1]];ti.textContent=n.m[2];
+      inf.textContent=n.m[3];go.textContent="Open the deep-dive →";go.href="#methods";
+      go.onclick=e=>{e.preventDefault();closeNode();openMethod(n.m);};}
+    else{const fam=n.id.slice(2),nM=METHODS.filter(m=>m[1]===fam).length;
+      t.textContent="method family";ti.textContent=n.label;
+      inf.textContent=nM+" methods in this family; counts grow with every extraction batch.";
+      go.textContent="Filter the registry →";go.href="#methods";
+      go.onclick=e=>{e.preventDefault();closeNode();
+        const chip=[...chips.querySelectorAll(".chip-btn")].find(b=>b.dataset.fam===fam);
+        if(chip){chip.click();}document.getElementById("methods").scrollIntoView();};}
+    back.classList.add("open");nodeModal.classList.add("open");
+    document.getElementById("nnClose").focus();
+  }
+  document.getElementById("nnClose").addEventListener("click",closeNode);
+  document.getElementById("nnDismiss").addEventListener("click",closeNode);
+  back.addEventListener("click",closeNode);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeNode();});
+  cv.addEventListener("click",()=>{if(!hover||drag)return;openNode(hover);});
 })();
 </script>
 <script src="assets/site.js"></script>

@@ -34,7 +34,7 @@ remains the registry-driven data dashboard, built at S8.
 
 | Page | Contents |
 |---|---|
-| `site/index.html` | overview + clickable status cards, annotated-paper card grid (built for 70), the knowledge graph (Obsidian view: papers↔methods↔families, click-through both ways), method registry as clickable cards opening DEEP-DIVE modals (what/intuition/mathematics/evidence/related), navigation-map figure, footer site map |
+| `site/index.html` | overview + clickable status cards, annotated-paper card grid (built for 70), the knowledge graph (Obsidian view; clicking ANY node opens an info card with an open-page action, so it scales as papers grow), method registry as clickable cards opening DEEP-DIVE modals (what / intuition / mathematics / evidence / related / try-it-yourself open-source links, every URL existence-verified by live search, dated), navigation-map figure, footer site map |
 | `site/system.html` | how the platform is produced: tool lanes, pipeline-flow figure + S1-S9 expanding cards, scoring rubric, counting + categorization rules, 8 agents, registry schemas, I1-I3, two-track timeline figure, the verification LAW — with docs/ quoted verbatim |
 | `site/corpus.html` | ranked candidates, per-paper score breakdown (R+H+Z+V+A), strength signals, platform/source/year filters + search |
 | `site/papers/falcongym-2025.html` | annotated paper 01 · NeRF sim, NPE + Kalman, attention fusion |
