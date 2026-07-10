@@ -1,64 +1,100 @@
 # PhD Zero-Shot UAV
 
-MPhil to PhD transfer: pipeline specs, candidate corpus, and the reading platform.
+MPhil → PhD transfer, Robotics, City, University of London. Topic: simulation-trained UAV control policies
+deployed zero-shot (or semi-zero-shot) on real hardware, drones first, designed to extend to arms and ground
+robots. This repository holds the pipeline specifications, the candidate corpus, the verification records, and
+the public reading platform they generate.
+
+**The law of this project: everything published is quoted or verified; nothing is invented. Unverified items
+are labelled, never hidden.**
+
+## Status · 10 July 2026
+
+| What | State |
+|---|---|
+| Candidate corpus | 70 papers seeded, scored against the fixed rubric; **awaiting Gate 1** (human corpus lock) |
+| Extracted & annotated | 5 papers, each with its own site page (figures, math, provenance) |
+| S5 verification | **Batch 1 passed** — NotebookLM cross-check, per-paper isolation; record in `docs/s5-notebooklm-2026-07-10.md`; 3 material corrections applied and visible on the pages |
+| Method registry | 22 canonical methods in 9 families; counts recomputed from full-text evidence (DR 4/5, latency handling 4/5) |
+| NotebookLM notebook | Live (notebook `d336f22d`, 5 full-text sources) — the standing S5 instrument; add each batch's papers on arrival |
+| Implementation track (I1–I3) | **Not started** — the 12-week clock has no start date yet |
 
 ## Repository structure
 
 ```
-docs/       pipeline specifications + corpus files (reading order below)
-site/       the website: an academic self-learning reading platform
-  index.html          overview, reading list, method registry, programme
-  corpus.html         ranked candidates with transparent scoring + filters
-  papers/{id}.html    one full annotated page per extracted paper
-                      (math via KaTeX, SVG figures, provenance notes)
-  assets/             site.css (design system) + site.js (no framework)
-archive/    superseded artefacts (transfer-hub-v1.html, the old dashboard hub)
+docs/                         the source of truth (reading order below)
+  phd-architecture.md         the environment: registry principle, tool lanes,
+                              repo layout, CLAUDE.md, dashboard spec, hardware map,
+                              design-loop history (§0)
+  phd-pipeline.md             the machine: S1-S9 stage contracts, paper state
+                              machine, method merge rules, 12-week programme,
+                              provenance chain
+  phd-implementation.md       the hardware track: I1-I3 with acceptance tests,
+                              experiments.json schema, flight ladder, risk register,
+                              statistics standards
+  phd-agents.md               eight agent definitions, orchestration protocol,
+                              single-writer rule
+  phd-transfer-report.md      the paper contract: examiner questions, chapter
+                              budgets, argument spine, RQ/kill-condition rules,
+                              pre-submission checklist, mock viva bank
+  sim2real-litreview-command.md   the task brief (~50 papers, 2022+, frequency
+                              counting, pilot sketch per shortlisted gap)
+  corpus-candidates.md        ranked triage list from the deep-research sweep
+  corpus-acquisition.md       standalone 70-paper download manifest: links, rubric
+                              point breakdowns, strength signals, citation-fetch
+                              instructions, lab-sweep directives — hand it to any
+                              module and it can run acquisition alone
+  s5-notebooklm-2026-07-10.md batch-1 verification record: quotes, verdicts,
+                              corrections, registry actions
+site/                         the reading platform (static, framework-free,
+                              light + dark themes, GitHub-Pages ready)
+archive/                      superseded artefacts (transfer-hub-v1.html)
 ```
 
-Tech note: the site is deliberately static, framework-free HTML/CSS/JS
-(Crimson Pro + Atkinson Hyperlegible, KaTeX for math) so it serves from
-GitHub Pages with zero build. The React app in phd-architecture.md section 6
-remains the registry-driven data dashboard, built at S8.
+## The reading platform (site/)
 
-## Files and reading order
-
-1. `docs/phd-architecture.md`  The environment: repo structure, CLAUDE.md content, tool lanes (Claude Code, NotebookLM, Understand-Anything, Codex, Antigravity), registry-as-single-source-of-truth, React dashboard spec, hardware map.
-2. `docs/phd-pipeline.md`  The machine: paper state machine, nine stage contracts S1 to S9, NotebookLM verification gate, method merge rules, weekly cadence with the full 12-week programme, provenance chain.
-3. `docs/phd-implementation.md`  The hardware track: phases I1 to I3 (infrastructure, baseline reproduction, pilot experiment) running in parallel from week 1, experiment state machine and experiments.json schema, flight-safety ladder, risk register, statistics standards.
-4. `docs/phd-agents.md`  The workers: eight agent definitions ready for `.claude/agents/`, orchestration protocol, single-writer rule, parallel extraction.
-5. `docs/phd-transfer-report.md`  The paper: what examiners assess, chapter structure with word budgets, the argument spine, RQ/hypothesis/kill-condition rules, evidence standards, pre-submission checklist, mock viva bank, writing workflow.
-6. `docs/sim2real-litreview-command.md`  The task brief: ~50 papers, 2022 onwards, zero-shot focus, method frequency counting, per-paper pipelines, pilot sketch per shortlisted gap, Obsidian vault output.
-7. `docs/corpus-candidates.md`  Seed candidate list from the 2026-07-07 deep-research sweep, ranked with rubric scores and per-paper verification status. Feeds candidates.json at Phase 1.
-8. `docs/corpus-acquisition.md`  Standalone download manifest (70 papers): direct links, per-paper point breakdown (R+H+Z+V+A) and citation column (filled at S2 via Semantic Scholar), institutional additions (MIT, Stanford, CMU, Berkeley, DeepMind), Chinese-institution block (SJTU, Shanghai AI Lab, Tsinghua, Qi Zhi, Fudan incl. 2026 entries), fresh-2026 block, lab-sweep directives (incl. Tel Aviv/Technion, Chinese 2026 and UK labs), and step-by-step instructions so any module or session can run the acquisition alone.
-## Site map (canonical copy)
+Tech: semantic HTML + one stylesheet + vanilla JS. Space Grotesk / Inter / JetBrains Mono; KaTeX for
+mathematics; hand-drawn SVG figures on a constant light plate so they read in both themes. No build step:
+enable GitHub Pages (Settings → Pages → main) and it serves as-is.
 
 | Page | Contents |
 |---|---|
-| `site/index.html` | overview + clickable status cards, annotated-paper card grid (built for 70), the knowledge graph (Obsidian view; clicking ANY node opens an info card with an open-page action, so it scales as papers grow), method registry as clickable cards opening DEEP-DIVE modals (what / intuition / mathematics / evidence / related / try-it-yourself open-source links, every URL existence-verified by live search, dated), navigation-map figure, footer site map |
-| `site/system.html` | how the platform is produced: tool lanes, pipeline-flow figure + S1-S9 expanding cards, scoring rubric, counting + categorization rules, 8 agents, registry schemas, I1-I3, two-track timeline figure, the verification LAW — with docs/ quoted verbatim |
-| `site/corpus.html` | ranked candidates, per-paper score breakdown (R+H+Z+V+A), strength signals, platform/source/year filters + search |
-| `site/papers/falcongym-2025.html` | annotated paper 01 · NeRF sim, NPE + Kalman, attention fusion |
-| `site/papers/raptor-2026.html` | annotated paper 02 · meta-imitation, 2,084-param recurrent student |
-| `site/papers/monorace-2026.html` | annotated paper 03 · monocular racing, A2RL champion (verified) |
-| `site/papers/e2e-fly-2026.html` | annotated paper 04 · integrated training-to-deployment system |
-| `site/papers/fly-seconds-2024.html` | annotated paper 05 · asymmetric actor-critic, designated I2 baseline |
+| `site/index.html` | status cards · annotated-paper card grid (built for 70; only extracted papers get pages) · **knowledge graph** (Obsidian view: papers↔methods↔families; hover shows an on-canvas brief with connections; click opens an info card with the page/deep-dive action) · **method registry** as clickable cards opening deep-dive modals (what · intuition · mathematics "notation ours" · S5-verified evidence quotes · related methods · try-it-yourself open-source links, every URL existence-verified and dated) · navigation-map figure · footer site map |
+| `site/system.html` | **the whole system in one clickable map** (two tracks, three gates, registry hub, generated views — press any block to open the card that explains it) · S1–S9 stage cards with verbatim quotes · scoring rubric · method counting & categorization rules · 8 agent cards · registry schemas · I1–I3 · two-track 12-week timeline · the verification law |
+| `site/corpus.html` | 40 ranked candidates with per-paper R+H+Z+V+A breakdowns, strength signals, platform/source/year filters + search; annotated papers linked |
+| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, **author-stated limitations (S5-verified)**, relevance to this PhD, provenance status, BibTeX, prev/next. The five: `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024` |
 
-Every paper page carries: TL;DR, problem, pipeline figure, the mathematics
-(reconstructed concept forms are labelled "notation ours"), results, stated
-limitations, relevance to this PhD, provenance status, BibTeX, prev/next.
+Design rules that keep the site honest and consistent:
+- Every fact card carries a `.src` source chip naming its file or record; statuses are
+  `web-verified` / `web-found` / `to confirm` / `S4-lite` / `S5 verified`, never hidden.
+- Reconstructed equations are labelled "notation ours"; our explanations are labelled ours.
+- One master map per page plus zoom figures — never competing big diagrams.
+- Figures sit on a constant light plate; no always-on animation loops (the graph physics sleeps when idle).
 
 ## Update protocol (run on EVERY tweak, in order)
 
 1. Edit the source of truth first: the relevant file in `docs/`. Never start with a generated view.
-2. If the change alters how the system works, record it as a new design loop in docs/phd-architecture.md section 0.
-3. Update `site/`: the page whose content changed. Consistency sweep: the stats strip and method counts on index.html, the corpus table on corpus.html, and the "updated" date in page footers must all agree with docs/.
-4. Update this README (structure, site map, reading order) if pages or files changed.
+2. If the change alters how the system works, record it as a design loop in docs/phd-architecture.md §0.
+3. Update `site/`: the page whose content changed. Consistency sweep: index status cards and method counts,
+   corpus table, page footers' dates — all must agree with docs/.
+4. Update this README (status table, structure, site map) if pages, files or standing facts changed.
 5. Update the Claude memory (`phd-transfer-pipeline`) if standing facts changed.
-6. Commit and push (GitHub Pages redeploys the site automatically once enabled).
+6. Commit and push (GitHub Pages redeploys automatically once enabled).
+
+## Verification (S5) — how to run a batch
+
+The NotebookLM notebook (`d336f22d`, account rutaul41@gmail.com) is the standing second reader. Per batch:
+add each paper's full text as a source (arXiv HTML URL, or the PDF at acquisition); select ONLY that paper's
+source; ask the five standard questions from docs/phd-pipeline.md S5, requesting verbatim quotes; record
+answers and verdicts in a dated `docs/s5-*.md` file; apply corrections to the site visibly ("a near-match on
+numbers is a mismatch"); delete the notebook chat between papers to keep sessions clean.
 
 ## Paper access (S3 acquire)
 
-Never store university credentials in this repo or any file. Most of the corpus is open-access on arXiv. For the few paywalled PDFs: log in to the institutional proxy in Chrome yourself, then let Claude drive the already-authenticated browser via the Chrome extension (same pattern as the Aula downloads). Credentials stay in the browser; the repo only ever holds the PDFs you are licensed to keep.
+Never store university credentials in this repo or any file. Most of the corpus is open-access on arXiv. For
+paywalled PDFs: log in to the institutional proxy in Chrome yourself, then let the assistant drive the
+already-authenticated browser. Credentials stay in the browser; the repo only holds PDFs you are licensed to
+keep — and `*.pdf` is gitignored because this repository is public.
 
 ## Phase 0 prompt (paste into Claude Code from the repo root)
 
@@ -81,7 +117,9 @@ docs/phd-transfer-report.md in full. Then execute Phase 0:
 5. Initialise empty registry files: papers.json, methods.json,
    pipelines.json, gaps.json, hardware-map.json (seed hardware-map
    from phd-architecture.md section 7), candidates.json,
-   experiments.json.
+   experiments.json. Seed candidates.json from
+   docs/corpus-acquisition.md and papers/methods from the five
+   S4-lite extractions + docs/s5-notebooklm-2026-07-10.md.
 6. Create reports/transfer-report/risk-register.md seeded from
    phd-implementation.md section 7.
 7. Do NOT start the literature search yet. Report what was created
@@ -102,3 +140,9 @@ top to bottom and committing evidence to experiments/logs/i1/.
 
 /plugin marketplace add Egonex-AI/Understand-Anything
 /plugin install understand-anything
+
+## Tool lanes (who does what)
+
+Claude Code orchestrates and owns the registry · NotebookLM verifies (S5) · Codex CLI is the second engineer
+(mechanical multi-file edits and design consultation, diff-reviewed before commit) · Antigravity browser-tests
+the future React dashboard (S8) · Obsidian is the human reading layer. No tool crosses lanes.
