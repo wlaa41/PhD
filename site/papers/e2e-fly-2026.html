@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2604.12916" rel="noopener">arXiv:2604.12916</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 93 = 25+25+20+8+15</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 10 Jul 2026</span>
   </div>
 </div>
 
@@ -336,18 +336,23 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> none listed in the abstract; the limitations section awaits the
-          full-PDF extraction pass.</li>
-        <li><b>Not in the abstract:</b> numerical performance of any kind — until the full PDF is read, the
-          paper's evidence is breadth (six tasks, two platforms, one pipeline), not measured accuracy — and
-          the two platform models, which remain unspecified.</li>
-        <li><b>Our open questions</b> (marked as ours, to be checked against the full text): does the
-          differentiable-physics path survive regimes that are contact-free but aggressively high-drag, where
-          the dynamics are smooth in principle yet stiff and strongly velocity-coupled in practice — or does
-          training quietly fall back to the RL path there? And how much real flight data does the system
-          identification stage require — the answer decides whether the pipeline is genuinely near-zero-shot
-          for a new airframe or zero-shot only after a non-trivial identification campaign.</li>
+        <li><b>Stated by the authors (verified at S5, 10 Jul 2026, from the full text):</b> designing
+          "effective and smoothly differentiable reward functions" for long-horizon tasks is hard;
+          back-propagation through long sequences suffers "vanishing or exploding gradients"; gradient-based
+          optimization is prone to "convergence toward suboptimal behaviors"; BPTT is "highly sensitive" to
+          sparse rewards; and it "requires constructing a fully differentiable gradient chain", not always
+          feasible. The authors' stated future direction: combine RL (high-level exploration) with
+          differentiable simulation (precise refinement).</li>
+        <li><b>Verified detail the abstract lacked:</b> the two platforms are VIS-R (Radax X4 onboard computer,
+          Intel N100, RealSense D435i stereo camera) and VIS-H (hardware-in-the-loop, FPV camera to a ground
+          station), both on Betaflight STM32F7 flight controllers; BPTT converges in ~1,200&nbsp;s, "less than
+          30% of PPO's training time"; vision-based racing achieved a "100% success rate across three
+          racetracks"; the six tasks are hovering, tracking, landing, racing, visual landing, and racing in
+          cluttered environments.</li>
+        <li><b>Ours:</b> how much real flight data the system-identification stage needs remains the practical
+          question for a new airframe.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-10.md" rel="noopener">docs/s5-notebooklm-2026-07-10.md</a></p>
     </section>
 
     <section id="relevance">

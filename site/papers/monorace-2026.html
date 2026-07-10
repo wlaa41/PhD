@@ -308,16 +308,23 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Flagged by the authors:</b> camera interference and IMU saturation at the venue — presented in
-          the abstract as engineering hurdles the system successfully coped with, not as open failures. The
-          full limitations discussion awaits the full-PDF extraction pass.</li>
-        <li><b>Ours:</b> the estimator leans on a structured environment — gates of known geometry at known
-          positions. How the approach degrades on tracks without a published map, or in unstructured
-          environments generally, is untested here (and outside the paper's stated scope).</li>
-        <li><b>Ours:</b> the training regimen for the guidance-and-control network is not described in the
-          abstract, so the simulation-versus-real-data training split — the question this corpus most cares
-          about — is unknown until the full-PDF pass.</li>
+        <li><b>Stated by the authors (verified at S5, 10 Jul 2026, from the full text):</b> the decoupled
+          vision-and-control design requires significant reward shaping and assumes near-perfect state
+          estimation — the authors name end-to-end learning as the way forward; the pipeline is specialized
+          to rectangular gate geometry; the system cannot yet detect or avoid other drones (a collision
+          occurred during a multi-drone event); and racing-specific elements limit generalization to broader
+          applications.</li>
+        <li><b>Training question answered (was unknown from the abstract):</b> the policy was "trained in
+          simulation using reinforcement learning", "optimized via PPO to complete the track in minimal
+          time", with "extensive domain randomization" over all model parameters.</li>
+        <li><b>Hardware correction from the S5 pass:</b> the main processing unit is an NVIDIA Jetson
+          Orin&nbsp;NX onboard the 966&nbsp;g airframe, alongside an STM32H743 (480&nbsp;MHz) flight
+          controller — all compute is onboard the aircraft, but not solely on the flight controller as our
+          earlier wording implied. Fastest lap 16.56&nbsp;s; top speed 28.23&nbsp;m/s.</li>
+        <li><b>Ours:</b> known-geometry gates supply the estimator's anchor; unstructured environments remain
+          out of scope by design.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-10.md" rel="noopener">docs/s5-notebooklm-2026-07-10.md</a></p>
     </section>
 
     <section id="relevance">

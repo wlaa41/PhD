@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2509.11481" rel="noopener">arXiv:2509.11481</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 93 = 25+25+20+8+15</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 10 Jul 2026</span>
   </div>
 </div>
 
@@ -262,13 +262,20 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> none listed in the abstract; the limitations section awaits the
-          full-PDF extraction pass.</li>
-        <li><b>Our open questions</b> (marked as ours, to be checked against the full text): how aggressive can
-          the flight envelope get before a 2,084-parameter policy saturates? Does the platform distribution
-          cover payload changes mid-flight? How does it degrade outside \(p(\xi)\)'s support — e.g. a 5 kg
-          platform?</li>
+        <li><b>Stated by the authors (verified at S5, 10 Jul 2026, from the full text):</b> a significant part
+          of the remaining sim-to-real gap comes from flight-controller and infrastructure delays; the policy
+          relies heavily on linear-velocity observations for its implicit system identification; the domain
+          randomization range shows limits on out-of-distribution platforms (e.g. very high thrust-to-weight);
+          and tracking lacks trajectory lookahead.</li>
+        <li><b>Verified detail the abstract lacked:</b> figure-eight tracking RMSE 0.07–0.19&nbsp;m
+          (mean 0.11&nbsp;m); 5.5-s trajectory RMSE 0.17–0.29&nbsp;m (mean 0.20&nbsp;m); 10× context-window
+          extrapolation (50&nbsp;s stable flight from 5-s training sequences); the student is a GRU trained in
+          the L2F (Learning-to-Fly) simulator under a "very broad distribution over dynamics parameters" with
+          ancestral sampling of physically plausible platforms.</li>
+        <li><b>Our open questions</b> (ours): envelope aggressiveness before 2,084 parameters saturate; payload
+          changes mid-flight; behaviour far outside \(p(\xi)\)'s support.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-10.md" rel="noopener">docs/s5-notebooklm-2026-07-10.md</a></p>
     </section>
 
     <section id="relevance">

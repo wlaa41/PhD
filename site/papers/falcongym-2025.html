@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2503.02198" rel="noopener">arXiv:2503.02198</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 95 = 25+25+20+10+15</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 10 Jul 2026</span>
   </div>
 </div>
 
@@ -282,15 +282,21 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> none listed in the abstract; the limitations section awaits the
-          full-PDF extraction pass.</li>
-        <li><b>Our open questions</b> (marked as ours, to be checked against the full text): how much
-          capture effort — photographs, poses, fitting time — does a NeRF of each <em>new</em> environment
-          cost, and does that effort undercut the "unlimited data" advantage? How robust is the policy to
-          lighting that differs from the captured scene, since the radiance field freezes one illumination
-          condition into the training distribution? And does the recipe generalise beyond gate-relative
-          navigation, where the task conveniently supplies a well-defined visual anchor for the NPE?</li>
+        <li><b>Stated by the authors (verified at S5, 10 Jul 2026, from the full text):</b> performance can
+          degrade with visual domain gaps, communication delays, and mismatches between simulated and real
+          dynamics; future work names "Gaussian Splatting" as a faster rendering backend; generalization to
+          "unseen tracks"; moving beyond the double-integrator to "physics-based dynamics" for aggressive
+          manoeuvres; distilling perception and control to run "fully onboard"; and handling "motion blur"
+          in high-speed flight.</li>
+        <li><b>Material correction from the S5 pass:</b> perception and controller inference run on an
+          <em>offboard</em> workstation with an NVIDIA RTX 4090 over the same subnet (a stable 20&nbsp;Hz
+          control loop via ROS topics); onboard hardware is a Raspberry Pi 3 + Navio2 with an ArduCam
+          global-shutter camera. Running fully onboard is the authors' future work, not the demonstrated
+          system — our earlier relevance framing overstated this.</li>
+        <li><b>Our open questions</b> (ours): NeRF capture effort per new environment; robustness to lighting
+          that differs from the captured scene; generalization beyond gate-relative tasks.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-10.md" rel="noopener">docs/s5-notebooklm-2026-07-10.md</a></p>
     </section>
 
     <section id="relevance">

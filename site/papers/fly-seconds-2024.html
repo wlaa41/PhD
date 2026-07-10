@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2311.13081" rel="noopener">arXiv:2311.13081</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 92 = 20+25+20+12+15</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 10 Jul 2026</span>
     <span class="badge">designated I2 baseline</span>
   </div>
 </div>
@@ -280,15 +280,26 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> none listed in the abstract; the limitations section awaits the
-          full-PDF extraction pass.</li>
-        <li><b>Our open questions</b> (marked as ours, to be checked against the full text): validation in
-          the abstract is Crazyflie-only — does the recipe scale to 500&nbsp;g+ platforms with brushless
-          motors and ESCs, where the RPM interface is mediated by another controller? How do direct-RPM
-          policies cope with battery sag, which shifts the RPM-to-thrust map over a single flight? And the
-          zero-shot wording: the abstract claims sim-to-real transfer and deployment, but whether transfer
-          is strictly without any real-world fine-tuning is to be confirmed at S5.</li>
+        <li><b>Stated by the authors (verified at S5, 10 Jul 2026, from the full text):</b> the RL design
+          space remains sparsely explored ("curse of dimensionality"); training speed and controller
+          robustness are to be further optimised; automatic hyperparameter tuning is planned; adaptivity to
+          changing conditions such as "battery levels or wind" is future work, via "integral compensation" or
+          "meta-RL".</li>
+        <li><b>Wording correction from the S5 pass (the LAW at work):</b> the paper never uses the term
+          "zero-shot". It states the approach "directly transfers to real-world platforms even without domain
+          randomization" and calls the process "Sim2Real transfer" for "direct RPM control". Functionally a
+          no-fine-tuning transfer; our zero-shot tag now carries this note. Additionally, the full text
+          describes a replay buffer with scheduled exploration-noise decay — an <em>off-policy</em>
+          actor-critic, so our earlier PPO framing in section 3.1 is corrected: read that section's clipped
+          surrogate as generic policy-optimization background, not this paper's algorithm.</li>
+        <li><b>Verified transfer recipe detail:</b> action history in the actor observation against motor-delay
+          partial observability; rotor delay modelled as a first-order low-pass filter; observation noise for
+          sensor imperfections; random force/torque disturbances per episode. Flight results: up to
+          3&nbsp;m/s and 0.9&nbsp;g accelerations on the 27&nbsp;g Crazyflie; training on a 2020 MacBook Pro.</li>
+        <li><b>Our open questions</b> (ours): scaling beyond the Crazyflie to 500&nbsp;g+ brushless platforms;
+          battery sag shifting the RPM-to-thrust map.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-10.md" rel="noopener">docs/s5-notebooklm-2026-07-10.md</a></p>
     </section>
 
     <section id="relevance">

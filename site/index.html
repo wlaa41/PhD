@@ -80,7 +80,7 @@
   </div>
   <p class="small" style="margin-top:.8rem">Status of 7 July 2026 ·
     <span class="src">docs/corpus-acquisition.md</span>
-    <span class="src pending">extractions are first-pass; NotebookLM verification pending (S5)</span></p>
+    <span class="src">S5 NotebookLM cross-check passed 10 Jul 2026 · docs/s5-notebooklm-2026-07-10.md</span></p>
 
   <h2 class="section-label" id="papers">Annotated papers</h2>
   <p class="section-sub">
@@ -290,7 +290,8 @@ const METHODS=[
  ["imitation-learning-sim","neural-pose-estimation-kalman"]],
 ["custom-high-performance-simulator","sim","Custom high-throughput simulator",
  "A purpose-built fast dynamics simulator drives sample cost toward zero.",
- [["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"]],
+ [["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"],
+  ["raptor","trains its 1,000 teachers and student in the 'L2F simulator' (S5-verified quote)"]],
  "RL's real currency is wall-clock time per sample. If the simulator produces months of flight per second, algorithmic sample-efficiency stops being the bottleneck and iteration speed becomes the superpower.",
  null,["end-to-end-rl","curriculum-learning"]],
 ["differentiable-physics-learning","sim","Differentiable physics learning",
@@ -300,14 +301,18 @@ const METHODS=[
  "\\nabla_\\theta J=\\sum_t \\frac{\\partial J}{\\partial s_t}\\,\\frac{\\partial s_t}{\\partial \\theta},\\qquad s_{t+1}=f_\\psi(s_t,a_t)",
  ["end-to-end-rl","system-identification"]],
 ["domain-randomization-dynamics","rand","Domain randomization (dynamics)",
- "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution.",
- [["e2efly","lists domain randomization among its deployment methods"]],
+ "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution. The S5 pass grew this count from 1 to 4: the full papers use DR where their abstracts never said so.",
+ [["e2efly","'empirically validated domain-randomization parameters' (S5-verified)"],
+  ["monorace","'extensive domain randomization' over all model parameters (S5-verified)"],
+  ["raptor","a 'very broad distribution over dynamics parameters' — the paper's own wide-DR framing (S5-verified)"],
+  ["falcongym","'mild random noise into expert's control output' during training (S5-verified; merge judgement logged)"]],
  "You cannot model the real drone exactly — so stop trying to. Train across a cloud of plausible drones; if the cloud is wide enough, reality falls inside it and the policy has already seen something like it.",
  "\\max_\\theta\\;\\mathbb{E}_{\\xi\\sim p(\\xi)}\\big[J(\\theta;\\xi)\\big]",
  ["sensor-noise-modelling","meta-imitation-multi-platform","system-identification"]],
 ["sensor-noise-modelling","rand","Sensor noise modelling",
  "Inject empirically shaped sensor noise so perception in simulation degrades the way reality does.",
- [["e2efly","lists sensor noise modeling among its deployment methods"]],
+ [["e2efly","Gaussian noise on inverse depth + the 'Redwood depth noise model' (S5-verified)"],
+  ["flysec","observation noise 'to account for imperfections in the sensors' (S5-verified)"]],
  "Clean simulated sensors teach the policy to trust its inputs too much. Corrupt them the way real sensors are corrupted, and trusting-behaviour that would break in reality never gets learned.",
  "z_t = h(s_t)+\\varepsilon_t,\\qquad \\varepsilon_t\\sim\\hat{p}_{\\text{noise}}\\ \\text{(fit to real sensor logs)}",
  ["domain-randomization-dynamics","system-identification"]],
@@ -403,8 +408,11 @@ const METHODS=[
  "Integration faults — timing, units, message ordering, saturations — live between the software and the hardware, exactly where pure simulation cannot see. HIL runs the real electronics against simulated physics, catching those faults while a crash still costs nothing. This project's I2.5 rung.",
  null,["sim-to-sim-validation"]],
 ["latency-compensation","latency","Latency compensation",
- "Model or compensate the sensing-to-actuation delay explicitly.",
- [["e2efly","lists latency compensation among its deployment methods"]],
+ "Model or compensate the sensing-to-actuation delay explicitly. The S5 pass grew this count from 1 to 4: delay handling turns out to be near-universal in deployed systems.",
+ [["e2efly","'step-response alignment method' for communication and motor delays (S5-verified)"],
+  ["raptor","'overlaying a simple accelerometer integral... grounded through an exponential decay' against velocity-feedback delay (S5-verified)"],
+  ["monorace","temporal synchronization and delay compensation between camera and IMU (S5-verified)"],
+  ["flysec","action history in the observation + rotor delay as a first-order low-pass filter (S5-verified)"]],
  "By the time the policy acts on a measurement, the world has moved on by the loop delay d. A policy trained on instant feedback learns corrections that arrive too late and destabilize. Give it the delayed observation plus its own recent actions, and it can implicitly predict the present before acting.",
  "o_t=\\big(z_{t-d},\\,a_{t-d},\\dots,a_{t-1}\\big)",
  ["direct-motor-command-control","sensor-noise-modelling"]]
