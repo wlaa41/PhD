@@ -1,0 +1,144 @@
+\documentclass[11pt,a4paper]{article}
+
+% MPhil to PhD Transfer Application - Will (Walaa) Jamous
+% City St George's, University of London
+% Compile with pdflatex (works on Overleaf as-is)
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{ragged2e}
+
+\definecolor{cityblue}{HTML}{1F3864}
+\definecolor{citymid}{HTML}{2E5395}
+
+\titleformat{\section}{\large\bfseries\color{cityblue}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{citymid}}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gray} City St George's, University of London}
+\fancyhead[R]{\small\color{gray} MPhil to PhD Transfer Application}
+\fancyfoot[C]{\small\color{gray} Page \thepage}
+\renewcommand{\headrulewidth}{0.2pt}
+
+\setlist[itemize]{itemsep=2pt, topsep=4pt}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{cityblue} Application for Transfer of Registration\\[2pt] from MPhil to PhD}\\[8pt]
+  {\large\color{gray} Zero-Shot Deployment of Simulation-Trained UAV Control Policies}\\[6pt]
+  \rule{\textwidth}{0.8pt}
+\end{center}
+
+\section{Candidate Details}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{4.2cm}X@{}}
+  \toprule
+  Candidate & Will (Walaa) Jamous \\
+  Email & walaa.jamous@city.ac.uk \\
+  School & Engineering Department, School of Science and Technology, City St George's, University of London \\
+  Programme & MPhil/PhD, Robotics and Control (registered January 2026) \\
+  Supervisor & Dr Abdelhafid Zenati \\
+  Research area & Zero-shot deployment of simulation-trained control policies on real unmanned aerial vehicles (UAVs) \\
+  Date of application & 10 July 2026 \\
+  \bottomrule
+\end{tabularx}
+
+\section{Purpose}
+
+I am applying to transfer my registration from MPhil to PhD. This document sets out the research context, what I have already delivered, including a paper accepted at the IFAC World Congress 2026 and five further papers submitted or in preparation, the proposed programme with its milestones, and why the project is of doctoral scope and feasible in the time remaining. The supporting forms are held on the Doctoral Research Manager.
+
+\section{Research Context}
+
+Training robot control policies in GPU-parallel simulation and deploying them on real hardware without task-specific retraining (zero-shot deployment) is now the dominant paradigm in learning-based robotics, from champion-level autonomous drone racing to single policies that fly ten different real quadrotors. Deployment nevertheless remains brittle: the simulation-to-reality gap resurfaces as degraded tracking, unmodelled dynamics and platform-specific failure, and papers across the field keep reporting closely related limitations that no established method resolves.
+
+My project works in this space with quadrotors as the primary platform, chosen for their fast dynamics, hard onboard compute budgets and safety-critical deployment, with cross-platform anchor papers selected so the methodology later extends to robotic arms and ground robots. The transfer phase has two outcomes: a frequency analysis across roughly fifty recent papers establishing which methods are necessary infrastructure, and the selection of one recurrent, well-defined gap where a unique control model becomes the PhD contribution.
+
+\section{What Has Been Delivered}
+
+\subsection{Publications}
+
+\textbf{Accepted.}
+\begin{quote}\itshape
+Zenati, A., Jamous, W. and Youcef-Toumi, K. (2026) `Sliding Follow-the-Ridge for Fast Finite-Time Local Minimax Optimisation'. Accepted for presentation at the IFAC World Congress, Busan, Republic of Korea, August 2026. To appear in the conference proceedings.
+\end{quote}
+
+The IFAC World Congress is one of the most prestigious international venues in control systems and automation. The paper, written with my supervisor Dr Abdelhafid Zenati and Professor Kamal Youcef-Toumi (MIT), introduces the Sliding Follow-the-Ridge (SFR) algorithm: it recasts local minimax optimisation as a sliding mode control problem, so the dynamics converge in finite time to true local minimax points and cannot settle on non-minimax stationary points. Against the Follow-the-Ridge baseline, SFR converges faster with shorter trajectories at low computational cost. Minimax optimisation is the mathematics behind robust and adversarial policy training, so this work feeds directly into my doctoral topic.
+
+\textbf{Submitted and in preparation.} The following papers, written with Dr Zenati's group, are at various stages between submission and final preparation:
+\begin{itemize}
+  \item Lightweight Spatiotemporal Highway Lane Detection via 3D-ResNet and PINet with ROI-Aware Attention
+  \item Multi-Robot Patrol and Thermal Inspection Platform for Industrial Sites and Refineries
+  \item AI-Driven Thermal Inspection Drone System for Autonomous Monitoring of Oilfield Surface Networks
+  \item A control paper prepared for IEEE Control Systems Letters
+  \item A control paper prepared for the European Control Conference (ECC)
+\end{itemize}
+
+\subsection{A running, verified evidence pipeline}
+
+I built the research system the transfer report will stand on: a single machine-readable registry from which the reading vault, the analysis dashboard and the report are all generated, a nine-stage literature pipeline with a per-paper state machine and a fixed scoring rubric, and an independent verification gate. The first batch of five papers has been extracted and cross-checked by a second reader over the same texts, with verbatim quotes on file: no fabrications, three material corrections adopted, limitations analysis completed for all five. A seventy-paper acquisition manifest and a ranked candidate list stand behind it.
+
+\subsection{Research platform}
+
+A public research website presents the project end to end: annotated paper pages, a method registry in nine families with live usage counts, a corpus dashboard, a knowledge graph and method deep-dives. The panel can inspect any claim down to its source.
+
+\subsection{Implementation readiness}
+
+A parallel hardware track (infrastructure, baseline reproduction, pilot experiment) is fully specified: experiment state machine, graded flight-safety ladder, risk register and statistics standards. I have personally purchased and hold all equipment required for it.
+
+\section{Research Environment}
+
+The panel should be aware, and I raise this without directing it at any individual, that the preliminary work above was achieved despite persistent difficulty accessing university laboratories, equipment and facilities throughout the year, and despite being excluded from office space alongside PhD colleagues in my own speciality. To keep the project moving I purchased my own equipment at my own cost and with no university support, including a 3D printer and a CNC laser cutter that both already exist in university laboratories I could not access, plus all other research hardware and materials.
+
+I note this for two reasons: it is material to assessing what has been achieved in the time available, and the feasibility of the programme below will be considerably strengthened if normal access to laboratories and facilities is restored. Details are available through the Doctoral Research Manager.
+
+\section{Proposed Programme}
+
+\subsection{Research questions}
+
+The final research questions will be instantiated from the gap analysis at Gate 2 and presented in full in the transfer report, under pre-committed rules: one primary and two subsidiary questions, each falsifiable, each with a directional hypothesis, a named unit-bearing metric measurable on equipment I own, the best-supported existing method as baseline, a planned experiment, and a kill condition stated in advance. The subsidiary questions are structured to survive failure of the primary hypothesis, so the thesis retains publishable findings under every outcome.
+
+\subsection{Milestones}
+
+\begin{tabularx}{\textwidth}{@{}p{4.6cm}p{1.8cm}X@{}}
+  \toprule
+  \textbf{Phase} & \textbf{Weeks} & \textbf{Deliverable} \\
+  \midrule
+  Corpus completion & 1--3 & Remaining papers acquired, extracted and verified; Gate 1: corpus locked ($\sim$50 papers) \\
+  Analysis and gap selection & 3--6 & Method frequency analysis, pipeline comparison, gap clusters; Gate 2: direction selected with feasible pilot specification \\
+  Baseline and pilot & 6--10 & Published baseline reproduced on real hardware; pilot experiment run with pre-registered statistics \\
+  Transfer report & 9--12 & 10,000 to 12,000 word report; two cold review passes and full citation audit; Gate 3: sign-off and submission \\
+  \bottomrule
+\end{tabularx}
+
+\subsection{Feasibility and risk}
+
+Three design decisions protect the timeline. The implementation track runs alongside the review, not after it, so infrastructure failures surface early. No direction can pass Gate 2 unless its minimum viable pilot is demonstrably feasible on equipment I hold. And a maintained risk register with per-risk mitigations, plus a graded flight-safety ladder with written pass criteria at each rung, governs all physical work. Restored access to university facilities (section 5) would further strengthen feasibility, but the plan does not depend on it.
+
+\section{Supporting Statements}
+
+[Supervisor's supporting statement: Dr Abdelhafid Zenati]
+
+\vspace{1.2cm}
+\noindent
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{6.5cm}X@{}}
+  \toprule
+  Candidate signature & \\[10pt]
+  Date & \\[10pt]
+  Supervisor (Dr Abdelhafid Zenati) & \\[10pt]
+  Date & \\
+  \bottomrule
+\end{tabularx}
+
+\end{document}
