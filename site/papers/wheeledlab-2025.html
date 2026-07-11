@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2502.07380" rel="noopener">arXiv:2502.07380</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 92 = 25+25+20+10+12</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 11 Jul 2026</span>
     <span class="badge">ground-robot anchor</span>
   </div>
 </div>
@@ -244,15 +244,24 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> the abstract states no limitations; the paper's own limitation
-          discussion, if any, awaits the full-PDF pass.</li>
-        <li><b>Scale gap</b> (ours): RC-scale dynamics — mass, inertia, tyre construction, speed regime —
-          do not simply scale to full-size vehicles. What transfers from this platform is the
-          <em>methodology</em> and the training stack, not the dynamics themselves.</li>
-        <li><b>No quantitative baselines in the abstract</b> (ours): the "state-of-the-art" claim for
-          the three policies cannot be assessed from the abstract alone; comparisons and metrics await
-          the full-PDF pass.</li>
+        <li><b>Stated by the authors</b> (verified at S5, 11 Jul 2026, from the full text): there is no
+          pedagogical study yet of how easily students use the pipeline, and an "open curriculum" is
+          needed for beginners; the policies are not "plug-and-play" — they require "patience and an
+          intent to iterate"; deployment-time adaptation (e.g. to specific friction) is named as the
+          frontier; "mechanical hysteresis and tolerances of hobby-grade components" plus limited
+          onboard sensing and compute bound the project; and identifying which Sim2Real steps are
+          hardest needs study.</li>
+        <li><b>Verified detail the abstract lacked:</b> the vehicles are the HOUND (LiDAR + RGB, Jetson
+          Orin NX, about 3,000 USD; drifting) and the MuSHR (about 930 USD; elevation + visual), trained
+          on a single RTX 3080 with PPO via the RSL-RL library; the zero-shot claim is verbatim —
+          "direct Sim2Real transfer for drifting without online fine-tuning"; drift results: maximum
+          controlled slip angle 58°, about 1.6 m/s average, full laps where the baseline failed every
+          turn; visual navigation succeeded 3/5 trials; memorable craft: friction estimated with a
+          "cheap (less than 5 USD) spring scale", actuator gain ranges refined through "Sim2Real2Sim"
+          cycles, and tape wrapped on wheels to reduce friction.</li>
+        <li><b>Ours:</b> the scale gap from RC platforms to full-size dynamics remains.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-11.md" rel="noopener">docs/s5-notebooklm-2026-07-11.md</a></p>
     </section>
 
     <section id="relevance">
@@ -285,6 +294,7 @@
         <a href="https://uwrobotlearning.github.io/WheeledLab/" rel="noopener">uwrobotlearning.github.io/WheeledLab</a>
         (confirmed live, 10 July 2026). This page is promoted to <b>verified</b> only after the full-PDF
         pass and the NotebookLM five-question cross-check (pipeline stage S5).
+        S5 cross-check completed 11 July 2026; zero-shot wording verified verbatim.
       </div>
       <div class="cite">@inproceedings{han2025wheeledlab,
   title     = {Wheeled Lab: Modern Sim2Real for Low-cost, Open-source Wheeled Robotics},

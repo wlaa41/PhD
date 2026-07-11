@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2407.10648" rel="noopener">arXiv:2407.10648</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 90 = 25+15+20+15+15</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 11 Jul 2026</span>
     <span class="badge verified">venue web-confirmed: Nature MI</span>
   </div>
 </div>
@@ -270,17 +270,26 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> none in the abstract — it states no limitations. The authors' own
-          limitation discussion, if any, awaits the full-PDF pass (pipeline stage S5).</li>
-        <li><b>Ours — the point-mass ceiling:</b> a model with no attitude states cannot, by construction,
-          reason about manoeuvres where attitude dynamics are the binding constraint — aggressive flips,
-          perching, racing at the edge of actuation. Fast forest navigation at 20&nbsp;m/s is impressive but
-          not attitude-critical; where the abstraction's envelope ends is an open question.</li>
-        <li><b>Ours — the rendering gap:</b> the abstract names a depth rendering engine but says nothing
-          about how rendered depth relates to a real sensor's noise, dropout and artefacts. How that visual
-          gap is closed — randomization, noise injection, or robustness of depth as a modality — awaits the
-          full PDF.</li>
+        <li><b>Stated by the authors</b> (verified at S5, 11 Jul 2026, from the full text — framed as
+          future directions): adapting task design (network inputs, outputs, loss functions); broader
+          applications (search and rescue, logistics, infrastructure inspection, entertainment,
+          agriculture); scaling the proven "localization-free and communication-free navigation" to wider
+          real-world use.</li>
+        <li><b>Verified detail the abstract lacked:</b> the full hardware manifest — Roma 3-inch frame,
+          GEMFAN 3-inch propellers, 1606 3750KV motors, 365&nbsp;g total, thrust-to-weight 3.6, RealSense
+          D435i depth at 15&nbsp;Hz, Aocoda F7mini flight controller, HAKRC 4-in-1 ESC, and the $21
+          computer is a Mango Pi SBC (Cortex-A53) — fully onboard; the depth renderer is CUDA as a PyTorch
+          extension over four abstract obstacle types; calibrated parameters include "control latency",
+          "exponential smoothing" and "quadratic air drag"; a "temporal gradient decay" (exponential decay
+          on position/velocity gradients) prevents "gradient explosion" — the direct counter to the BPTT
+          failure modes <a href="e2e-fly-2026.html">E2E-Fly</a>'s authors list; the policy is a CRNN with
+          depth max-pooled to 16&nbsp;×&nbsp;12; the multi-agent result is a team of six quadrotors
+          crossing a narrow gate in opposite directions with "autonomous coordination without communication
+          or centralized planning" (success = all within 1.2&nbsp;m of goals, no collisions).</li>
+        <li><b>Ours:</b> the point-mass ceiling for attitude-critical manoeuvres remains our open
+          question.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-11.md" rel="noopener">docs/s5-notebooklm-2026-07-11.md</a></p>
     </section>
 
     <section id="relevance">
@@ -314,6 +323,7 @@
         web-confirmed on that fetch; this entry was previously memory-sourced. Equations marked "notation
         ours" are canonical forms, not the paper's own. This page is promoted to <b>verified</b> only after
         the full-PDF pass and the NotebookLM five-question cross-check (pipeline stage S5).
+        S5 cross-check completed 11 July 2026; zero-shot wording verified verbatim (three quotes).
       </div>
       <div class="cite">@article{zhang2025newton,
   title   = {Back to Newton's Laws: Learning Vision-based Agile Flight via Differentiable Physics},

@@ -20,13 +20,17 @@ later by the Phase 0 prompt in the README — it does not exist yet.
 
 - Corpus: 70 candidates seeded, scored (rubric R+H+Z+V+A); **Gate 1 (corpus lock) is PENDING — it is the
   owner's decision alone**; extraction ran ahead on the top ten with the owner's knowledge.
-- Extracted & annotated: 10 papers (site/papers/). Batch 1 (01–05) **S5-verified** — record:
-  docs/s5-notebooklm-2026-07-10.md. Batch 2 (06–10) **S5 PENDING** — next step: add the five arXiv HTML
-  sources to the NotebookLM notebook and run the five questions per source in isolation.
+- Extracted & annotated: 10 papers (site/papers/), **ALL S5-verified** — records:
+  docs/s5-notebooklm-2026-07-10.md (batch 1) and docs/s5-notebooklm-2026-07-11.md (batch 2). Batch-2 S5
+  named SimpleFlight's five factors (actor input = rotation matrix + velocity; critic time vector;
+  smoothness reward; SysID crucial + DR selective; larger batches) and applied 2 offboard-compute
+  corrections (pixels: ground-station PC; simpleflight-Crazyflie: offboard + OptiTrack).
 - Method registry: 23 canonical methods in 9 families (families are FIXED — the owner likes them as they are;
-  methods may be added as the corpus demands, with merge judgements logged). Top counts: end-to-end-rl 8/10,
-  domain-randomization 4/10, latency-compensation 4/10 (latency is the emerging gap candidate — fits the
-  owner's RoboMaster EP 80–120 ms latency testbed).
+  methods may be added as the corpus demands, with merge judgements logged). Top counts after both S5 passes:
+  end-to-end-rl 8/10, **domain-randomization 8/10**, **system-identification 7/10**, latency-compensation
+  6/10 (latency remains the emerging gap candidate — fits the owner's RoboMaster EP 80–120 ms testbed).
+  Cross-corpus finding: "zero-shot ≠ onboard" — falcongym, pixels and simpleflight-Crazyflie all compute
+  OFFBOARD; monorace, raptor, diffphys, fly-seconds run onboard. A live analysis axis for the gap study.
 - NotebookLM: notebook id d336f22d (owner's Google account) is the standing S5 second reader.
 - Implementation track (I1–I3): NOT started; the 12-week clock has no start date. Phase 0 not run.
 - Open owner decisions: Gate 1; corpus-dashboard charts (inventory row 19, dropped-pending-decision);

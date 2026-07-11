@@ -90,7 +90,7 @@
   </div>
   <p class="small" style="margin-top:.8rem">Status of 10 July 2026 ·
     <span class="src">docs/corpus-acquisition.md</span>
-    <span class="src">S5: batch 1 passed · batch 2 pending</span></p>
+    <span class="src">S5: batches 1 and 2 passed · docs/s5-notebooklm-2026-07-11.md</span></p>
 
   <div class="card" style="margin-top:1rem;padding:1rem 1.3rem;border-left:3px solid var(--warn)">
     <span style="font-size:.68rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--warn)">Gate 1 · waiting for the human</span>
@@ -106,8 +106,9 @@
   <h2 class="section-label" id="papers">Annotated papers</h2>
   <p class="section-sub">
     Only extracted papers get a page; the other 60 candidates live in the
-    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. Batch 2 (06–10) is
-    freshly extracted from the papers' arXiv pages; its NotebookLM cross-check (S5) is the next step. Each page brings the
+    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. All ten pages below
+    are <strong>S5-verified</strong>: every extraction cross-checked against the full text by the second
+    independent reader, corrections applied visibly. Each page brings the
     full content: the pipeline as a figure, the mathematics, results, stated limitations and hardware relevance.
   </p>
   <div class="grid g3">
@@ -370,11 +371,15 @@ const METHODS=[
  "\\nabla_\\theta J=\\sum_t \\frac{\\partial J}{\\partial s_t}\\,\\frac{\\partial s_t}{\\partial \\theta},\\qquad s_{t+1}=f_\\psi(s_t,a_t)",
  ["end-to-end-rl","system-identification"]],
 ["domain-randomization-dynamics","rand","Domain randomization (dynamics)",
- "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution. The S5 pass grew this count from 1 to 4: the full papers use DR where their abstracts never said so.",
+ "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution. Two S5 passes grew this count from 1 to 8: the full papers use DR where their abstracts never said so — it is nearly universal.",
  [["e2efly","'empirically validated domain-randomization parameters' (S5-verified)"],
   ["monorace","'extensive domain randomization' over all model parameters (S5-verified)"],
   ["raptor","a 'very broad distribution over dynamics parameters' — the paper's own wide-DR framing (S5-verified)"],
-  ["falcongym","'mild random noise into expert's control output' during training (S5-verified; merge judgement logged)"]],
+  ["falcongym","'mild random noise into expert's control output' during training (S5-verified; merge judgement logged)"],
+  ["attn","observation noise plus randomized 'torso mass and the friction coefficient of each contact foot' (S5-verified)"],
+  ["wheeled","'aggressive domain randomization' for drifting; DR named among its general methods (S5-verified)"],
+  ["pixels","'domain randomization to robustify a control policy against a sim2real gap in the system dynamics' (S5-verified)"],
+  ["simpleflight","Factor 4: 'DR exhibits selective effectiveness' — used, but selectively (S5-verified)"]],
  "You cannot model the real drone exactly — so stop trying to. Train across a cloud of plausible drones; if the cloud is wide enough, reality falls inside it and the policy has already seen something like it.",
  "\\max_\\theta\\;\\mathbb{E}_{\\xi\\sim p(\\xi)}\\big[J(\\theta;\\xi)\\big]",
  ["sensor-noise-modelling","meta-imitation-multi-platform","system-identification"]],
@@ -386,8 +391,14 @@ const METHODS=[
  "z_t = h(s_t)+\\varepsilon_t,\\qquad \\varepsilon_t\\sim\\hat{p}_{\\text{noise}}\\ \\text{(fit to real sensor logs)}",
  ["domain-randomization-dynamics","system-identification"]],
 ["system-identification","ident","System identification",
- "Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Merge decision (logged): MonoRace's offline calibration refinement from flight logs is counted here — same mechanism, real data → model parameters.",
- [["e2efly","lists system identification among its deployment methods"],["monorace","refines calibration parameters offline using known gate geometry and onboard flight data"]],
+ "Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Now 7 of 10 papers — and SimpleFlight's ablation ranks it CRUCIAL where DR is only selective. Merge decisions logged per member.",
+ [["e2efly","'step-response alignment' system identification among its four alignment stages (S5-verified)"],
+  ["monorace","refines calibration parameters offline using known gate geometry and onboard flight data (S5-verified)"],
+  ["attn","an 'actuator model through supervised learning' aids transfer (S5-verified; actuator-network variant)"],
+  ["wheeled","friction measured with a '<5 USD spring scale'; actuator gains refined via 'Sim2Real2Sim' cycles (S5-verified)"],
+  ["pixels","'data-driven augmentation' of the propeller model builds its 'augmented simulator' (S5-verified)"],
+  ["diffphys","calibrates 'control latency', 'exponential smoothing' and 'quadratic air drag' (S5-verified)"],
+  ["simpleflight","Factor 4: 'SysID for calibrating key dynamic parameters is crucial' (S5-verified)"]],
  "Randomization says 'be ready for anything'; system ID says 'know your actual vehicle'. Fit the model to logged reality and the simulator stops being a guess. The strongest pipelines do both: identify what you can, randomize the rest.",
  "\\psi^{*}=\\arg\\min_\\psi\\sum_t\\big\\lVert s^{\\text{real}}_{t+1}-f_\\psi(s^{\\text{real}}_t,a^{\\text{real}}_t)\\big\\rVert^2",
  ["domain-randomization-dynamics","sensor-noise-modelling"]],
@@ -411,7 +422,8 @@ const METHODS=[
  ["meta-imitation-multi-platform","asymmetric-actor-critic"]],
 ["curriculum-learning","distill","Curriculum learning",
  "Staged task difficulty keeps fast training stable.",
- [["flysec","uses a curriculum as part of its 18-second training recipe"]],
+ [["flysec","uses a curriculum as part of its 18-second training recipe"],
+  ["attn","robots are 'upgraded to harder terrain levels upon success' (S5-verified)"]],
  "Ask a fresh policy to do the hard task and it thrashes; reward is too sparse to learn from. Start where reward is dense, harden the task as competence grows, and the policy is never asked a question it has no hope of answering.",
  null,["custom-high-performance-simulator","end-to-end-rl"]],
 ["imitation-learning-sim","algo","Imitation learning in simulation",
@@ -428,7 +440,8 @@ const METHODS=[
  ["asymmetric-actor-critic","direct-motor-command-control","curriculum-learning"]],
 ["asymmetric-actor-critic","algo","Asymmetric actor-critic",
  "The critic sees privileged simulator state; the actor sees only what the real vehicle will have.",
- [["flysec","names the asymmetric actor-critic architecture as a core contribution"],["pixels","'asymmetric actor-critic with access to privileged information' (verbatim)"]],
+ [["flysec","names the asymmetric actor-critic architecture as a core contribution"],["pixels","'asymmetric actor-critic with access to privileged information' (verbatim, S5-verified)"],
+  ["attn","privileged training: 'privileged information for the critic' while the actor fine-tunes under noise (S5-verified; judgement logged)"]],
  "The critic is scaffolding: it exists only during training and is discarded at deployment, so it may cheat freely — full state, no noise. A well-informed critic gives low-variance gradients; the actor still learns under real-world constraints. Free accuracy with no transfer penalty.",
  "\\underbrace{V_\\varphi(s^{\\text{priv}}_t)}_{\\text{critic, sim-only}}\\qquad\\underbrace{\\pi_\\theta(a_t\\,|\\,o_t)}_{\\text{actor, deployable}}",
  ["end-to-end-rl","teacher-student-distillation"]],
@@ -483,11 +496,13 @@ const METHODS=[
  "Integration faults — timing, units, message ordering, saturations — live between the software and the hardware, exactly where pure simulation cannot see. HIL runs the real electronics against simulated physics, catching those faults while a crash still costs nothing. This project's I2.5 rung.",
  null,["sim-to-sim-validation"]],
 ["latency-compensation","latency","Latency compensation",
- "Model or compensate the sensing-to-actuation delay explicitly. The S5 pass grew this count from 1 to 4: delay handling turns out to be near-universal in deployed systems.",
+ "Model or compensate the sensing-to-actuation delay explicitly. Two S5 passes grew this count from 1 to 6: delay handling is the quiet constant of deployed systems, and delays are named remaining-gap causes in RAPTOR and FalconGym.",
  [["e2efly","'step-response alignment method' for communication and motor delays (S5-verified)"],
   ["raptor","'overlaying a simple accelerometer integral... grounded through an exponential decay' against velocity-feedback delay (S5-verified)"],
   ["monorace","temporal synchronization and delay compensation between camera and IMU (S5-verified)"],
-  ["flysec","action history in the observation + rotor delay as a first-order low-pass filter (S5-verified)"]],
+  ["flysec","action history in the observation + rotor delay as a first-order low-pass filter (S5-verified)"],
+  ["diffphys","'control latency' explicitly calibrated into the differentiable simulation (S5-verified)"],
+  ["pixels","a 'history of three past actions' in the actor observation (S5-verified; smoothing variant, judgement logged)"]],
  "By the time the policy acts on a measurement, the world has moved on by the loop delay d. A policy trained on instant feedback learns corrections that arrive too late and destabilize. Give it the delayed observation plus its own recent actions, and it can implicitly predict the present before acting.",
  "o_t=\\big(z_{t-d},\\,a_{t-d},\\dots,a_{t-1}\\big)",
  ["direct-motor-command-control","sensor-noise-modelling"]]

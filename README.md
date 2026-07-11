@@ -13,9 +13,9 @@ are labelled, never hidden.**
 | What | State |
 |---|---|
 | Candidate corpus | 70 papers seeded, scored against the fixed rubric; **awaiting Gate 1** (human corpus lock) |
-| Extracted & annotated | **10 papers** (batches 1–2), each with its own site page (figures, math, provenance). Batch-2 venue corrections applied: ETH attention paper is an arXiv pre-review draft (93→86); SimpleFlight accepted at RA-L (88→92); Newton's-Laws confirmed Nature MI |
-| S5 verification | **Batch 1 passed** (record: `docs/s5-notebooklm-2026-07-10.md`; 3 material corrections applied). **Batch 2 pending** — add the five new papers to the notebook and run the five questions per source |
-| Method registry | 23 canonical methods in 9 families (batch 2 forced the first new method: training-time-sensor-abstraction); top counts: end-to-end RL 8/10, DR 4/10, latency handling 4/10 |
+| Extracted & annotated | **10 papers, all S5-verified** (batches 1–2), each with its own site page (figures, math, provenance, verified limitations) |
+| S5 verification | **Both batches passed** (records: `docs/s5-notebooklm-2026-07-10.md`, `docs/s5-notebooklm-2026-07-11.md`). Batch 2 named SimpleFlight's five factors and applied two offboard-compute corrections; "zero-shot ≠ onboard" identified as a cross-corpus analysis axis |
+| Method registry | 23 canonical methods in 9 families; top counts after both S5 passes: end-to-end RL 8/10, **domain randomization 8/10**, **system identification 7/10** (SimpleFlight ranks it crucial), latency handling 6/10 |
 | NotebookLM notebook | Live (notebook `d336f22d`, 5 full-text sources) — the standing S5 instrument; add each batch's papers on arrival |
 | Implementation track (I1–I3) | **Not started** — the 12-week clock has no start date yet |
 

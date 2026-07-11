@@ -41,7 +41,7 @@
     <a href="https://arxiv.org/abs/2412.11764" rel="noopener">arXiv:2412.11764</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 92 = 20+25+20+12+15 (venue corrected: RA-L)</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 11 Jul 2026</span>
   </div>
 </div>
 
@@ -135,8 +135,9 @@
         </svg>
         <figcaption><b>Figure 1.</b> The SimpleFlight pipeline. Everything left of the green line happens in
           the OmniDrones simulator; the policy crosses to the Crazyflie unchanged. The highlighted box is the
-          paper's contribution — five ablation-ranked factors folded into a PPO training framework. The five
-          names are not in the abstract; the full list awaits the full-PDF pass.</figcaption>
+          paper's contribution — five ablation-ranked factors folded into a PPO training framework: actor
+          input design, critic time vector, smoothness reward, SysID + selective DR, larger batches
+          (S5-verified, 11 Jul 2026; full list in section 3).</figcaption>
       </figure>
     </section>
 
@@ -178,15 +179,25 @@
         vindicated; when they disagree, the ablation wins and the registry's weighting should be revisited.</p>
       </div>
 
-      <h3>3.3 The five factors — honestly flagged</h3>
+      <h3>3.3 The five factors — verified at S5</h3>
       <p>
         The five critical factors are the paper's core contribution, and they are <em>not named in the
-        abstract</em>. Under this site's verification law, that means they cannot be listed here yet: no
-        secondary source is trusted to name them, and nothing is invented. The full list is flagged for the
-        S5 full-PDF pass, where the factors will be extracted verbatim and then checked, one by one, against
-        the method registry's frequency counts — the single most direct test this corpus can run of whether
-        counting predicts what controlled ablation confirms.
+        abstract</em> — which is why this page withheld them until the full text was read. The S5 full-PDF
+        pass has now extracted them:
       </p>
+      <ol>
+        <li><b>Actor input design</b> — attitude fed as a "rotation matrix instead of a quaternion", plus
+          linear velocity in the actor's input.</li>
+        <li><b>Critic input design</b> — adding "a time vector to the critic's input" for temporal
+          awareness.</li>
+        <li><b>Reward design</b> — "regularization of the difference between successive actions as the
+          smoothness reward".</li>
+        <li><b>SysID &amp; domain randomisation</b> — "SysID for calibrating key dynamic parameters is
+          crucial. DR exhibits selective effectiveness": system identification is crucial; domain
+          randomisation helps only selectively.</li>
+        <li><b>Training techniques</b> — "larger batch sizes" for generalisation via data diversity.</li>
+      </ol>
+      <p class="small">Verified at S5 on 11 July 2026 — quotes from the full text.</p>
     </section>
 
     <section id="results">
@@ -211,7 +222,7 @@
             <text x="384" y="60" fill="#1c1917" font-weight="700">&lt; 50%</text>
             <line x1="180" y1="84" x2="612" y2="84" stroke="#e7e5e4"/>
             <text x="396" y="100" text-anchor="middle" font-size="10.5" fill="#78716c">relative trajectory tracking error — baseline set to 100%</text>
-            <text x="396" y="116" text-anchor="middle" font-size="10.5" fill="#78716c">drawn from the abstract's "more than a 50% reduction" claim; absolute numbers await the full-PDF pass</text>
+            <text x="396" y="116" text-anchor="middle" font-size="10.5" fill="#78716c">from the S5-verified "reduces trajectory tracking error by over 50%" claim; relative scale, not absolute units</text>
           </g>
         </svg>
         <figcaption><b>Figure 2.</b> The headline claim, drawn to scale and nothing more. Only the relative
@@ -229,18 +240,20 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> none in the abstract — it contains no limitations statement. Recorded
-          as such rather than paraphrased around; the paper's own limitations section, if one exists, will be
-          quoted after the S5 full-PDF pass.</li>
-        <li><b>Ours:</b> validation is Crazyflie-only. A palm-sized platform with a small thrust-to-weight
-          ratio is the gentlest possible hardware test, and the same scale question already raised for
-          <a href="fly-seconds-2024.html">Learning to Fly in Seconds</a> applies here: do the five factors keep
-          their ranking on heavier, faster airframes?</li>
-        <li><b>Ours:</b> the five factors were identified and ablated inside one simulator. Whether their
-          ranking is a property of quadrotor sim-to-real transfer in general, or partly a property of
-          OmniDrones, is exactly the kind of question a second simulator — an Isaac-based or
-          differentiable-physics stack — would answer.</li>
+        <li><b>Stated by the authors (verified at S5, 11 Jul 2026):</b> the study is dynamics-focused, not
+          vision — future work names "visual randomization and domain adaptation"; complex high-dimensional
+          tasks may need a larger critic time vector; and SimpleFlight is a set of identified factors rather
+          than a new algorithm — future work integrates them onto other control methods.</li>
+        <li><b>MATERIAL CORRECTION from the S5 pass:</b> in the Crazyflie experiments "the policy is executed
+          on an offboard computer", with commands sent over a 2.4 GHz radio at 100 Hz and state from an
+          OptiTrack motion-capture system — offboard compute plus mocap, not onboard autonomy. The second
+          platform ("Air": 250 mm arms, PX4 flight controller, Nvidia Orin processor) is the onboard-capable
+          one, where SimpleFlight outperformed a "finely-tuned PAMPC".</li>
+        <li><b>Verified detail:</b> the zero-shot claim is verbatim — "zero-shot real-world deployment";
+          the trainer is on-policy PPO in OmniDrones; and SimpleFlight was "the only one capable of
+          successfully completing all benchmarking trajectories".</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-11.md" rel="noopener">docs/s5-notebooklm-2026-07-11.md</a></p>
     </section>
 
     <section id="relevance">
@@ -276,7 +289,8 @@
         triage score was corrected from 88 (20+25+20+8+15) to 92 (20+25+20+12+15). Equations marked "notation
         ours" are canonical forms, not the paper's own. This page is promoted to <b>verified</b> only after the
         full-PDF pass and the NotebookLM five-question cross-check (pipeline stage S5), where the five factors
-        will be extracted and checked against the method registry.
+        will be extracted and checked against the method registry. S5 cross-check completed 11 July 2026;
+        the five factors verified and listed; offboard+mocap correction applied.
       </div>
       <div class="cite">@article{chen2024simpleflight,
   title   = {What Matters in Learning A Zero-Shot Sim-to-Real RL Policy for Quadrotor Control? A Comprehensive Study},

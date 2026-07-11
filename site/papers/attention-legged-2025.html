@@ -41,10 +41,11 @@
     <a href="https://arxiv.org/abs/2506.09588" rel="noopener">arXiv:2506.09588</a>
     <span class="badge zero">zero-shot</span>
     <span class="badge">triage score 86 = 25+25+20+8+8 (venue corrected)</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 11 Jul 2026</span>
   </div>
-  <p class="small">Badge caveat: the abstract reports real-world tests in scenarios "including ones unseen during
-    training"; whether the authors themselves use the term "zero-shot" is to be verified at S5.</p>
+  <p class="small">Badge caveat resolved at S5 (11 Jul 2026): the paper states verbatim "We deployed the
+    fine-tuned policies for both ANYmal-D and GR-1 zero-shot on the real hardware" — the authors' own
+    zero-shot wording is confirmed.</p>
 </div>
 
 <div class="article-grid">
@@ -288,17 +289,20 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors:</b> the abstract itself lists no limitations; the arXiv comments field,
-          however, flags the paper's status plainly — this is the "Original draft prior to peer review" and
-          "Significant revisions and new materials are expected after formal publication release".</li>
-        <li><b>Ours:</b> as a pre-review draft, every claim on this page carries extra uncertainty — results,
-          framing and even the method description may change in the published version.</li>
-        <li><b>Ours:</b> no quantitative metrics are available from the abstract; the strength of the
-          precision-plus-robustness claim cannot be judged until the full-PDF pass.</li>
-        <li><b>Ours:</b> the zero-shot badge rests on the "unseen during training" sentence; whether the
-          authors frame this as zero-shot generalisation, and how far the unseen scenarios depart from the
-          training distribution, is to be verified at S5.</li>
+        <li><b>Stated by the authors (verified at S5, 11 Jul 2026, from the full text):</b> training takes
+          several days, making tuning slow; the "2.5D height map representation" cannot handle "confined
+          spaces" — future work names "effective 3D representations"; and the controllers are locomotion-only
+          for now — future loco-manipulation such as "opening doors" and "climbing with the help of hands".</li>
+        <li><b>Verified detail the abstract lacked:</b> the platforms are the ANYmal-D quadruped and the
+          Fourier GR-1 humanoid. ANYmal-D infers on an Intel i7-8850H with elevation mapping on an onboard
+          Nvidia Jetson; the GR-1's map comes from ray-casting a pre-designed terrain mesh using captured
+          pose — a partial crutch, not onboard perception. Training used a custom PPO on an A100-40GB
+          (ANYmal) and RTX 4090 (GR-1). Results include 26.5%/77.3% higher success than DTC/baseline RL,
+          ~60% training-time reduction vs DTC, the GR-1 accelerating 0.7→1.5 m/s on a shaky balance beam,
+          a 19-cm beam and 12×12 cm stones.</li>
+        <li><b>Ours:</b> pre-review status still applies to unreviewed claims.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-11.md" rel="noopener">docs/s5-notebooklm-2026-07-11.md</a></p>
     </section>
 
     <section id="relevance">
@@ -332,7 +336,8 @@
         Robotics; the arXiv record identifies this as an original draft prior to peer review, so the venue is
         recorded honestly as "arXiv 2025, pre-review draft" and the triage score was corrected from 93 to 86
         accordingly. This page is promoted to <b>verified</b> only after the full-PDF pass and the NotebookLM
-        five-question cross-check (pipeline stage S5).
+        five-question cross-check (pipeline stage S5). S5 cross-check completed 11 July 2026; zero-shot
+        wording verified verbatim; GR-1 mapping crutch noted.
       </div>
       <div class="cite">@misc{he2025attention,
   title   = {Attention-Based Map Encoding for Learning Generalized Legged Locomotion},

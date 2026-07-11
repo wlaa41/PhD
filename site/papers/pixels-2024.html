@@ -39,9 +39,9 @@
   <div class="meta-line">
     UZH Robotics and Perception Group <span class="sep">·</span> RSS 2024, submitted 18 June 2024 <span class="sep">·</span>
     <a href="https://arxiv.org/abs/2406.12505" rel="noopener">arXiv:2406.12505</a>
-    <span class="badge zero">zero-shot · wording to verify at S5</span>
+    <span class="badge zero">zero-shot · wording verified verbatim at S5</span>
     <span class="badge">triage score 90 = 20+25+20+10+15</span>
-    <span class="badge pending">S5 verification pending</span>
+    <span class="badge verified">S5 verified · NotebookLM cross-check · 11 Jul 2026</span>
     <span class="badge acc">ID web-confirmed 10 Jul 2026</span>
   </div>
 </div>
@@ -283,21 +283,25 @@
     <section id="limits">
       <h2>5 · Limitations &amp; open questions</h2>
       <ul>
-        <li><b>Stated by the authors (abstract):</b> the demonstration "focuses on drone racing"; the
-          method is positioned as "a foundation for future research into real-world applications in
-          structured environments" — the authors themselves scope the claim to structured settings rather
-          than open-world flight.</li>
-        <li><b>Ours — generality beyond gate tasks:</b> the sensor abstraction is task-specific by
-          construction. Gate inner edges are the perfect minimal observation <em>for racing gates</em>;
-          a new task needs a new abstraction and a new detector, and it is not yet clear which tasks
-          admit one this clean.</li>
-        <li><b>Ours — detector dependence:</b> at deployment the whole perception stack is the Swin
-          gate detector, so robustness rides on the appearance of the gates it was trained for; lighting
-          and gate-geometry shift hit the system at its single learned perception stage.</li>
-        <li><b>Awaiting the full-PDF pass:</b> the exact observation and reward, training algorithm and
-          budget, detector training data, per-run statistics, and whether the paper itself ever uses
-          zero-shot wording (the badge above carries that caveat until S5).</li>
+        <li><b>Stated by the authors</b> (verified at S5, 11 Jul 2026, from the full text): the
+          "limited memory of the neural controller" — the policy sees only three past actions — is the
+          named weakness; if no gates are visible for several frames the "success rate drops
+          drastically" and the system cannot recover; future work names recurrent networks for
+          "prolonged memory retention" and the sample efficiency of learning directly from pixels;
+          broader applications are scoped as "indoor navigation or ship inspection" and "powerline
+          inspection"; obstacle avoidance, dynamic objects and environment changes are unhandled.</li>
+        <li><b>MATERIAL CORRECTION from the S5 pass:</b> the policy does <em>not</em> run on the drone —
+          it runs on an "offboard ground-station PC" with commands returned to the vehicle via RF; the
+          Swin gate detector runs in 4 ms on an RTX 3090 (offboard); video transmission latency is
+          33 ms at 60 Hz; the platform is a modified Agilicious carrying an onboard FPV camera only.
+          Our earlier framing implied more onboard autonomy than the system has.</li>
+        <li><b>Verified detail:</b> training is PPO in an "augmented simulator" — a data-driven
+          augmentation of a quadratic propeller model; the gate detector was trained on 80,000 real +
+          photorealistic images; an "initial state buffer" prevents catastrophic forgetting; domain
+          randomization covers thrust, mass and gate positions; the figure-8 result is a 100% success
+          rate across 6 runs and 20 flown laps.</li>
       </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s5-notebooklm-2026-07-11.md" rel="noopener">docs/s5-notebooklm-2026-07-11.md</a></p>
     </section>
 
     <section id="relevance">
@@ -329,10 +333,13 @@
       <div class="provenance">
         Extraction status: <b>S4-lite</b> — built from the paper's arXiv abstract page (fetched 10 July
         2026) plus clearly-labelled concept reconstructions. This entry was previously memory-sourced;
-        today's fetch confirmed the arXiv ID, title, authors, venue and abstract. The abstract does not
-        use zero-shot wording — the badge above carries that caveat until the full-PDF pass. Equations
-        marked "notation ours" are canonical forms, not the paper's own. This page is promoted to
-        <b>verified</b> only after the full-PDF pass and the NotebookLM cross-check (pipeline stage S5).
+        the 10 July fetch confirmed the arXiv ID, title, authors, venue and abstract. The abstract does
+        not use zero-shot wording, but the full text does — verbatim: "direct zero-shot
+        simulation-to-reality transfer of our pixel-based control policies" — so the caveat carried by
+        the badge above is resolved. Equations marked "notation ours" are canonical forms, not the
+        paper's own. This page is promoted to <b>verified</b> only after the full-PDF pass and the
+        NotebookLM cross-check (pipeline stage S5). S5 cross-check completed 11 July 2026; zero-shot
+        wording verified verbatim; offboard-compute correction applied.
       </div>
       <div class="cite">@inproceedings{geles2024pixels,
   title     = {Demonstrating Agile Flight from Pixels without State Estimation},
