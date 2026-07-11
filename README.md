@@ -46,6 +46,8 @@ docs/                         the source of truth (reading order below)
                               module and it can run acquisition alone
   s5-notebooklm-2026-07-10.md batch-1 verification record: quotes, verdicts,
                               corrections, registry actions
+  s5-notebooklm-2026-07-11.md batch-2 verification record: five factors named,
+                              offboard-compute corrections, registry actions
 site/                         the reading platform (static, framework-free,
                               light + dark themes, GitHub-Pages ready)
 archive/                      superseded artefacts (transfer-hub-v1.html)
@@ -62,7 +64,7 @@ enable GitHub Pages (Settings → Pages → main) and it serves as-is.
 | `site/index.html` | status cards · annotated-paper card grid (built for 70; only extracted papers get pages) · **knowledge graph** (Obsidian view: papers↔methods↔families; hover shows an on-canvas brief with connections; click opens an info card with the page/deep-dive action) · **method registry** as clickable cards opening deep-dive modals (what · intuition · mathematics "notation ours" · S5-verified evidence quotes · related methods · try-it-yourself open-source links, every URL existence-verified and dated) · navigation-map figure · footer site map |
 | `site/system.html` | **the whole system in one clickable map** (two tracks, three gates, registry hub, generated views — press any block to open the card that explains it) · S1–S9 stage cards with verbatim quotes · scoring rubric · method counting & categorization rules · 8 agent cards · registry schemas · I1–I3 · two-track 12-week timeline · the verification law |
 | `site/corpus.html` | 40 ranked candidates with per-paper R+H+Z+V+A breakdowns, strength signals, platform/source/year filters + search; annotated papers linked |
-| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, author-stated limitations, relevance to this PhD, provenance status, BibTeX, prev/next. Batch 1 (S5-verified): `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024`. Batch 2 (S4-lite, S5 pending): `attention-legged-2025`, `wheeledlab-2025`, `pixels-2024`, `diffphys-2025`, `simpleflight-2024` |
+| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, author-stated limitations, relevance to this PhD, provenance status, BibTeX, prev/next. Batch 1 (S5-verified): `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024`. Batch 2 (S5-verified): `attention-legged-2025`, `wheeledlab-2025`, `pixels-2024`, `diffphys-2025`, `simpleflight-2024` |
 
 Design rules that keep the site honest and consistent:
 - Every fact card carries a `.src` source chip naming its file or record; statuses are
