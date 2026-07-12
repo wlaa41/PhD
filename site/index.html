@@ -23,6 +23,11 @@
   .graph-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:.45rem}
   .graph-hint{position:absolute;right:.9rem;bottom:.7rem;font-size:.72rem;color:var(--ink-3);
     background:color-mix(in srgb,var(--card) 82%,transparent);border:1px solid var(--line);border-radius:8px;padding:.3rem .7rem}
+  .graph-fs{position:absolute;left:.9rem;bottom:.7rem;font-size:.72rem;color:var(--ink-3);cursor:pointer;
+    background:color-mix(in srgb,var(--card) 82%,transparent);border:1px solid var(--line);border-radius:8px;padding:.3rem .7rem}
+  .graph-fs:hover{border-color:var(--accent);color:var(--accent)}
+  .graph-wrap:fullscreen{border-radius:0;border:none}
+  .graph-wrap:fullscreen #graphCanvas{height:100%}
   .graph-brief{position:absolute;right:.9rem;top:.8rem;max-width:17rem;pointer-events:none;
     background:color-mix(in srgb,var(--card) 90%,transparent);border:1px solid var(--line-2);
     border-radius:10px;padding:.7rem .9rem;font-size:.76rem;color:var(--ink-2);
@@ -235,6 +240,7 @@
     <div class="graph-legend" id="graphLegend"></div>
     <div class="graph-brief" id="graphBrief" aria-live="polite"></div>
     <div class="graph-hint">drag · hover · click</div>
+    <button class="graph-fs" id="graphFs" aria-label="Toggle full screen">⛶ full screen</button>
   </div>
 
   <h2 class="section-label" id="stack">The shared stack</h2>
@@ -837,7 +843,9 @@ const STACK=[
     const ns=[],ls=[];
     Object.entries(FAMS).forEach(([k,v])=>{const nM=METHODS.filter(m=>m[1]===k).length;
       ns.push({id:"f:"+k,label:v,type:"fam",count:nM,r:3.5+1.6*Math.sqrt(nM)});});
-    METHODS.forEach(m=>{ns.push({id:"m:"+m[0],label:m[0],type:"method",m,count:m[4].length,r:3.2+2.4*Math.sqrt(m[4].length)});
+    /* convex size curve: one-paper leaves stay small satellites, size ramps up
+       as usage grows (r ~ count^1.5, capped) */
+    METHODS.forEach(m=>{ns.push({id:"m:"+m[0],label:m[0],type:"method",m,count:m[4].length,r:Math.min(12,2.6+0.34*Math.pow(m[4].length,1.5))});
       ls.push(["m:"+m[0],"f:"+m[1]]);});
     const deg={};METHODS.forEach(m=>m[4].forEach(([p])=>deg[p]=(deg[p]||0)+1));
     Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:7+2.2*Math.sqrt(deg[k]||1)}));
@@ -849,7 +857,7 @@ const STACK=[
     STACK.filter(f=>f.lens).forEach(f=>f.items.forEach((it,j)=>{
       if(it.graphSkip)return;
       const id="s:"+f.id+":"+j;
-      ns.push({id,label:it.n,type:"stack",f,it,count:it.m.length,r:3.2+2.6*Math.sqrt(it.m.length)});
+      ns.push({id,label:it.n,type:"stack",f,it,count:it.m.length,r:Math.min(12,2.6+0.38*Math.pow(it.m.length,1.5))});
       it.m.forEach(([p])=>{ls.push(["p:"+p,id]);deg[p]=(deg[p]||0)+1;});
     }));
     Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:7+2.2*Math.sqrt(deg[k]||1)}));
@@ -877,8 +885,9 @@ const STACK=[
     wake();drawG();
   }
   function size(){const r=cv.parentElement.getBoundingClientRect();
-    cv.width=r.width*devicePixelRatio;cv.height=440*devicePixelRatio;
-    cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=r.width;H=440;}
+    const hh=document.fullscreenElement===cv.parentElement?Math.max(320,r.height):440;
+    cv.width=r.width*devicePixelRatio;cv.height=hh*devicePixelRatio;
+    cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=r.width;H=hh;}
   function reset(){size();nodes.forEach((n,i)=>{const a=i/nodes.length*6.283;
     const rad=n.type==="paper"?0.18:(n.type==="method"||n.type==="stack")?0.34:0.46;
     n.x=W/2+Math.cos(a)*W*rad+(Math.random()-.5)*30;
@@ -952,7 +961,8 @@ const STACK=[
         cx.beginPath();cx.arc(n.x,n.y,n===hover?n.r+3:n.r,0,6.29);cx.fill();
         if(n===hover){cx.strokeStyle=C.ink;cx.lineWidth=1.4;cx.stroke();}
       }
-      const lab=n.type==="paper"||(n.type==="method"&&n.count>=5)||(n.type==="stack"&&n.count>=2);
+      /* papers keep their icon but show their name only on hover */
+      const lab=(n.type==="method"&&n.count>=5)||(n.type==="stack"&&n.count>=2);
       const showLab=!hm?lab:(d!==undefined&&(d<=1||n.type==="paper"));
       if(showLab){
         cx.fillStyle=C.ink;cx.font="11px Inter,system-ui,sans-serif";cx.textAlign="center";
@@ -973,6 +983,18 @@ const STACK=[
     else{raf=null;}
   }
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake();});
+  /* full screen: room for the corpus to grow (70 papers will not fit in 440px) */
+  const wrap=cv.parentElement,fsBtn=document.getElementById("graphFs");
+  fsBtn.addEventListener("click",()=>{
+    if(document.fullscreenElement===wrap){document.exitFullscreen();}
+    else if(wrap.requestFullscreen){wrap.requestFullscreen();}
+  });
+  document.addEventListener("fullscreenchange",()=>{
+    fsBtn.textContent=document.fullscreenElement===wrap?"✕ exit full screen":"⛶ full screen";
+    reset();
+    if(document.hidden){for(let k=0;k<90;k++)step();drawG();}
+    else wake();
+  });
   wake();
   new MutationObserver(()=>{wake();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
   function pick(x,y){let best=null,bd=350;

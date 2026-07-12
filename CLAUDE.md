@@ -54,9 +54,11 @@ persisted, pre-paint snippet in every head); everything is a card; method cards 
 (what / intuition-ours / KaTeX math notation-ours / verified evidence quotes / related / try-it resources);
 knowledge graph nodes open info cards (hover = corner brief); the graph weights node size by usage and has
 TWO LENSES on the one master map (methods↔families / shared stack) — never a second competing diagram;
-papers draw as per-paper icons (not circles), popular methods carry an aura scaled to usage, hover lights
-paths TWO HOPS out (family → methods → papers), and the graph paints synchronous frames when the document
-is hidden (rAF is suspended in background tabs — a blank canvas there is this bug, not a data problem); the
+papers draw as per-paper icons (not circles) with names on HOVER ONLY, node size is CONVEX in usage
+(count-1 leaves small, r ~ count^1.5), popular methods carry an aura scaled to usage, hover lights
+paths TWO HOPS out (family → methods → papers), a ⛶ full-screen toggle gives the map room as the corpus
+grows, and the graph paints synchronous frames when the document is hidden (rAF is suspended in
+background tabs — a blank canvas there is this bug, not a data problem); the
 shared-stack stripe (index #stack) renders docs/shared-stack.md (simulators, algorithms, compute, sensors,
 firmware, code releases; counts = distinct papers; "not stated" shown, never guessed); ONE master map per
 page + zoom figures, never competing diagrams; figures on a constant light plate; NO always-on animation
