@@ -20,7 +20,7 @@ loses things — so rewrites now carry content by THIS checklist.
 | 1 | Project status numbers (candidates / extracted / methods / gates) | index.html status cards + README status table | LIVE — must stay consistent |
 | 2 | Annotated paper cards (scales to 70; only extracted get pages) | index.html #papers | LIVE |
 | 3 | Per-paper annotated pages (TL;DR, figures, math, results, limitations, relevance, provenance, BibTeX) | site/papers/{id}.html ×10 (batches 1 and 2 both S5-verified, 11 Jul 2026) | LIVE |
-| 4 | Knowledge graph (hover brief, node info cards; since 12 Jul 2026: node size = usage, two lenses — methods↔families and shared stack — on the one master map) | index.html #graph | LIVE — enhanced 12 Jul 2026, nothing dropped |
+| 4 | Knowledge graph (hover brief, node info cards; since 12 Jul 2026: node size = usage, two lenses — methods↔families and shared stack — on the one master map; same day: papers draw as per-paper icons not circles, popular methods carry an aura scaled to usage, hover lights paths two hops out — family → methods → papers, paper → shared tool → sibling papers; graph paints a synchronous frame in hidden documents where rAF is suspended) | index.html #graph | LIVE — enhanced 12 Jul 2026, nothing dropped |
 | 5 | Method registry: 9 families, 23 cards (23rd added by batch 2), deep-dive modals (what / intuition / math / evidence / related / try-it resources); since 12 Jul 2026 also a usage bar per card + "sort by most used" toggle | index.html #methods | LIVE — families never change without permission |
 | 6 | Navigation map figure + footer site map on every page | index.html #map + all footers | LIVE |
 | 7 | Registry principle + tool lanes (verbatim quotes) | system.html #principle | LIVE |

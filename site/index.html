@@ -216,7 +216,11 @@
     nodes, hover to trace a neighbourhood, <strong>click a paper to open its page or a method to open its
     deep-dive</strong>. Edges come from the extractions on this page — nothing decorative. The full vault graph
     (papers, methods, authors, citations) is generated later by Understand-Anything over the Obsidian vault.
-    <strong>Node size is usage</strong>: the more extracted papers rely on a node, the larger it draws.
+    <strong>Node size is usage</strong>: the more extracted papers rely on a node, the larger it draws — and
+    the most-used methods carry an <strong>aura</strong> scaled to their popularity. Each paper draws as its
+    own <strong>icon</strong> (🍎 Newton's Laws, ⏱️ Fly in Seconds, 🏁 MonoRace …). Hovering lights the
+    <strong>whole path, two hops out</strong>: a family lights its methods and their papers; a paper lights
+    its tools and the sibling papers that share them.
     Two lenses share this one map: the <strong>methods lens</strong> (papers ↔ methods ↔ families) and the
     <strong>stack lens</strong> (papers ↔ simulators, algorithms, compute, sensors, firmware — the
     <a href="#stack">shared stack</a> below).
@@ -818,17 +822,25 @@ const STACK=[
   let W,H,hover=null,drag=null;
   let nodes=[],edges=[],adj={},byNode={};
   let lens="methods";
+  /* one icon per paper (identity, not fact): falcongym=camera (NeRF vision sim),
+     raptor=eagle, monorace=chequered flag, e2efly=loop (end-to-end), flysec=stopwatch
+     (18 s), attn=mechanical leg, wheeled=car, pixels=eye (no state estimation),
+     diffphys=apple (Newton), simpleflight=test tube (the ablation study) */
+  const PAPER_ICON={falcongym:"📷",raptor:"🦅",monorace:"🏁",e2efly:"🔁",flysec:"⏱️",
+    attn:"🦿",wheeled:"🚗",pixels:"👁️",diffphys:"🍎",simpleflight:"🧪"};
+  const rgba=(hex,a)=>{const v=parseInt(hex.slice(1),16);
+    return `rgba(${v>>16&255},${v>>8&255},${v&255},${a})`;};
   function themeColors(){const s=getComputedStyle(document.body);
     return {ink:s.getPropertyValue("color")||"#333",
       line:"rgba(128,130,140,.35)"};}
   function buildMethods(){
     const ns=[],ls=[];
     Object.entries(FAMS).forEach(([k,v])=>{const nM=METHODS.filter(m=>m[1]===k).length;
-      ns.push({id:"f:"+k,label:v,type:"fam",count:nM,r:4+1.6*Math.sqrt(nM)});});
-    METHODS.forEach(m=>{ns.push({id:"m:"+m[0],label:m[0],type:"method",m,count:m[4].length,r:4.5+2.1*Math.sqrt(m[4].length)});
+      ns.push({id:"f:"+k,label:v,type:"fam",count:nM,r:3.5+1.6*Math.sqrt(nM)});});
+    METHODS.forEach(m=>{ns.push({id:"m:"+m[0],label:m[0],type:"method",m,count:m[4].length,r:3.2+2.4*Math.sqrt(m[4].length)});
       ls.push(["m:"+m[0],"f:"+m[1]]);});
     const deg={};METHODS.forEach(m=>m[4].forEach(([p])=>deg[p]=(deg[p]||0)+1));
-    Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:6+1.9*Math.sqrt(deg[k]||1)}));
+    Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:7+2.2*Math.sqrt(deg[k]||1)}));
     METHODS.forEach(m=>m[4].forEach(([p])=>ls.push(["p:"+p,"m:"+m[0]])));
     return [ns,ls];
   }
@@ -837,22 +849,22 @@ const STACK=[
     STACK.filter(f=>f.lens).forEach(f=>f.items.forEach((it,j)=>{
       if(it.graphSkip)return;
       const id="s:"+f.id+":"+j;
-      ns.push({id,label:it.n,type:"stack",f,it,count:it.m.length,r:4.5+2.3*Math.sqrt(it.m.length)});
+      ns.push({id,label:it.n,type:"stack",f,it,count:it.m.length,r:3.2+2.6*Math.sqrt(it.m.length)});
       it.m.forEach(([p])=>{ls.push(["p:"+p,id]);deg[p]=(deg[p]||0)+1;});
     }));
-    Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:6+1.9*Math.sqrt(deg[k]||1)}));
+    Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:7+2.2*Math.sqrt(deg[k]||1)}));
     return [ns,ls];
   }
   function legend(){
     const el=document.getElementById("graphLegend");
     el.innerHTML = lens==="methods"
-      ? `<span><i style="background:#8b93ff"></i>papers (click → page)</span>
+      ? `<span>📄 papers = icons (click → page)</span>
          <span><i style="background:#34b46a"></i>methods (click → deep-dive)</span>
          <span><i style="background:#c08a2d"></i>families</span>
-         <span class="gl-note">node size = papers relying on it</span>`
-      : `<span><i style="background:#8b93ff"></i>papers (click → page)</span>`+
+         <span class="gl-note">size = usage · aura = popularity<br>hover lights paths two hops out</span>`
+      : `<span>📄 papers = icons (click → page)</span>`+
         STACK.filter(f=>f.lens).map(f=>`<span><i style="background:${f.color}"></i>${f.short}</span>`).join("")+
-        `<span class="gl-note">node size = papers using it</span>`;
+        `<span class="gl-note">size = usage · aura = popularity<br>hover lights paths two hops out</span>`;
   }
   function build(){
     const [ns,ls]=lens==="methods"?buildMethods():buildStack();
@@ -860,7 +872,9 @@ const STACK=[
     edges=ls.map(([a,b])=>({a:byNode[a],b:byNode[b]}));
     adj={};nodes.forEach(n=>adj[n.id]=new Set());
     edges.forEach(l=>{adj[l.a.id].add(l.b.id);adj[l.b.id].add(l.a.id);});
-    hover=null;drag=null;showBrief(null);legend();reset();wake();
+    hover=null;drag=null;showBrief(null);legend();reset();
+    for(let k=0;k<90;k++)step();  /* pre-settle so the page never opens mid-explosion */
+    wake();drawG();
   }
   function size(){const r=cv.parentElement.getBoundingClientRect();
     cv.width=r.width*devicePixelRatio;cv.height=440*devicePixelRatio;
@@ -882,32 +896,83 @@ const STACK=[
       if(n!==drag){n.vx*=.85;n.vy*=.85;n.x+=n.vx;n.y+=n.vy;}
       n.x=Math.max(18,Math.min(W-18,n.x));n.y=Math.max(18,Math.min(H-18,n.y));});
   }
+  /* hover reach: BFS two hops out, so indirect paths light too
+     (family -> its methods -> their papers; paper -> shared tool -> sibling paper).
+     Depth-2 nodes are kept only if they are papers or families - endpoints worth
+     reaching, not the whole component. */
+  function hoverMap(){
+    if(!hover)return null;
+    const d=new Map([[hover.id,0]]);
+    let frontier=[hover.id];
+    for(let depth=1;depth<=2;depth++){
+      const next=[];
+      frontier.forEach(id=>adj[id].forEach(nb=>{
+        if(d.has(nb))return;
+        const t=byNode[nb].type;
+        if(depth===2&&t!=="paper"&&t!=="fam")return;
+        d.set(nb,depth);next.push(nb);}));
+      frontier=next;
+    }
+    return d;
+  }
   function drawG(){
     const C=themeColors();
     cx.clearRect(0,0,W,H);
-    const hi=hover?adj[hover.id]:null;
-    edges.forEach(l=>{const on=hover&&(l.a===hover||l.b===hover);
-      cx.strokeStyle=on?"#8b93ff":C.line;cx.lineWidth=on?1.6:.8;cx.globalAlpha=on?1:.55;
+    const hm=hoverMap();
+    edges.forEach(l=>{
+      const da=hm?hm.get(l.a.id):undefined, db=hm?hm.get(l.b.id):undefined;
+      const lit=hm&&da!==undefined&&db!==undefined&&Math.abs(da-db)===1;
+      if(lit){const lvl=Math.min(da,db);
+        cx.strokeStyle="#8b93ff";cx.lineWidth=lvl===0?1.8:1.2;cx.globalAlpha=lvl===0?1:.7;}
+      else{cx.strokeStyle=C.line;cx.lineWidth=.8;cx.globalAlpha=hm?.12:.55;}
       cx.beginPath();cx.moveTo(l.a.x,l.a.y);cx.lineTo(l.b.x,l.b.y);cx.stroke();cx.globalAlpha=1;});
-    nodes.forEach(n=>{const dim=hover&&n!==hover&&!hi.has(n.id);
-      cx.globalAlpha=dim?.18:1;
-      cx.fillStyle=color(n,C);
-      cx.beginPath();cx.arc(n.x,n.y,n===hover?n.r+3:n.r,0,6.29);cx.fill();
-      if(n===hover){cx.strokeStyle=C.ink;cx.lineWidth=1.4;cx.stroke();}
+    nodes.forEach(n=>{
+      const d=hm?hm.get(n.id):undefined;
+      const alpha=!hm?1:(d===undefined?.12:(d===2?.7:1));
+      cx.globalAlpha=alpha;
+      /* aura: popularity halo on method/stack nodes, radius + intensity grow with count */
+      if((n.type==="method"||n.type==="stack")&&n.count>=2){
+        const glowR=n.r+5+n.count*2.4;
+        const g=cx.createRadialGradient(n.x,n.y,n.r*.4,n.x,n.y,glowR);
+        g.addColorStop(0,rgba(color(n,C),Math.min(.34,.08+.033*n.count)));
+        g.addColorStop(1,rgba(color(n,C),0));
+        cx.fillStyle=g;cx.beginPath();cx.arc(n.x,n.y,glowR,0,6.29);cx.fill();
+      }
+      if(n.type==="paper"){
+        /* papers are icons, not circles */
+        const s=Math.round(n.r*1.9);
+        cx.font=s+'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+        cx.textAlign="center";cx.textBaseline="middle";
+        cx.fillText(PAPER_ICON[n.id.slice(2)]||"📄",n.x,n.y);
+        cx.textBaseline="alphabetic";
+        if(n===hover){cx.strokeStyle=C.ink;cx.lineWidth=1.4;
+          cx.beginPath();cx.arc(n.x,n.y,n.r+4,0,6.29);cx.stroke();}
+      }else{
+        cx.fillStyle=color(n,C);
+        cx.beginPath();cx.arc(n.x,n.y,n===hover?n.r+3:n.r,0,6.29);cx.fill();
+        if(n===hover){cx.strokeStyle=C.ink;cx.lineWidth=1.4;cx.stroke();}
+      }
       const lab=n.type==="paper"||(n.type==="method"&&n.count>=5)||(n.type==="stack"&&n.count>=2);
-      if(!dim&&(lab||n===hover||(hover&&hi.has(n.id)))){
+      const showLab=!hm?lab:(d!==undefined&&(d<=1||n.type==="paper"));
+      if(showLab){
         cx.fillStyle=C.ink;cx.font="11px Inter,system-ui,sans-serif";cx.textAlign="center";
-        cx.fillText(n.label.length>30?n.label.slice(0,28)+"…":n.label,n.x,n.y-n.r-6);}
+        cx.fillText(n.label.length>30?n.label.slice(0,28)+"…":n.label,n.x,n.y-n.r-(n.type==="paper"?9:6));}
       cx.globalAlpha=1;});
   }
   /* run physics only while recently active; sleep when settled (saves CPU) */
   let lastActive=performance.now(),raf=null;
-  function wake(){lastActive=performance.now();if(raf===null)raf=requestAnimationFrame(loop);}
+  function wake(){lastActive=performance.now();
+    /* rAF never fires while the document is hidden (background tab, embed):
+       paint one synchronous frame instead so the graph is never blank */
+    if(document.hidden){step();drawG();return;}
+    if(raf===null)raf=requestAnimationFrame(loop);}
   function loop(){
-    step();drawG();
+    try{step();drawG();}
+    catch(e){console.error("graph loop:",e);raf=null;return;}
     if(performance.now()-lastActive<5000){raf=requestAnimationFrame(loop);}
     else{raf=null;}
   }
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake();});
   wake();
   new MutationObserver(()=>{wake();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
   function pick(x,y){let best=null,bd=350;
@@ -937,7 +1002,8 @@ const STACK=[
     const x=e.clientX-r.left,y=e.clientY-r.top;
     if(drag){drag.x=x;drag.y=y;drag.vx=drag.vy=0;return;}
     const prev=hover;hover=pick(x,y);cv.style.cursor=hover?"pointer":"grab";
-    if(hover!==prev)showBrief(hover);});
+    if(hover!==prev)showBrief(hover);
+    if(document.hidden)drawG();});
   cv.addEventListener("mousedown",()=>{wake();if(hover){drag=hover;cv.classList.add("grabbing");}});
   addEventListener("mouseup",()=>{drag=null;cv.classList.remove("grabbing");});
   cv.addEventListener("mouseleave",()=>{hover=null;showBrief(null);wake();});
