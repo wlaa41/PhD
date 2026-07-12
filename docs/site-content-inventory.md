@@ -19,9 +19,9 @@ loses things — so rewrites now carry content by THIS checklist.
 |---|---|---|---|
 | 1 | Project status numbers (candidates / extracted / methods / gates) | index.html status cards + README status table | LIVE — must stay consistent |
 | 2 | Annotated paper cards (scales to 70; only extracted get pages) | index.html #papers | LIVE |
-| 3 | Per-paper annotated pages (TL;DR, figures, math, results, limitations, relevance, provenance, BibTeX) | site/papers/{id}.html ×10 (batch 1 S5-verified; batch 2 S5 pending) | LIVE |
-| 4 | Knowledge graph (papers↔methods↔families, hover brief, node info cards) | index.html #graph | LIVE |
-| 5 | Method registry: 9 families, 22 cards, deep-dive modals (what / intuition / math / evidence / related / try-it resources) | index.html #methods | LIVE — families never change without permission |
+| 3 | Per-paper annotated pages (TL;DR, figures, math, results, limitations, relevance, provenance, BibTeX) | site/papers/{id}.html ×10 (batches 1 and 2 both S5-verified, 11 Jul 2026) | LIVE |
+| 4 | Knowledge graph (hover brief, node info cards; since 12 Jul 2026: node size = usage, two lenses — methods↔families and shared stack — on the one master map) | index.html #graph | LIVE — enhanced 12 Jul 2026, nothing dropped |
+| 5 | Method registry: 9 families, 23 cards (23rd added by batch 2), deep-dive modals (what / intuition / math / evidence / related / try-it resources); since 12 Jul 2026 also a usage bar per card + "sort by most used" toggle | index.html #methods | LIVE — families never change without permission |
 | 6 | Navigation map figure + footer site map on every page | index.html #map + all footers | LIVE |
 | 7 | Registry principle + tool lanes (verbatim quotes) | system.html #principle | LIVE |
 | 8 | **Design-loop history (Loops 1–5 self-critique)** | system.html #principle (restored 10 Jul) · source docs/phd-architecture.md §0 | RESTORED 10 Jul 2026 — was silently dropped in redesign v2 |
@@ -38,7 +38,9 @@ loses things — so rewrites now carry content by THIS checklist.
 | 19 | **Corpus dashboard charts** (KPI tiles; papers by year × zero-shot; platform mix; institutions; score distribution) | nowhere — was old hub #dash | **DROPPED in redesign v2 — PENDING OWNER DECISION.** The old implementation is preserved in archive/transfer-hub-v1.html; say the word and it returns as light/dark chart cards on corpus.html |
 | 20 | Weather/drone hero simulation | removed | REMOVED BY OWNER REQUEST 7 Jul 2026 ("childish") — the one authorized removal |
 | 21 | Update protocol (6 steps + removal rule) | README + this file | LIVE |
-| 22 | S5 verification record | docs/s5-notebooklm-2026-07-10.md, linked from all paper pages | LIVE |
+| 22 | S5 verification records | docs/s5-notebooklm-2026-07-10.md + docs/s5-notebooklm-2026-07-11.md, linked from all paper pages | LIVE |
+| 23 | **Shared stack stripe** (7 facet cards: simulators, algorithms, training compute, deployment compute, sensors, firmware, code releases; count bars, evidence modals, "not stated" gaps shown) | index.html #stack · source docs/shared-stack.md | LIVE — shipped 12 Jul 2026 |
+| 24 | Stack lens on the knowledge graph (papers ↔ simulators/algorithms/compute/sensors/firmware; facet colours, size = count) | index.html #graph (lens toggle) · source docs/shared-stack.md | LIVE — shipped 12 Jul 2026 |
 
 ## How to use this file
 

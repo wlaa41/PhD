@@ -38,6 +38,25 @@
   .foot-map b{display:block;font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-bottom:.35rem}
   .foot-map a{display:block;color:var(--ink-3);padding:.12rem 0}
   .foot-map a:hover{color:var(--accent)}
+  /* graph lens chips + legend note */
+  .graph-legend .gl-note{border-top:1px dashed var(--line);margin-top:.25rem;padding-top:.3rem;font-size:.68rem}
+  /* method-card usage bar (count made scannable) */
+  .method-card .mc-bar{display:block;height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:.4rem}
+  .method-card .mc-bar i{display:block;height:100%;background:var(--accent);border-radius:2px}
+  /* shared-stack stripe */
+  .stack-card{padding:1rem 1.2rem;display:flex;flex-direction:column;gap:.55rem}
+  .stack-card .sk-fam{font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:.45rem}
+  .stack-card .sk-fam i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+  .stack-card .sk-note{font-size:.8rem;color:var(--ink-3);line-height:1.5}
+  .sk-items{display:flex;flex-direction:column;gap:.1rem}
+  .sk-item{display:grid;grid-template-columns:minmax(0,1fr) 4.5rem 2.6rem;align-items:center;gap:.6rem;
+    background:none;border:0;border-radius:7px;padding:.32rem .45rem;font-family:var(--sans);text-align:left;cursor:pointer}
+  .sk-item:hover{background:var(--card-2)}
+  .sk-item .sk-name{font-size:.84rem;font-weight:500;color:var(--ink);line-height:1.3}
+  .sk-item .sk-bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+  .sk-item .sk-bar i{display:block;height:100%;border-radius:2px}
+  .sk-item .sk-count{font-family:var(--mono);font-size:.7rem;color:var(--ink-3);white-space:nowrap;text-align:right}
+  .stack-card .sk-none{font-size:.72rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:.45rem;margin-top:.1rem;line-height:1.5}
 </style>
 </head>
 <body>
@@ -73,6 +92,7 @@
   <nav class="quick-nav" aria-label="Jump to">
     <a class="chip-btn" href="#papers">Papers</a>
     <a class="chip-btn" href="#graph">Knowledge graph</a>
+    <a class="chip-btn" href="#stack">Shared stack</a>
     <a class="chip-btn" href="#methods">Methods</a>
     <a class="chip-btn" href="system.html">How it works</a>
     <a class="chip-btn" href="corpus.html">Ranked corpus</a>
@@ -196,14 +216,34 @@
     nodes, hover to trace a neighbourhood, <strong>click a paper to open its page or a method to open its
     deep-dive</strong>. Edges come from the extractions on this page — nothing decorative. The full vault graph
     (papers, methods, authors, citations) is generated later by Understand-Anything over the Obsidian vault.
-    <span class="src">edges: the member lists in the method registry below</span>
+    <strong>Node size is usage</strong>: the more extracted papers rely on a node, the larger it draws.
+    Two lenses share this one map: the <strong>methods lens</strong> (papers ↔ methods ↔ families) and the
+    <strong>stack lens</strong> (papers ↔ simulators, algorithms, compute, sensors, firmware — the
+    <a href="#stack">shared stack</a> below).
+    <span class="src">edges: the method registry + docs/shared-stack.md</span>
   </p>
+  <div class="filter-chips" id="graphLensChips" role="tablist" aria-label="Graph lens" style="margin:0 0 .7rem">
+    <button class="chip-btn on" data-lens="methods">Lens: papers ↔ methods</button>
+    <button class="chip-btn" data-lens="stack">Lens: papers ↔ stack</button>
+  </div>
   <div class="graph-wrap">
     <canvas id="graphCanvas"></canvas>
     <div class="graph-legend" id="graphLegend"></div>
     <div class="graph-brief" id="graphBrief" aria-live="polite"></div>
     <div class="graph-hint">drag · hover · click</div>
   </div>
+
+  <h2 class="section-label" id="stack">The shared stack</h2>
+  <p class="section-sub">
+    The method registry below counts <em>techniques</em>; this stripe counts the <em>concrete tools and
+    platforms</em> the ten extracted papers build with — simulators, algorithms, compute, sensors, firmware,
+    code releases. The count is distinct papers; the bar makes it scannable. <strong>Press any item for its
+    evidence</strong>: who uses it, quoted. A facet a paper does not state is shown as
+    <em>not stated</em>, never guessed.
+    <span class="src">docs/shared-stack.md · derived 12 Jul 2026</span>
+    <span class="src">paper pages + S5 records, recounted &amp; re-grounded</span>
+  </p>
+  <div class="grid g2" id="stackGrid"></div>
 
   <h2 class="section-label" id="methods">The method registry</h2>
   <p class="section-sub">
@@ -226,7 +266,7 @@
           <path d="M0,0 L10,5 L0,10 z" fill="#9b9da6"/></marker></defs>
         <rect x="300" y="16" width="160" height="52" rx="9" fill="#4f46e5"/>
         <text x="380" y="38" text-anchor="middle" fill="#ffffff" font-weight="700">Overview</text>
-        <text x="380" y="55" text-anchor="middle" fill="#e0e7ff" font-size="10">status · papers · graph · methods</text>
+        <text x="380" y="55" text-anchor="middle" fill="#e0e7ff" font-size="10">status · papers · graph · stack · methods</text>
 
         <rect x="40" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
         <text x="115" y="139" text-anchor="middle" fill="#111216" font-weight="600">Paper pages ×5</text>
@@ -248,7 +288,7 @@
 
         <rect x="40" y="216" width="330" height="44" rx="9" fill="#fff" stroke="#d8d8de" stroke-dasharray="4 3"/>
         <text x="205" y="234" text-anchor="middle" fill="#111216" font-weight="600" font-size="11">Knowledge graph (Obsidian view)</text>
-        <text x="205" y="250" text-anchor="middle" fill="#71737c" font-size="10">papers ↔ methods ↔ families · click-through both ways</text>
+        <text x="205" y="250" text-anchor="middle" fill="#71737c" font-size="10">two lenses: methods ↔ families · shared stack · size = usage</text>
         <line x1="130" y1="166" x2="170" y2="212" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
         <line x1="295" y1="166" x2="250" y2="212" stroke="#9b9da6" stroke-width="1.4" marker-end="url(#nma)"/>
 
@@ -312,6 +352,7 @@
       <a href="papers/simpleflight-2024.html">10 · SimpleFlight</a></div>
     <div><b>Explore</b>
       <a href="#graph">Knowledge graph</a>
+      <a href="#stack">Shared stack</a>
       <a href="#methods">Method registry</a>
       <a href="corpus.html">Ranked corpus</a></div>
     <div><b>Understand</b>
@@ -325,7 +366,7 @@
   </div>
   <div class="site-foot-inner">
     <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
-    <span>Zero-Shot UAV · updated 7 July 2026</span>
+    <span>Zero-Shot UAV · updated 12 July 2026</span>
   </div>
 </footer>
 
@@ -582,20 +623,27 @@ const byId={};METHODS.forEach(m=>byId[m[0]]=m);
 const grid=document.getElementById("methodGrid"), chips=document.getElementById("famChips");
 chips.innerHTML=`<button class="chip-btn on" data-fam="">All · ${METHODS.length}</button>`+
   Object.entries(FAMS).map(([k,v])=>{const n=METHODS.filter(m=>m[1]===k).length;
-    return `<button class="chip-btn" data-fam="${k}">${v} · ${n}</button>`;}).join("");
+    return `<button class="chip-btn" data-fam="${k}">${v} · ${n}</button>`;}).join("")+
+  `<button class="chip-btn" id="sortCount" title="Order methods by how many papers use them">Sort: most used</button>`;
+let sortByCount=false,curFam="";
 function draw(fam){
-  grid.innerHTML=METHODS.filter(m=>!fam||m[1]===fam).map(m=>{
+  let list=METHODS.filter(m=>!fam||m[1]===fam);
+  if(sortByCount)list=[...list].sort((a,b)=>b[4].length-a[4].length);
+  grid.innerHTML=list.map(m=>{
     const idx=METHODS.indexOf(m);
     return `<button class="card clickable method-card" data-i="${idx}" aria-haspopup="dialog">
       <span class="mc-id">${m[0]}</span>
       <span class="mc-name">${esc(m[2])}</span>
+      <span class="mc-bar" aria-hidden="true"><i style="width:${m[4].length*10}%"></i></span>
       <span class="mc-foot"><span class="mc-fam">${FAMS[m[1]]}</span>
       <span class="mc-count">${m[4].length} / 10</span></span></button>`;}).join("");
 }
 draw("");
-chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b||!b.dataset)return;
+chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b)return;
+  if(b.id==="sortCount"){sortByCount=!sortByCount;b.classList.toggle("on",sortByCount);draw(curFam);return;}
   if(b.dataset.fam===undefined)return;
-  chips.querySelectorAll(".chip-btn").forEach(x=>x.classList.toggle("on",x===b));draw(b.dataset.fam);});
+  curFam=b.dataset.fam;
+  chips.querySelectorAll(".chip-btn[data-fam]").forEach(x=>x.classList.toggle("on",x===b));draw(curFam);});
 
 const back=document.getElementById("modalBack"),modal=document.getElementById("methodModal");
 function openMethod(m){
@@ -632,38 +680,197 @@ back.addEventListener("click",closeModal);
 document.getElementById("mmClose").addEventListener("click",closeModal);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 
-/* ---- knowledge graph: papers <-> methods <-> families (edges = registry members) ---- */
+/* ---- the shared stack: source of truth is docs/shared-stack.md (derived 12 Jul 2026
+   from the ten paper pages + the two S5 records; counts recounted and quotes re-grounded
+   adversarially before publication). Count = distinct papers. "not stated" is shown, never
+   guessed. Facets with lens:true also feed the knowledge graph's stack lens. ---- */
+const STACK=[
+{id:"sim",name:"Simulators & training environments",short:"simulators",color:"#34b46a",lens:true,
+ note:"Only four of ten train in a simulator that has a name; six build their own or never name it. Simulators are where this corpus does not converge.",ns:[],
+ items:[
+  {n:"Purpose-built / unnamed simulator",g:"six different artefacts — grouped only to show the pattern, not a shared tool",m:[
+    ["flysec","purpose-built: about 5 months of simulated flight per second on a laptop GPU"],
+    ["e2efly","an unnamed high-performance simulator (differentiable physics + RL), plus a second simulator for sim-to-sim validation"],
+    ["diffphys","'a simple point-mass physics model and a depth rendering engine', implemented with CUDA as a PyTorch extension (S5)"],
+    ["pixels","PPO in an 'augmented simulator' — a data-driven augmentation of a quadratic propeller model (S5)"],
+    ["monorace","'trained in simulation using reinforcement learning' — the simulator is never named (S5)"],
+    ["attn","'massively parallel DRL' — the simulator itself is not named (S5)"]]},
+  {n:"Isaac Lab + RSL-RL",g:"the only third-party framework here — and this project's own planned training stack",m:[
+    ["wheeled","policies trained with PPO 'as implemented in the RSL RL library' inside Isaac Lab's GPU-parallel simulation (S5)"]]},
+  {n:"OmniDrones",m:[
+    ["simpleflight","trained in the GPU-based OmniDrones simulator — 'a GPU-accelerated, highly parallel drone simulator' (S5)"]]},
+  {n:"FalconGym (NeRF-built)",m:[
+    ["falcongym","trained by imitation learning against expert trajectories, entirely inside the NeRF simulator"]]},
+  {n:"L2F (Learning-to-Fly) simulator",m:[
+    ["raptor","'the student is a GRU trained in the L2F (Learning-to-Fly) simulator'"]]}]},
+{id:"algo",name:"Training algorithms",short:"algorithms",color:"#c08a2d",lens:true,
+ note:"PPO is the only algorithm this corpus shares; everything else appears once or twice.",ns:[],
+ items:[
+  {n:"PPO",m:[
+    ["monorace","'optimized via PPO to complete the track in minimal time' (S5)"],
+    ["simpleflight","'a PPO-based training framework' (verbatim)"],
+    ["wheeled","'PPO as implemented in the RSL RL library' (S5)"],
+    ["attn","'custom version of Proximal Policy Optimization (PPO)' on an A100-40GB and an RTX 4090 (S5)"],
+    ["pixels","'model-free reinforcement learning relying on PPO' (S5)"],
+    ["e2efly","PPO trained as the comparison baseline — BPTT converges 'in less than 30% of PPO's training time'"]]},
+  {n:"Backprop through differentiable simulation",g:"matches differentiable-physics-learning in the method registry",m:[
+    ["e2efly","BPTT through the differentiable simulator"],
+    ["diffphys","'backpropagation through a physical simulator directly' — no reward shaping, no policy-gradient estimation"]]},
+  {n:"DAgger-style imitation learning",m:[
+    ["falcongym","imitation learning 'DAGGER-style' from an 'expert state-based controller' (S5)"],
+    ["raptor","'the expectation over trajectories is taken under the student's own behaviour, DAgger-style'"]]},
+  {n:"Meta-Imitation Learning",m:[
+    ["raptor","'condenses the behavior of 1000 Markovian teacher policies into a single adaptive/non-Markovian student' (S5)"]]},
+  {n:"Off-policy actor-critic (name not stated)",m:[
+    ["flysec","replay buffer + scheduled exploration-noise decay — 'OFF-POLICY actor-critic, not PPO' (S5 correction); exact name deferred to S6"]]}]},
+{id:"tcomp",name:"Training compute",short:"training compute",color:"#71737c",lens:false,
+ note:"Stated by only three papers — and the spread is the story: 18 seconds on a MacBook Pro at one end, an A100 at the other.",
+ ns:["falcongym","raptor","monorace","e2efly","pixels","diffphys","simpleflight"],
+ items:[
+  {n:"A100-40GB + RTX 4090",m:[["attn","custom PPO trained 'on an A100-40GB (ANYmal) and RTX 4090 (GR-1)' (S5)"]]},
+  {n:"Single RTX 3080",m:[["wheeled","trained on a 'single NVIDIA RTX 3080 GPU' (S5)"]]},
+  {n:"2020 MacBook Pro (laptop GPU)",m:[["flysec","18-second training on a consumer laptop; simulation on an 'Nvidia T2000 laptop GPU' (S5)"]]}]},
+{id:"deploy",name:"Deployment compute",short:"compute",color:"#d8618f",lens:true,
+ note:"The S5 records' live analysis axis — 'zero-shot ≠ onboard': six papers run fully onboard, three offboard, one both.",ns:[],
+ items:[
+  {n:"Offboard ground station",g:"four different machines — grouped to show the offboard pattern, not a shared tool",m:[
+    ["falcongym","perception + controller inference offboard on an NVIDIA RTX 4090, a stable 20 Hz loop (S5 correction)"],
+    ["pixels","'the policy does not run on the drone' — offboard PC; the Swin detector takes 4 ms on an RTX 3090 (S5 correction)"],
+    ["simpleflight","Crazyflie tests: 'the policy is executed on an offboard computer' via 2.4 GHz radio at 100 Hz (S5 correction); the 'Air' platform carries an onboard-capable Nvidia Orin"],
+    ["e2efly","VIS-H: hardware-in-the-loop, FPV camera streamed to a ground station"]]},
+  {n:"NVIDIA Jetson Orin NX",m:[
+    ["monorace","the 'main processing unit' onboard the 966 g airframe, alongside an STM32H743 (480 MHz) flight controller (S5)"],
+    ["wheeled","the HOUND: LiDAR + RGB, Jetson Orin NX, about 3,000 USD"]]},
+  {n:"Flight-controller-class MCU (unnamed)",m:[
+    ["raptor","deployed 'directly onto the microcontrollers' (S5); 'fits comfortably on any flight controller, with no accelerator, quantization or pruning'"],
+    ["flysec","a 'microcontroller with real-time guarantees' aboard a Crazyflie nano quadrotor"]]},
+  {n:"Mango Pi SBC (Cortex-A53) · 21 USD",m:[
+    ["diffphys","fully onboard, with an 'Aocoda F7mini flight controller' and 'HAKRC 4-in-1' ESC (S5)"]]},
+  {n:"Radax X4 (Intel N100)",m:[
+    ["e2efly","VIS-R: Radax X4 onboard computer with Intel N100"]]},
+  {n:"Intel i7-8850H + onboard Jetson",m:[
+    ["attn","ANYmal-D infers on the i7; 'elevation mapping runs on an onboard Nvidia Jetson' (S5); GR-1 uses an i7-13700H"]]}]},
+{id:"sense",name:"Sensors at deployment",short:"sensors",color:"#4aa8c0",lens:true,
+ note:"Cameras dominate, but no two systems sense alike; two of ten fly with no explicit state estimation at all.",
+ ns:["flysec"],
+ items:[
+  {n:"Intel RealSense D435i",m:[
+    ["e2efly","VIS-R stereo camera"],
+    ["diffphys","'Intel RealSense depth camera' (D435i) at 15 Hz (S5)"]]},
+  {n:"FPV camera → offboard compute",m:[
+    ["pixels","onboard FPV camera only; video at 60 Hz with 33 ms transmission latency (S5)"],
+    ["e2efly","VIS-H: FPV camera to a ground station"]]},
+  {n:"IMU (stated)",m:[
+    ["falcongym","NPE fused with an IMU through a Kalman filter"],
+    ["monorace","one monocular rolling-shutter camera + IMU"]]},
+  {n:"Robot-centric elevation map",m:[
+    ["attn","'robot-centric height map' (S5), built on an onboard Jetson"],
+    ["wheeled","'local (2.5 × 2.5 meters) body-centric elevation map' (S5)"]]},
+  {n:"No explicit state estimation",graphSkip:true,m:[
+    ["pixels","'no state estimator anywhere in the loop'"],
+    ["diffphys","'can operate without state estimation and adapt to dynamic obstacles'"]]},
+  {n:"Monocular rolling-shutter camera",m:[
+    ["monorace","'single CMOS rolling-shutter camera' (S5); 'no external tracking of any kind'"]]},
+  {n:"ArduCam global-shutter camera",m:[
+    ["falcongym","on the Raspberry Pi 3 + Navio2 onboard stack (S5)"]]},
+  {n:"LiDAR + RGB",m:[
+    ["wheeled","the HOUND's sensing for the drifting task"]]},
+  {n:"OptiTrack motion capture (external)",m:[
+    ["simpleflight","state from an 'OptiTrack motion capture system' (S5 correction) — external infrastructure, not onboard autonomy"]]},
+  {n:"Linear-velocity observations",m:[
+    ["raptor","the policy 'relies heavily on linear-velocity observations' for implicit system ID (S5 limitation)"]]},
+  {n:"Proprioception (joint + body state)",m:[
+    ["attn","map encoding conditioned on the robot's proprioception"]]}]},
+{id:"fw",name:"Firmware & middleware",short:"firmware",color:"#9a7bd0",lens:true,
+ note:"Named by four papers only — RAPTOR alone spans four firmware ecosystems; six papers name none.",
+ ns:["monorace","flysec","attn","wheeled","pixels","diffphys"],
+ items:[
+  {n:"PX4",g:"this project's own stack",m:[
+    ["raptor","flight-controller ecosystems: 'PX4/Betaflight/Crazyflie/M5StampFly' (S5)"],
+    ["simpleflight","the 'Air' platform: 'PX4 flight controller' with Nvidia Orin (S5)"]]},
+  {n:"Betaflight",m:[
+    ["raptor","the same four-ecosystem quote (S5)"],
+    ["e2efly","both platforms on 'Betaflight-compatible STM32F7-based' flight controllers, via the 'betaflight-ctrl' bridge (S5)"]]},
+  {n:"Crazyflie firmware",m:[
+    ["raptor","the same four-ecosystem quote (S5) — flysec flies a Crazyflie but states no firmware, so gets no credit"]]},
+  {n:"M5StampFly",m:[
+    ["raptor","the same four-ecosystem quote (S5)"]]},
+  {n:"ROS",m:[
+    ["falcongym","'a stable 20 Hz control loop via ROS topics' (S5)"]]}]},
+{id:"code",name:"Code releases & language",short:"code",color:"#64748b",lens:false,
+ note:"Three of ten state a release; implementation language is stated by exactly one paper. An honest gap the LAW keeps visible.",
+ nsLabel:"no release stated by",ns:["falcongym","raptor","monorace","e2efly","attn","pixels","diffphys"],
+ items:[
+  {n:"Open-source release stated",m:[
+    ["flysec","'the code and simulator are open source' — this project's designated I2 baseline"],
+    ["simpleflight","open-source access to both the code and the model checkpoints"],
+    ["wheeled","'The full stack, from hardware to software, is low-cost and open-source' — project site live-verified 10 Jul 2026"]]},
+  {n:"Implementation language stated",m:[
+    ["diffphys","depth renderer 'implemented with CUDA as a PyTorch extension' (S5)"]]}]}
+];
+
+/* ---- knowledge graph: two lenses over one map (never two competing diagrams) ----
+   methods lens: papers <-> methods <-> families (edges = registry members)
+   stack lens:   papers <-> shared-stack items  (edges = docs/shared-stack.md)
+   node radius grows with usage: r ~ sqrt(papers relying on the node) */
 (function(){
   const cv=document.getElementById("graphCanvas"),cx=cv.getContext("2d");
   let W,H,hover=null,drag=null;
+  let nodes=[],edges=[],adj={},byNode={};
+  let lens="methods";
   function themeColors(){const s=getComputedStyle(document.body);
     return {ink:s.getPropertyValue("color")||"#333",
-      card:getComputedStyle(cv.parentElement).backgroundColor,
-      accent:getComputedStyle(document.querySelector(".brand span")).color,
-      line:"rgba(128,130,140,.35)",dim:"rgba(128,130,140,.9)"};}
-  const nodes=[],links=[];
-  Object.entries(FAMS).forEach(([k,v])=>nodes.push({id:"f:"+k,label:v,type:"fam",r:6}));
-  METHODS.forEach(m=>{nodes.push({id:"m:"+m[0],label:m[0],type:"method",r:7,m});
-    links.push(["m:"+m[0],"f:"+m[1]]);});
-  Object.entries(PAPERS).forEach(([k,[href,label]])=>nodes.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",r:11,href}));
-  METHODS.forEach(m=>m[4].forEach(([p])=>links.push(["p:"+p,"m:"+m[0]])));
-  const byNode={};nodes.forEach(n=>byNode[n.id]=n);
-  const edges=links.map(([a,b])=>({a:byNode[a],b:byNode[b]}));
-  const adj={};nodes.forEach(n=>adj[n.id]=new Set());
-  edges.forEach(l=>{adj[l.a.id].add(l.b.id);adj[l.b.id].add(l.a.id);});
+      line:"rgba(128,130,140,.35)"};}
+  function buildMethods(){
+    const ns=[],ls=[];
+    Object.entries(FAMS).forEach(([k,v])=>{const nM=METHODS.filter(m=>m[1]===k).length;
+      ns.push({id:"f:"+k,label:v,type:"fam",count:nM,r:4+1.6*Math.sqrt(nM)});});
+    METHODS.forEach(m=>{ns.push({id:"m:"+m[0],label:m[0],type:"method",m,count:m[4].length,r:4.5+2.1*Math.sqrt(m[4].length)});
+      ls.push(["m:"+m[0],"f:"+m[1]]);});
+    const deg={};METHODS.forEach(m=>m[4].forEach(([p])=>deg[p]=(deg[p]||0)+1));
+    Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:6+1.9*Math.sqrt(deg[k]||1)}));
+    METHODS.forEach(m=>m[4].forEach(([p])=>ls.push(["p:"+p,"m:"+m[0]])));
+    return [ns,ls];
+  }
+  function buildStack(){
+    const ns=[],ls=[],deg={};
+    STACK.filter(f=>f.lens).forEach(f=>f.items.forEach((it,j)=>{
+      if(it.graphSkip)return;
+      const id="s:"+f.id+":"+j;
+      ns.push({id,label:it.n,type:"stack",f,it,count:it.m.length,r:4.5+2.3*Math.sqrt(it.m.length)});
+      it.m.forEach(([p])=>{ls.push(["p:"+p,id]);deg[p]=(deg[p]||0)+1;});
+    }));
+    Object.entries(PAPERS).forEach(([k,[href,label]])=>ns.push({id:"p:"+k,label:label.split(" (")[0],type:"paper",href,count:deg[k]||0,r:6+1.9*Math.sqrt(deg[k]||1)}));
+    return [ns,ls];
+  }
+  function legend(){
+    const el=document.getElementById("graphLegend");
+    el.innerHTML = lens==="methods"
+      ? `<span><i style="background:#8b93ff"></i>papers (click → page)</span>
+         <span><i style="background:#34b46a"></i>methods (click → deep-dive)</span>
+         <span><i style="background:#c08a2d"></i>families</span>
+         <span class="gl-note">node size = papers relying on it</span>`
+      : `<span><i style="background:#8b93ff"></i>papers (click → page)</span>`+
+        STACK.filter(f=>f.lens).map(f=>`<span><i style="background:${f.color}"></i>${f.short}</span>`).join("")+
+        `<span class="gl-note">node size = papers using it</span>`;
+  }
+  function build(){
+    const [ns,ls]=lens==="methods"?buildMethods():buildStack();
+    nodes=ns;byNode={};nodes.forEach(n=>byNode[n.id]=n);
+    edges=ls.map(([a,b])=>({a:byNode[a],b:byNode[b]}));
+    adj={};nodes.forEach(n=>adj[n.id]=new Set());
+    edges.forEach(l=>{adj[l.a.id].add(l.b.id);adj[l.b.id].add(l.a.id);});
+    hover=null;drag=null;showBrief(null);legend();reset();wake();
+  }
   function size(){const r=cv.parentElement.getBoundingClientRect();
     cv.width=r.width*devicePixelRatio;cv.height=440*devicePixelRatio;
     cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=r.width;H=440;}
   function reset(){size();nodes.forEach((n,i)=>{const a=i/nodes.length*6.283;
-    const rad=n.type==="paper"?0.18:n.type==="method"?0.34:0.46;
+    const rad=n.type==="paper"?0.18:(n.type==="method"||n.type==="stack")?0.34:0.46;
     n.x=W/2+Math.cos(a)*W*rad+(Math.random()-.5)*30;
     n.y=H/2+Math.sin(a)*H*rad+(Math.random()-.5)*30;n.vx=0;n.vy=0;});}
-  reset();addEventListener("resize",reset);
-  document.getElementById("graphLegend").innerHTML=
-    `<span><i style="background:#8b93ff"></i>papers (click → page)</span>
-     <span><i style="background:#34b46a"></i>methods (click → deep-dive)</span>
-     <span><i style="background:#c08a2d"></i>families</span>`;
-  function color(n,C){return n.type==="paper"?"#8b93ff":n.type==="method"?"#34b46a":"#c08a2d";}
+  addEventListener("resize",()=>{reset();});
+  function color(n,C){return n.type==="paper"?"#8b93ff":n.type==="method"?"#34b46a":n.type==="fam"?"#c08a2d":n.f.color;}
   function step(){
     for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
       const a=nodes[i],b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy+.01,d=Math.sqrt(d2);
@@ -687,7 +894,8 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
       cx.fillStyle=color(n,C);
       cx.beginPath();cx.arc(n.x,n.y,n===hover?n.r+3:n.r,0,6.29);cx.fill();
       if(n===hover){cx.strokeStyle=C.ink;cx.lineWidth=1.4;cx.stroke();}
-      if(!dim&&(n.type==="paper"||n===hover||(hover&&hi.has(n.id)))){
+      const lab=n.type==="paper"||(n.type==="method"&&n.count>=5)||(n.type==="stack"&&n.count>=2);
+      if(!dim&&(lab||n===hover||(hover&&hi.has(n.id)))){
         cx.fillStyle=C.ink;cx.font="11px Inter,system-ui,sans-serif";cx.textAlign="center";
         cx.fillText(n.label.length>30?n.label.slice(0,28)+"…":n.label,n.x,n.y-n.r-6);}
       cx.globalAlpha=1;});
@@ -714,8 +922,10 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
     let type,body;
     if(n.type==="paper"){type="annotated paper · click to open its page";
       body=PAPER_INFO[n.id.slice(2)]||"";}
-    else if(n.type==="method"){type="method · "+FAMS[n.m[1]]+" · click for the deep-dive";
+    else if(n.type==="method"){type="method · "+FAMS[n.m[1]]+" · "+n.count+" of 10 papers · click for the deep-dive";
       body=n.m[3].length>140?n.m[3].slice(0,137)+"…":n.m[3];}
+    else if(n.type==="stack"){type=n.f.short+" · used by "+n.count+" of 10 · click for the evidence";
+      body=(n.it.g?n.it.g+". ":"")+"Used by: "+n.it.m.map(([p])=>PAPERS[p][1].split(" (")[0]).join(", ")+".";}
     else{type="method family · click to filter the registry";
       body=METHODS.filter(m=>m[1]===n.id.slice(2)).length+" methods in this family.";}
     briefEl.innerHTML=`<span class="gb-type">${type}</span>
@@ -759,6 +969,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
     else if(n.type==="method"){t.textContent="method · "+FAMS[n.m[1]];ti.textContent=n.m[2];
       inf.textContent=n.m[3];go.textContent="Open the deep-dive →";go.href="#methods";
       go.onclick=e=>{e.preventDefault();closeNode();openMethod(n.m);};}
+    else if(n.type==="stack"){openStackInfo(n.f,n.it,"graph");return;}
     else{const fam=n.id.slice(2),nM=METHODS.filter(m=>m[1]===fam).length;
       t.textContent="method family";ti.textContent=n.label;
       inf.textContent=nM+" methods in this family; counts grow with every extraction batch.";
@@ -774,6 +985,48 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
   back.addEventListener("click",closeNode);
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeNode();});
   cv.addEventListener("click",()=>{if(!hover||drag)return;openNode(hover);});
+
+  /* stack info card: shared by graph stack-nodes and the stripe's items */
+  function openStackInfo(f,it,from){
+    const t=document.getElementById("nnType"),ti=document.getElementById("nnTitle"),
+          inf=document.getElementById("nnInfo"),lk=document.getElementById("nnLinks"),
+          go=document.getElementById("nnGo");
+    t.textContent=f.name;ti.textContent=it.n;
+    inf.textContent=`Used by ${it.m.length} of the 10 extracted papers. ${it.g?it.g+". ":""}Count = distinct papers; the quotes below come from the paper pages and the S5 records (docs/shared-stack.md).`;
+    lk.innerHTML=it.m.map(([p,ev])=>`<a href="${PAPERS[p][0]}">${esc(PAPERS[p][1])}</a> — ${esc(ev)}`).join("<br>");
+    if(from==="graph"){go.textContent="See it in the shared stack →";go.href="#stack";
+      go.onclick=()=>{closeNode();};}
+    else{go.textContent="See it in the graph →";go.href="#graph";
+      go.onclick=()=>{closeNode();setLens("stack");};}
+    back.classList.add("open");nodeModal.classList.add("open");
+    document.getElementById("nnClose").focus();
+  }
+
+  /* lens switch: one master map, two views */
+  const lensChips=document.getElementById("graphLensChips");
+  lensChips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");
+    if(!b||b.dataset.lens===undefined||b.dataset.lens===lens)return;
+    lens=b.dataset.lens;
+    lensChips.querySelectorAll(".chip-btn").forEach(x=>x.classList.toggle("on",x===b));
+    build();});
+  function setLens(l){if(lens===l)return;
+    const b=lensChips.querySelector(`.chip-btn[data-lens="${l}"]`);if(b)b.click();}
+
+  /* the shared-stack stripe: rendered from the same STACK constant */
+  const sg=document.getElementById("stackGrid");
+  sg.innerHTML=STACK.map((f,fi)=>`<div class="card stack-card">
+    <span class="sk-fam"><i style="background:${f.color}"></i>${esc(f.name)}</span>
+    <p class="sk-note">${esc(f.note)}</p>
+    <div class="sk-items">${f.items.map((it,ii)=>`<button class="sk-item" data-f="${fi}" data-i="${ii}" aria-haspopup="dialog">
+      <span class="sk-name">${esc(it.n)}</span>
+      <span class="sk-bar" aria-hidden="true"><i style="width:${it.m.length*10}%;background:${f.color}"></i></span>
+      <span class="sk-count">${it.m.length}/10</span></button>`).join("")}</div>
+    ${f.ns&&f.ns.length?`<p class="sk-none">${f.nsLabel||"not stated by"}: ${f.ns.map(p=>esc(PAPERS[p][1].split(" (")[0])).join(", ")} — an honest gap, not a guess.</p>`:""}
+  </div>`).join("");
+  sg.addEventListener("click",e=>{const b=e.target.closest(".sk-item");if(!b)return;
+    const f=STACK[+b.dataset.f];openStackInfo(f,f.items[+b.dataset.i],"stripe");});
+
+  build();
 })();
 </script>
 <script src="assets/site.js"></script>

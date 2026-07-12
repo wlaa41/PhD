@@ -52,10 +52,14 @@ docs/phd-transfer-report.md.
 Design mandate "Precision Lab": Space Grotesk + Inter + JetBrains Mono; light AND dark themes (toggle,
 persisted, pre-paint snippet in every head); everything is a card; method cards open deep-dive modals
 (what / intuition-ours / KaTeX math notation-ours / verified evidence quotes / related / try-it resources);
-knowledge graph nodes open info cards (hover = corner brief); ONE master map per page + zoom figures, never
-competing diagrams; figures on a constant light plate; NO always-on animation loops (physics sleeps when
-idle); every fact card carries a .src source chip; the LAW prints in every footer; counts must agree across
-index cards, corpus table, README and docs on every change (the owner notices stale numbers).
+knowledge graph nodes open info cards (hover = corner brief); the graph weights node size by usage and has
+TWO LENSES on the one master map (methods↔families / shared stack) — never a second competing diagram; the
+shared-stack stripe (index #stack) renders docs/shared-stack.md (simulators, algorithms, compute, sensors,
+firmware, code releases; counts = distinct papers; "not stated" shown, never guessed); ONE master map per
+page + zoom figures, never competing diagrams; figures on a constant light plate; NO always-on animation
+loops (physics sleeps when idle); every fact card carries a .src source chip; the LAW prints in every footer;
+counts must agree across index cards, corpus table, README and docs on every change (the owner notices stale
+numbers).
 New paper pages: copy the structure of site/papers/raptor-2026.html exactly.
 
 ## Working rules on any machine
@@ -81,6 +85,8 @@ docs/phd-architecture.md (environment + design-loop history §0) · docs/phd-pip
 rules, programme) · docs/phd-implementation.md (I1–I3, ladder, risks) · docs/phd-agents.md (8 agents) ·
 docs/phd-transfer-report.md (report contract) · docs/sim2real-litreview-command.md (task brief) ·
 docs/corpus-candidates.md + docs/corpus-acquisition.md (the 70, scores, links, download instructions) ·
-docs/s5-notebooklm-2026-07-10.md (batch-1 verification record) · docs/site-content-inventory.md (anti-drop
-manifest) · site/index.html · site/system.html · site/corpus.html · site/papers/*.html ×10 ·
-archive/transfer-hub-v1.html (superseded dashboard hub — contains the pending-decision charts).
+docs/s5-notebooklm-2026-07-10.md + docs/s5-notebooklm-2026-07-11.md (verification records) ·
+docs/shared-stack.md (tools/platforms across the ten papers; source of the stack stripe + stack lens) ·
+docs/site-content-inventory.md (anti-drop manifest) · site/index.html · site/system.html · site/corpus.html ·
+site/papers/*.html ×10 · archive/transfer-hub-v1.html (superseded dashboard hub — contains the
+pending-decision charts).
