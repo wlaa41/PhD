@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agile But Safe: collision-free high-speed legged locomotion · annotated</title>
+<meta name="description" content="Annotated reading of Agile But Safe (He et al., RSS 2024): a learned reach-avoid value network shields an agile quadruped policy on a Unitree Go1, reaching 3.1 m/s collision-free zero-shot.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../system.html">System</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="crumbs"><a href="../index.html">Overview</a> / <a href="../index.html#papers">Annotated papers</a> / <span>Agile But Safe</span></p>
+  <p class="eyebrow">Annotated paper · 14 of 20 · corpus rank #14</p>
+  <h1>Agile But Safe: collision-free high-speed legged locomotion</h1>
+  <p class="authors">Tairan He, Chong Zhang, Wenli Xiao, Guanqi He, Changliu Liu &amp; Guanya Shi</p>
+  <div class="meta-line">
+    CMU LeCAR (per corpus manifest) <span class="sep">·</span> RSS 2024 (stated on the arXiv abs page) <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2401.17583" rel="noopener">arXiv:2401.17583</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 85 = 20+25+20+12+8</span>
+    <span class="badge pending">S4 · S5 pending</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        A quadruped that runs fast <em>and</em> does not hit things. ABS pairs an agile goal-reaching
+        policy with a recovery policy, switched in closed loop by a learned control-theoretic
+        <b>reach-avoid (RA) value network</b>. All four modules — agile policy, RA value network,
+        recovery policy and a ResNet-18 ray-prediction perception net — are trained in Isaac Gym
+        (1,280 parallel environments) and deployed on a <b>Unitree Go1</b> with onboard sensing and
+        compute, with no fine-tuning: <b>3.1&nbsp;m/s</b> peak in the real world (4.0&nbsp;m/s in
+        simulation), <b>2.5&nbsp;m/s</b> peak amid dynamic adversarial obstacles, and 9–10/10 success
+        across real environments.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        Legged robots have historically had to choose between speed and safety. The abstract puts it
+        directly: "Existing studies either develop conservative controllers (&lt;&nbsp;1.0&nbsp;m/s) to
+        ensure safety, or focus on agility without considering potentially fatal collisions."
+      </p>
+      <p>
+        The gap is structural, not incremental: an agile RL policy has no notion of when it is about to
+        fail, and a formally safe controller is safe partly <em>because</em> it is slow. ABS's claim is
+        that the trade-off can be broken by keeping the agile policy aggressive and delegating safety to
+        a separate, learned mechanism — a learned control-theoretic reach-avoid value that watches the
+        agile policy and takes over only when its estimate says the current course ends in collision. The whole
+        system must also run on the robot itself: "These trained modules can be directly deployed in the
+        real world with onboard sensing and computation, leading to high-speed and collision-free
+        navigation."
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 332" role="img" aria-label="ABS pipeline in two bands. Training in Isaac Gym: agile policy, reach-avoid dataset of about 200k episodes, reach-avoid value network, recovery policy, plus a parallel ray-prediction network. Deployment zero-shot on a Unitree Go1: ZED Mini depth to ray prediction to 11 ray distances feeding the agile policy and the RA value; a runtime shield switches to the recovery policy when the RA value crosses the threshold.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <text x="8" y="16" font-size="11" fill="#78716c">Train in simulation — Isaac Gym · 1,280 parallel environments · PPO</text>
+
+            <rect x="8" y="30" width="150" height="72" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="83" y="52" text-anchor="middle" font-weight="700">Agile policy</text>
+            <text x="83" y="70" text-anchor="middle" font-size="10.5" fill="#78716c">goal-reaching PPO</text>
+            <text x="83" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">DR · ERFI-50 · illusion</text>
+
+            <rect x="188" y="30" width="130" height="72" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="253" y="52" text-anchor="middle" font-weight="700">RA dataset</text>
+            <text x="253" y="70" text-anchor="middle" font-size="10.5" fill="#78716c">~200k episodes</text>
+            <text x="253" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">policy rollouts</text>
+
+            <rect x="348" y="30" width="140" height="72" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="418" y="52" text-anchor="middle" font-weight="700" fill="#1e3a8a">RA value net V̂</text>
+            <text x="418" y="70" text-anchor="middle" font-size="10.5" fill="#44403c">discounted RA</text>
+            <text x="418" y="86" text-anchor="middle" font-size="10.5" fill="#44403c">Bellman · Eq. 5</text>
+
+            <rect x="518" y="30" width="140" height="72" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="588" y="52" text-anchor="middle" font-weight="700">Recovery policy</text>
+            <text x="588" y="70" text-anchor="middle" font-size="10.5" fill="#78716c">rapid twist</text>
+            <text x="588" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">tracking · RL</text>
+
+            <line x1="158" y1="66" x2="184" y2="66" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="318" y1="66" x2="344" y2="66" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="488" y1="66" x2="514" y2="66" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <rect x="8" y="114" width="280" height="44" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="148" y="132" text-anchor="middle" font-size="10.5" font-weight="700">Ray-prediction net · ResNet-18 · trained in parallel</text>
+            <text x="148" y="148" text-anchor="middle" font-size="10.5" fill="#78716c">[160,90] depth image → 11 ray distances</text>
+
+            <line x1="8" y1="170" x2="692" y2="170" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="692" y="164" text-anchor="end" font-size="10.5" fill="#78716c">simulation</text>
+            <text x="692" y="186" text-anchor="end" font-size="10.5" fill="#78716c">reality · zero-shot</text>
+            <text x="8" y="190" font-size="11" fill="#78716c">Deploy zero-shot on Unitree Go1 — Jetson Orin NX · ZED Mini</text>
+
+            <rect x="8" y="214" width="92" height="56" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="54" y="236" text-anchor="middle" font-weight="700">ZED Mini</text>
+            <text x="54" y="252" text-anchor="middle" font-size="10.5" fill="#78716c">depth image</text>
+
+            <rect x="124" y="214" width="132" height="56" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="190" y="236" text-anchor="middle" font-weight="700">Ray prediction</text>
+            <text x="190" y="252" text-anchor="middle" font-size="10.5" fill="#78716c">11 ray distances</text>
+
+            <rect x="286" y="202" width="106" height="44" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="339" y="220" text-anchor="middle" font-weight="700" font-size="11">Agile policy</text>
+            <text x="339" y="237" text-anchor="middle" font-size="10.5" fill="#78716c">proposes action</text>
+
+            <rect x="286" y="258" width="106" height="44" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="339" y="276" text-anchor="middle" font-weight="700" font-size="11">RA value V̂</text>
+            <text x="339" y="293" text-anchor="middle" font-size="10.5" fill="#78716c">safety estimate</text>
+
+            <rect x="426" y="208" width="142" height="88" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="497" y="228" text-anchor="middle" font-weight="700" fill="#1e3a8a">Runtime shield</text>
+            <text x="497" y="246" text-anchor="middle" font-size="10.5" fill="#44403c">V̂ &lt; V_thr → agile</text>
+            <text x="497" y="262" text-anchor="middle" font-size="10.5" fill="#44403c">V̂ ≥ V_thr → recovery</text>
+            <text x="497" y="278" text-anchor="middle" font-size="10.5" fill="#78716c">twist from Eq. 21</text>
+
+            <rect x="598" y="224" width="94" height="56" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="645" y="246" text-anchor="middle" font-weight="700" font-size="11">Go1</text>
+            <text x="645" y="262" text-anchor="middle" font-size="10.5" fill="#78716c">joint commands</text>
+
+            <line x1="100" y1="242" x2="120" y2="242" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="256" y1="230" x2="282" y2="224" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="256" y1="254" x2="282" y2="280" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="392" y1="224" x2="422" y2="234" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="392" y1="280" x2="422" y2="270" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="568" y1="252" x2="594" y2="252" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <text x="350" y="322" text-anchor="middle" font-size="10.5" fill="#78716c">Reported speeds: 3.1 m/s real · 4.0 m/s sim · 2.5 m/s peak (1.5 m/s avg) amid dynamic obstacles</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The ABS pipeline, redrawn from the paper's system description
+          (Sec. III-C, IV–VII). Module names, the ~200k-episode dataset, the switching rule
+          (\(\hat V\) vs \(V_{threshold}\)), equation numbers and all speed figures are the paper's;
+          the layout is ours. Everything above the green line is trained in simulation and crosses to
+          the real robot unchanged: "All of the four modules are directly deployed in the real world
+          after training".</figcaption>
+      </figure>
+      <p>
+        The idea in one sentence: let an aggressive policy drive, let a learned reach-avoid value
+        function referee, and hand control to a specialist recovery policy the moment the referee says
+        the current course could end in a collision.
+      </p>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 Four modules, one closed loop</h3>
+      <p>
+        ABS is not a single network but a system of four: an agile locomotion policy, a reach-avoid
+        value network, a recovery policy and a ray-prediction perception network. The switching logic is
+        the paper's core architectural move: "The policy switch in ABS is governed by a learned
+        control-theoretic reach-avoid value network, which also guides the recovery policy as an
+        objective function". Each module is trained separately in simulation, and "All of the four
+        modules are directly deployed in the real world after training with onboard sensing and
+        computation" — the zero-shot claim covers the whole stack, not just the locomotion policy.
+      </p>
+
+      <h3>3.2 The agile policy: goal-reaching, not velocity-tracking</h3>
+      <p>
+        The agile policy is trained with PPO on a goal-reaching task rather than the more common
+        velocity-tracking formulation, using "the GPU-based Isaac Gym simulator which supports us to
+        train 1280 environments in parallel with the PPO algorithm". Two randomisation choices carry the
+        sim-to-real crossing. For dynamics, "ERFI-50 proposed by Campanaro et al. implicitly models the
+        motor sim-to-real gaps with random torque perturbations". For the environment side of the
+        observation, a mechanism the authors call <em>illusion</em> "makes the policy more robust to
+        unseen geometries such as walls: it overwrites observed ray distances by random values" — the
+        policy learns not to trust any single ray reading too much.
+      </p>
+
+      <h3>3.3 The reach-avoid value network</h3>
+      <p>
+        After the agile policy is trained, it is rolled out to collect a dataset of roughly 200k
+        episodes labelled by outcome, and a value network \(\hat V\) is fitted to the discounted
+        reach-avoid Bellman equation:
+      </p>
+      <div class="math-block">
+        $$ V^{\pi}_{RA}(s) = \gamma_{RA}\,\max\{\zeta(s),\ \min\{l(s),\ V^{\pi}_{RA}(f(s,\pi(s)))\}\} + (1-\gamma_{RA})\,\max\{l(s),\zeta(s)\} $$
+        <div class="eq-note">The paper's Eq. 5 (Sec. III-B4), transcribed from the ar5iv HTML render —
+          symbol-level notation may carry minor transcription artefacts. The discount
+          \(\gamma_{RA}\) makes the otherwise-undiscounted RA fixed point learnable. The precise
+          definitions of \(l(s)\) and \(\zeta(s)\) were not captured verbatim in our extraction, so we
+          do not restate them here (unverified detail, labelled).</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · what a reach-avoid value is (ours)</span>
+        <p>In reach-avoid problems from control theory, a value function summarises, for each state, a
+        question with two clauses: starting here and following this policy, will the system reach its
+        target set <em>without ever</em> entering the failure set? Unlike an ordinary RL value that sums
+        reward, the RA value is built from max/min operations over trajectories, so its sign (relative
+        to a threshold) acts as a certificate-like predicate — "safe to continue" versus "on course to
+        fail" — rather than a graded score. ABS's twist is to <em>learn</em> this value for the learned
+        agile policy from rollout data, instead of computing it from a model, which is what lets it work
+        with an otherwise opaque neural controller.</p>
+      </div>
+
+      <h3>3.4 The recovery policy and the runtime shield</h3>
+      <p>
+        The recovery policy is a second RL policy with a narrower job: it "is trained to track twist
+        commands rapidly from high-speed movements … to make the robot track a given twist command as
+        fast as possible". At runtime the RA value arbitrates between the two policies in closed loop:
+        "If V̂&nbsp;≥&nbsp;V_threshold, [the recovery policy takes control]; If
+        V̂&nbsp;&lt;&nbsp;V_threshold, the agile policy takes control." When the recovery policy is in
+        charge, its twist command is not hand-picked — it comes from a constrained optimisation over the
+        RA value itself:
+      </p>
+      <div class="math-block">
+        $$ tw^{c} = \arg\min\ d^{future}_{goal}\quad \text{s.t.}\quad \hat{V}([tw^{c};\,G^{c}_{x,y};\,R]) &lt; V_{threshold} $$
+        <div class="eq-note">The paper's Eq. 21 (Sec. V-C), transcribed from the ar5iv HTML render:
+          choose the twist that minimises the predicted future distance to the goal, subject to the RA
+          value staying below the safety threshold. The paper reports this optimisation converging
+          within 5 steps.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why shield with a learned value (ours)</span>
+        <p>Classic safety shields (control barrier functions, Hamilton–Jacobi reachability) need a
+        dynamics model, which is exactly what an end-to-end RL system does not expose. By fitting the RA
+        value to rollouts of the actual trained policy, ABS gets a shield calibrated to what the agile
+        policy will really do — including its mistakes — and because \(\hat V\) is differentiable, the
+        same network doubles as the objective landscape the recovery optimisation descends. One
+        network, two roles: tripwire and steering signal.</p>
+      </div>
+
+      <h3>3.5 Perception: eleven rays instead of pixels</h3>
+      <p>
+        Neither policy consumes raw images. Instead "we choose to use a low-dimensional exteroception
+        representation: the distances that 11 rays travel from the robot to obstacles, similar to sparse
+        LiDAR readings" — but there is no LiDAR on the robot. The rays are <em>predicted</em> from the
+        stereo camera: "We finetune ResNet-18 with pretrained weights to train the model. The images are
+        downsampled to [160,90] resolution". The same 11-ray abstraction is the observation for both the
+        agile policy and the RA value network, so perception errors hit the policy and its referee
+        identically. State estimation is deliberately minimal: "IMU-based orientation estimation for g
+        (i.e., roll and pitch) is usually very accurate", and the authors report that "the policy can
+        effectively handle the odometry drift".
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        The hardware is a single platform: "We use the Unitree Go1 for our experiments. The robot is
+        equipped a Jetson Orin NX for onboard computation and a ZED Mini Stereo Camera for depth and
+        odometry sensing."
+      </p>
+      <div class="table-wrap"><table>
+        <caption>Numbers exactly as stated in the arXiv full text (S4 extraction, 12 Jul 2026); nothing interpolated. Per-environment breakdowns are not reproduced here.</caption>
+        <thead><tr><th>Measurement</th><th>Value</th><th>Where stated</th></tr></thead>
+        <tbody>
+          <tr><td>Peak speed, real world</td><td>3.1 m/s</td><td>Sec. IX-A1 / Table IV</td></tr>
+          <tr><td>Peak speed, simulation</td><td>4.0 m/s</td><td>Sec. IX-A1 / Table IV</td></tr>
+          <tr><td>Tight space, dynamic adversarial obstacles</td><td>2.5 m/s peak · 1.5 m/s average</td><td>Abstract / results caption</td></tr>
+          <tr><td>Simulation success rate vs baselines</td><td>ABS-n 79.1 ± 4.4 vs π-Agile-n 77.3 ± 4.2, LAG-n 77.4 ± 11.5</td><td>Table III</td></tr>
+          <tr><td>Real-world success rate</td><td>"either 9 or 10 out of 10 … across all environments, with minimal collisions"</td><td>Fig. 8 caption</td></tr>
+          <tr><td>Prior conservative controllers</td><td>&lt; 1.0 m/s</td><td>Abstract</td></tr>
+          <tr><td>Ray-prediction inference</td><td>~9 ms on Jetson Orin NX</td><td>Table V (paraphrased in the S4 extraction)</td></tr>
+        </tbody>
+      </table></div>
+      <p>
+        Two honest caveats on this table. The simulation success-rate margin over the baselines is
+        modest in the mean (79.1 vs 77.3/77.4) — the LAG baseline's ±11.5 spread suggests the
+        differentiation is as much about consistency as about the average. And the control-loop
+        frequency in Hz is not explicitly stated in the fetched text; the only onboard timing figures
+        captured are the ~9&nbsp;ms ResNet-18 inference and the recovery optimisation converging within
+        5 steps.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors (S4, from the arXiv full text, 12 Jul 2026):</b> dense obstacle
+          layouts defeat the policy — "when the obstacles are too dense and form a local minimum, our
+          policy can easily fail, which is also reflected by the high timeout rates"; "The RA values are
+          learned with static obstacles, and can only generalize to quasi-static environments"; "If a
+          dynamic object moves faster than the velocity limit of the recovery policy, the collision may
+          happen"; "we limit the robot behaviors to only 2D locomotion and constrain the motions to have
+          no flying phase"; "For 3D terrains such as stairs and gaps, the problem can be far more
+          challenging because the locomotion skills and collision avoidance are coupled"; "implicit
+          system identification techniques can leverage temporal information … but it is non-trivial to
+          incorporate them into our system"; and in the real-world trials "the only collision of ABS is
+          due to the 'undetected' objects by the ray-prediction network as the corridor is quite
+          dim".</li>
+        <li><b>No explicit future-work list:</b> the Conclusion (Sec. X) gives three takeaways —
+          integrating locomotion and navigation, low-dimensional exteroception, and breaking the
+          agility–safety trade-off via external shielding — but states no explicit future-work
+          sentence. Material for this section beyond the failure-case discussion is therefore thin, and
+          we say so rather than pad it.</li>
+        <li><b>Our open questions (ours):</b> how sensitive the whole shield is to the single scalar
+          \(V_{threshold}\), and how it was tuned; whether 11 rays remain enough at speeds where
+          obstacles enter and leave the narrow predicted fan between control decisions; what the RA
+          formulation looks like for a vehicle that cannot brake to a stop in place (a multirotor must
+          keep flying while "recovering"); and whether the dim-corridor failure implies the shield needs
+          an uncertainty estimate on perception, not just on dynamics.</li>
+      </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s4-batch3-2026-07-12.md" rel="noopener">docs/s4-batch3-2026-07-12.md</a></p>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          Platform mismatch first: ABS is a quadruped paper, its behaviours are explicitly restricted to
+          2D locomotion with no flying phase, and nothing here was demonstrated on an aerial or wheeled
+          platform — so no result transfers directly to this project's X500 V2 quadrotor or RoboMaster
+          EP. What does transfer is the architecture. First, the perception abstraction: distilling a
+          stereo depth camera into 11 "sparse-LiDAR" ray distances through a small ResNet-18 is a
+          concrete recipe for cutting onboard perception cost, and the Go1's ZED Mini + Jetson Orin NX
+          stack is a near-twin of this project's Orin Nano setup. Second, the safety pattern: a learned
+          reach-avoid value shielding an aggressive policy, with a recovery fallback chosen by
+          constrained optimisation over that same value, maps naturally onto emergency avoidance for a
+          fast UAV — and is the corpus's cleanest worked example of safety added <em>around</em> an RL
+          policy rather than baked into its reward. Third, the state-estimation frugality (trust IMU
+          roll/pitch, tolerate odometry drift) matches how a GPS-denied UAV must fly. Before any port:
+          the RA values are static-obstacle-only, fast movers can still defeat the recovery policy, and
+          the RA formulation would need re-deriving for full 3D dynamics where "stop and recover" is not
+          an available action.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>domain-randomization-dynamics</code></a> ·
+        <a href="../index.html#methods"><code>training-time-sensor-abstraction</code></a> ·
+        <a href="../index.html#methods"><code>domain-randomization-environment</code></a> ·
+        <a href="../index.html#methods"><code>reach-avoid-safety-shielding</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4</b> — built from the paper's arXiv full text (HTML, fetched 12 July
+        2026), with clearly-labelled concept reconstructions. Every quote was re-checked against the
+        source by an independent verification agent the same day (record:
+        docs/s4-batch3-2026-07-12.md). Promoted to <b>verified</b> only after the NotebookLM
+        five-question cross-check (S5) — pending for batch 3.
+      </div>
+      <div class="cite">@inproceedings{he2024agilebutsafe,
+  title        = {Agile But Safe: Learning Collision-Free High-Speed Legged Locomotion},
+  author       = {He, Tairan and Zhang, Chong and Xiao, Wenli and He, Guanqi and Liu, Changliu and Shi, Guanya},
+  booktitle    = {Robotics: Science and Systems (RSS)},
+  year         = {2024},
+  eprint       = {2401.17583},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.RO},
+  note         = {Published at RSS 2024}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="soccer-2024.html"><span class="dir">← Previous</span>Learning agile soccer skills for a bipedal robot</a>
+      <a href="him-2024.html" style="text-align:right"><span class="dir">Next →</span>HIM: agile locomotion via a hybrid internal model</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="falcongym-2025.html">01 · FalconGym</a>
+      <a href="raptor-2026.html">02 · RAPTOR</a>
+      <a href="monorace-2026.html">03 · MonoRace</a>
+      <a href="e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="attention-legged-2025.html">06 · Attention Legged</a>
+      <a href="wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="pixels-2024.html">08 · Flight from Pixels</a>
+      <a href="diffphys-2025.html">09 · Newton's Laws</a>
+      <a href="simpleflight-2024.html">10 · SimpleFlight</a>
+      <a href="anymal-parkour-2024.html">11 · ANYmal Parkour</a>
+      <a href="humanoid-rl-2024.html">12 · Humanoid RL</a>
+      <a href="soccer-2024.html">13 · Soccer Skills</a>
+      <a href="agile-but-safe-2024.html">14 · Agile But Safe</a>
+      <a href="him-2024.html">15 · HIM</a>
+      <a href="dtc-2024.html">16 · DTC</a>
+      <a href="host-2025.html">17 · HoST</a>
+      <a href="aerialgym-2025.html">18 · Aerial Gym</a>
+      <a href="extreme-parkour-2024.html">19 · Extreme Parkour</a>
+      <a href="hover-2024.html">20 · HOVER</a></div>
+    <div><b>Explore</b>
+      <a href="../index.html#graph">Knowledge graph</a>
+      <a href="../index.html#methods">Method registry</a>
+      <a href="../corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="../system.html#pipeline">The pipeline S1–S9</a>
+      <a href="../system.html#counting">Scoring &amp; counting</a>
+      <a href="../system.html#agents">The agents</a>
+      <a href="../system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>

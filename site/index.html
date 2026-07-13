@@ -106,23 +106,24 @@
   <div class="grid g4" style="margin-top:1.8rem" aria-label="Project status">
     <a class="card clickable status-card" href="corpus.html"><b>70</b>
       <span class="sc-label">candidate papers seeded</span><span class="sc-go">see the ranked corpus →</span></a>
-    <a class="card clickable status-card" href="#papers"><b>10</b>
+    <a class="card clickable status-card" href="#papers"><b>20</b>
       <span class="sc-label">extracted &amp; annotated</span><span class="sc-go">read the annotations →</span></a>
-    <a class="card clickable status-card" href="#methods"><b>23</b>
+    <a class="card clickable status-card" href="#methods"><b>34</b>
       <span class="sc-label">methods in 9 families</span><span class="sc-go">explore the registry →</span></a>
     <a class="card clickable status-card" href="system.html"><b>S1–S9</b>
       <span class="sc-label">pipeline, 3 human gates</span><span class="sc-go">how the system works →</span></a>
   </div>
-  <p class="small" style="margin-top:.8rem">Status of 10 July 2026 ·
+  <p class="small" style="margin-top:.8rem">Status of 12 July 2026 ·
     <span class="src">docs/corpus-acquisition.md</span>
-    <span class="src">S5: batches 1 and 2 passed · docs/s5-notebooklm-2026-07-11.md</span></p>
+    <span class="src">S5: batches 1 and 2 passed · docs/s5-notebooklm-2026-07-11.md</span>
+    <span class="src pending">batch 3 (ranks 11–20): S4 extracted · S5 pending · docs/s4-batch3-2026-07-12.md</span></p>
 
   <div class="card" style="margin-top:1rem;padding:1rem 1.3rem;border-left:3px solid var(--warn)">
     <span style="font-size:.68rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--warn)">Gate 1 · waiting for the human</span>
     <p style="font-size:.92rem;color:var(--ink-2);margin:.3rem 0 0">
       The corpus lock is <strong>your decision and nobody else's</strong>: approve, veto or swap any of the
       <a href="corpus.html">70 ranked candidates</a> (vetoes are recorded with reasons). The pipeline's agents
-      may not take this gate for you — extraction ran ahead on the ten top-ranked papers, but the corpus is
+      may not take this gate for you — extraction ran ahead on the twenty top-ranked papers, but the corpus is
       not locked until you say so. Gates 2 (direction + pilot) and 3 (report sign-off) are also yours.
       <span class="src">docs/phd-pipeline.md §2, Gate 1</span>
     </p>
@@ -130,10 +131,13 @@
 
   <h2 class="section-label" id="papers">Annotated papers</h2>
   <p class="section-sub">
-    Only extracted papers get a page; the other 60 candidates live in the
-    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. All ten pages below
+    Only extracted papers get a page; the other 50 candidates live in the
+    <a href="corpus.html">ranked corpus</a> until their batch is extracted and verified. Ranks 01–10
     are <strong>S5-verified</strong>: every extraction cross-checked against the full text by the second
-    independent reader, corrections applied visibly. Each page brings the
+    independent reader, corrections applied visibly. Ranks 11–20 (batch 3) are fresh <strong>S4
+    extractions</strong> from the arXiv sources (12 Jul 2026), each adversarially quote-checked against its
+    source the same day — their NotebookLM S5 cross-check is <strong>pending</strong>, and every batch-3 page
+    and badge says so. Each page brings the
     full content: the pipeline as a figure, the mathematics, results, stated limitations and hardware relevance.
   </p>
   <div class="grid g3">
@@ -207,9 +211,79 @@
       <p>The ablation study the field needed: five critical factors, 50% tracking-error reduction, open code and checkpoints.</p>
       <span class="pc-go">Read the annotation →</span>
     </a>
+    <a class="card clickable paper-card" href="papers/anymal-parkour-2024.html">
+      <span class="pc-top"><span class="pc-rank">#11</span><span class="badge zero">zero-shot*</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>ANYmal Parkour: agile navigation for quadrupedal robots</h3>
+      <span class="pc-meta">Hoeller, Rudin, Sako &amp; Hutter · ETH-RSL · 2024</span>
+      <p>Perception, navigation and five frozen locomotion skills chain boxes and 1&nbsp;m gaps at up to 2&nbsp;m/s on the real ANYmal D.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/humanoid-rl-2024.html">
+      <span class="pc-top"><span class="pc-rank">#12</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>Real-world humanoid locomotion with reinforcement learning</h3>
+      <span class="pc-meta">Radosavovic et al. · Berkeley · 2024</span>
+      <p>A causal transformer over observation-action history adapts in-context — outdoor humanoid walking, trained purely in simulation.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/soccer-2024.html">
+      <span class="pc-top"><span class="pc-rank">#13</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>Learning agile soccer skills for a bipedal robot</h3>
+      <span class="pc-meta">Haarnoja et al. · DeepMind · 2024</span>
+      <p>Skills distilled into one 1v1 agent, hardened by self-play and dynamics randomization; runs CPU-only on the real robot.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/agile-but-safe-2024.html">
+      <span class="pc-top"><span class="pc-rank">#14</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>Agile But Safe: collision-free high-speed legged locomotion</h3>
+      <span class="pc-meta">He et al. · CMU LeCAR · RSS 2024</span>
+      <p>An agile policy sprints while a learned reach-avoid value network shields it, switching to a recovery policy when danger builds.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/him-2024.html">
+      <span class="pc-top"><span class="pc-rank">#15</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>HIM: agile locomotion via a hybrid internal model</h3>
+      <span class="pc-meta">Long et al. · Shanghai AI Lab + SJTU · 2024</span>
+      <p>Treats terrain and pushes as disturbances and estimates them from the robot's own response — velocity regression plus a contrastive latent.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/dtc-2024.html">
+      <span class="pc-top"><span class="pc-rank">#16</span><span class="badge pending">zero-shot: to confirm</span><span class="badge pending">S4 (abstract) · S5 pending</span></span>
+      <h3>DTC: deep tracking control</h3>
+      <span class="pc-meta">Jenelten, He, Farshidian &amp; Hutter · ETH-RSL · 2024</span>
+      <p>A trajectory-optimization planner proposes footholds; a learned tracker follows them — planner precision with learned robustness. Abstract-depth extraction; full text at acquisition.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/host-2025.html">
+      <span class="pc-top"><span class="pc-rank">#17</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>HoST: humanoid standing-up control across diverse postures</h3>
+      <span class="pc-meta">Huang et al. · Shanghai AI Lab · RSS 2025</span>
+      <p>Multi-critic RL learns standing up from the ground across postures and terrains; collapse it to one critic and it never stands at all.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/aerialgym-2025.html">
+      <span class="pc-top"><span class="pc-rank">#18</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>Aerial Gym Simulator: GPU-parallel aerial robotics</h3>
+      <span class="pc-meta">Kulkarni et al. · NTNU-ARL · RA-L accepted</span>
+      <p>A purpose-built, highly parallelized multirotor simulator with GPU ray-casting — and zero-shot depth navigation on real hardware.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/extreme-parkour-2024.html">
+      <span class="pc-top"><span class="pc-rank">#19</span><span class="badge zero">zero-shot</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>Extreme parkour with legged robots</h3>
+      <span class="pc-meta">Cheng, Shi, Agarwal &amp; Pathak · CMU · 2024</span>
+      <p>One network from a single depth camera to joint targets, distilled from scandots with regularized online adaptation.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
+    <a class="card clickable paper-card" href="papers/hover-2024.html">
+      <span class="pc-top"><span class="pc-rank">#20</span><span class="badge zero">zero-shot*</span><span class="badge pending">S4 · S5 pending</span></span>
+      <h3>HOVER: one whole-body controller for many humanoid modes</h3>
+      <span class="pc-meta">He, Xiao et al. · NVIDIA GEAR · ICRA 2025</span>
+      <p>Command masking distils an oracle into one student serving 15+ control modes on a real Unitree H1. *The paper never uses the term "zero-shot" — wording note on the page.</p>
+      <span class="pc-go">Read the annotation →</span>
+    </a>
     <a class="card paper-card ghost" href="corpus.html">
       <span class="pc-top"><span class="badge pending">in triage</span></span>
-      <h3>+ 60 candidates awaiting extraction</h3>
+      <h3>+ 50 candidates awaiting extraction</h3>
       <p>Ranked and scored, extracted in weekly batches, verified before anything is trusted.</p>
       <span class="pc-go">Browse the corpus →</span>
     </a>
@@ -246,12 +320,15 @@
   <h2 class="section-label" id="stack">The shared stack</h2>
   <p class="section-sub">
     The method registry below counts <em>techniques</em>; this stripe counts the <em>concrete tools and
-    platforms</em> the ten extracted papers build with — simulators, algorithms, compute, sensors, firmware,
+    platforms</em> the ten S5-verified papers (ranks 01–10) build with — simulators, algorithms, compute, sensors, firmware,
     code releases. The count is distinct papers; the bar makes it scannable. <strong>Press any item for its
     evidence</strong>: who uses it, quoted. A facet a paper does not state is shown as
     <em>not stated</em>, never guessed.
+    Batch 3 (ranks 11–20, S4) is not counted here yet — the stack registry admits a paper only after its
+    S5 pass.
     <span class="src">docs/shared-stack.md · derived 12 Jul 2026</span>
     <span class="src">paper pages + S5 records, recounted &amp; re-grounded</span>
+    <span class="src pending">batch 3: awaiting S5 · docs/s4-batch3-2026-07-12.md</span>
   </p>
   <div class="grid g2" id="stackGrid"></div>
 
@@ -279,7 +356,7 @@
         <text x="380" y="55" text-anchor="middle" fill="#e0e7ff" font-size="10">status · papers · graph · stack · methods</text>
 
         <rect x="40" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
-        <text x="115" y="139" text-anchor="middle" fill="#111216" font-weight="600">Paper pages ×5</text>
+        <text x="115" y="139" text-anchor="middle" fill="#111216" font-weight="600">Paper pages ×20</text>
         <text x="115" y="156" text-anchor="middle" fill="#71737c" font-size="10">math · figures · provenance</text>
         <rect x="220" y="120" width="150" height="46" rx="9" fill="#fff" stroke="#d8d8de"/>
         <text x="295" y="139" text-anchor="middle" fill="#111216" font-weight="600">Method deep-dives</text>
@@ -359,7 +436,17 @@
       <a href="papers/wheeledlab-2025.html">07 · Wheeled Lab</a>
       <a href="papers/pixels-2024.html">08 · Flight from Pixels</a>
       <a href="papers/diffphys-2025.html">09 · Newton's Laws</a>
-      <a href="papers/simpleflight-2024.html">10 · SimpleFlight</a></div>
+      <a href="papers/simpleflight-2024.html">10 · SimpleFlight</a>
+      <a href="papers/anymal-parkour-2024.html">11 · ANYmal Parkour</a>
+      <a href="papers/humanoid-rl-2024.html">12 · Humanoid RL</a>
+      <a href="papers/soccer-2024.html">13 · Soccer Skills</a>
+      <a href="papers/agile-but-safe-2024.html">14 · Agile But Safe</a>
+      <a href="papers/him-2024.html">15 · HIM</a>
+      <a href="papers/dtc-2024.html">16 · DTC</a>
+      <a href="papers/host-2025.html">17 · HoST</a>
+      <a href="papers/aerialgym-2025.html">18 · Aerial Gym</a>
+      <a href="papers/extreme-parkour-2024.html">19 · Extreme Parkour</a>
+      <a href="papers/hover-2024.html">20 · HOVER</a></div>
     <div><b>Explore</b>
       <a href="#graph">Knowledge graph</a>
       <a href="#stack">Shared stack</a>
@@ -398,7 +485,17 @@ const PAPERS={
   wheeled:["papers/wheeledlab-2025.html","Wheeled Lab (UW, CoRL 2025)"],
   pixels:["papers/pixels-2024.html","Agile Flight from Pixels (UZH-RPG, RSS 2024)"],
   diffphys:["papers/diffphys-2025.html","Back to Newton's Laws (SJTU, Nature MI 2025)"],
-  simpleflight:["papers/simpleflight-2024.html","SimpleFlight (Tsinghua, RA-L)"]};
+  simpleflight:["papers/simpleflight-2024.html","SimpleFlight (Tsinghua, RA-L)"],
+  anymal:["papers/anymal-parkour-2024.html","ANYmal Parkour (ETH-RSL, 2024)"],
+  humanrl:["papers/humanoid-rl-2024.html","Humanoid Locomotion RL (Berkeley, 2024)"],
+  soccer:["papers/soccer-2024.html","Agile Soccer Skills (DeepMind, 2024)"],
+  abs:["papers/agile-but-safe-2024.html","Agile But Safe (CMU LeCAR, RSS 2024)"],
+  him:["papers/him-2024.html","Hybrid Internal Model (Shanghai AI Lab + SJTU, 2024)"],
+  dtc:["papers/dtc-2024.html","DTC: Deep Tracking Control (ETH-RSL, 2024)"],
+  host:["papers/host-2025.html","HoST Standing-up (Shanghai AI Lab, RSS 2025)"],
+  aerialgym:["papers/aerialgym-2025.html","Aerial Gym Simulator (NTNU-ARL, 2025)"],
+  xparkour:["papers/extreme-parkour-2024.html","Extreme Parkour (CMU, 2024)"],
+  hover:["papers/hover-2024.html","HOVER (NVIDIA GEAR, ICRA 2025)"]};
 
 /* [id, family, name, what, members[[paper,fact]], intuition, mathLatex|null, related[]] */
 const METHODS=[
@@ -412,7 +509,8 @@ const METHODS=[
  "A purpose-built fast dynamics simulator drives sample cost toward zero.",
  [["flysec","reports ~5 months of simulated flight per second on a laptop GPU, enabling 18-second training"],
   ["raptor","trains its 1,000 teachers and student in the 'L2F simulator' (S5-verified quote)"],
-  ["simpleflight","trained in OmniDrones, a purpose-built GPU drone simulator (merge judgement logged)"]],
+  ["simpleflight","trained in OmniDrones, a purpose-built GPU drone simulator (merge judgement logged)"],
+  ["aerialgym","builds 'a highly parallelized, modular framework for simulation and rendering of arbitrary multirotor platforms' (S4)"]],
  "RL's real currency is wall-clock time per sample. If the simulator produces months of flight per second, algorithmic sample-efficiency stops being the bottleneck and iteration speed becomes the superpower.",
  null,["end-to-end-rl","curriculum-learning"]],
 ["differentiable-physics-learning","sim","Differentiable physics learning",
@@ -422,7 +520,7 @@ const METHODS=[
  "\\nabla_\\theta J=\\sum_t \\frac{\\partial J}{\\partial s_t}\\,\\frac{\\partial s_t}{\\partial \\theta},\\qquad s_{t+1}=f_\\psi(s_t,a_t)",
  ["end-to-end-rl","system-identification"]],
 ["domain-randomization-dynamics","rand","Domain randomization (dynamics)",
- "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution. Two S5 passes grew this count from 1 to 8: the full papers use DR where their abstracts never said so — it is nearly universal.",
+ "Randomize physical parameters during training so the real vehicle is just another sample from the training distribution. Two S5 passes grew this count from 1 to 8: the full papers use DR where their abstracts never said so — it is nearly universal. Batch 3 (S4, S5 pending) takes it to 14 of 20.",
  [["e2efly","'empirically validated domain-randomization parameters' (S5-verified)"],
   ["monorace","'extensive domain randomization' over all model parameters (S5-verified)"],
   ["raptor","a 'very broad distribution over dynamics parameters' — the paper's own wide-DR framing (S5-verified)"],
@@ -430,26 +528,37 @@ const METHODS=[
   ["attn","observation noise plus randomized 'torso mass and the friction coefficient of each contact foot' (S5-verified)"],
   ["wheeled","'aggressive domain randomization' for drifting; DR named among its general methods (S5-verified)"],
   ["pixels","'domain randomization to robustify a control policy against a sim2real gap in the system dynamics' (S5-verified)"],
-  ["simpleflight","Factor 4: 'DR exhibits selective effectiveness' — used, but selectively (S5-verified)"]],
+  ["simpleflight","Factor 4: 'DR exhibits selective effectiveness' — used, but selectively (S5-verified)"],
+  ["humanrl","randomizes 'dynamics properties of the robot, control parameters, environment physics' (S4)"],
+  ["soccer","'targeted dynamics randomization' in the transfer recipe (S4)"],
+  ["abs","ERFI-50 random torque perturbations model the motor sim-to-real gap (S4)"],
+  ["him","randomizes body/link mass, centre of mass, payload, friction and restitution (S4)"],
+  ["host","'we employ domain randomization to bridge the physical gap between simulation and reality' (S4)"],
+  ["hover","randomizes 'the physical parameters of the simulated environment and humanoids' (S4)"]],
  "You cannot model the real drone exactly — so stop trying to. Train across a cloud of plausible drones; if the cloud is wide enough, reality falls inside it and the policy has already seen something like it.",
  "\\max_\\theta\\;\\mathbb{E}_{\\xi\\sim p(\\xi)}\\big[J(\\theta;\\xi)\\big]",
  ["sensor-noise-modelling","meta-imitation-multi-platform","system-identification"]],
 ["sensor-noise-modelling","rand","Sensor noise modelling",
  "Inject empirically shaped sensor noise so perception in simulation degrades the way reality does.",
  [["e2efly","Gaussian noise on inverse depth + the 'Redwood depth noise model' (S5-verified)"],
-  ["flysec","observation noise 'to account for imperfections in the sensors' (S5-verified)"]],
+  ["flysec","observation noise 'to account for imperfections in the sensors' (S5-verified)"],
+  ["anymal","elevation-map noise plus shifts 'up to 7.5 cm in all directions' (S4)"],
+  ["humanrl","'noise and delay to the observations' during training (S4)"],
+  ["soccer","'noise injected during training' named in the transfer recipe (S4)"],
+  ["aerialgym","simulated IMU with Gaussian noise and a bias random-walk (S4)"]],
  "Clean simulated sensors teach the policy to trust its inputs too much. Corrupt them the way real sensors are corrupted, and trusting-behaviour that would break in reality never gets learned.",
  "z_t = h(s_t)+\\varepsilon_t,\\qquad \\varepsilon_t\\sim\\hat{p}_{\\text{noise}}\\ \\text{(fit to real sensor logs)}",
  ["domain-randomization-dynamics","system-identification"]],
 ["system-identification","ident","System identification",
- "Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Now 7 of 10 papers — and SimpleFlight's ablation ranks it CRUCIAL where DR is only selective. Merge decisions logged per member.",
+ "Measure the real platform, or refine calibration from real flight data, and fold it back into the model. Now 8 of 20 papers — and SimpleFlight's ablation ranks it CRUCIAL where DR is only selective. Merge decisions logged per member.",
  [["e2efly","'step-response alignment' system identification among its four alignment stages (S5-verified)"],
   ["monorace","refines calibration parameters offline using known gate geometry and onboard flight data (S5-verified)"],
   ["attn","an 'actuator model through supervised learning' aids transfer (S5-verified; actuator-network variant)"],
   ["wheeled","friction measured with a '<5 USD spring scale'; actuator gains refined via 'Sim2Real2Sim' cycles (S5-verified)"],
   ["pixels","'data-driven augmentation' of the propeller model builds its 'augmented simulator' (S5-verified)"],
   ["diffphys","calibrates 'control latency', 'exponential smoothing' and 'quadratic air drag' (S5-verified)"],
-  ["simpleflight","Factor 4: 'SysID for calibrating key dynamic parameters is crucial' (S5-verified)"]],
+  ["simpleflight","Factor 4: 'SysID for calibrating key dynamic parameters is crucial' (S5-verified)"],
+  ["aerialgym","'the response of the simulated controllers and motor models is matched with real-world system' (S4)"]],
  "Randomization says 'be ready for anything'; system ID says 'know your actual vehicle'. Fit the model to logged reality and the simulator stops being a guess. The strongest pipelines do both: identify what you can, randomize the rest.",
  "\\psi^{*}=\\arg\\min_\\psi\\sum_t\\big\\lVert s^{\\text{real}}_{t+1}-f_\\psi(s^{\\text{real}}_t,a^{\\text{real}}_t)\\big\\rVert^2",
  ["domain-randomization-dynamics","sensor-noise-modelling"]],
@@ -461,20 +570,29 @@ const METHODS=[
  ["teacher-student-distillation","in-context-adaptation-recurrent","domain-randomization-dynamics"]],
 ["in-context-adaptation-recurrent","adapt","In-context adaptation (recurrent)",
  "A recurrent hidden state adapts to the platform during flight, with no gradient updates on the vehicle.",
- [["raptor","reports adaptation to unseen platforms within milliseconds via recurrent hidden layers"]],
+ [["raptor","reports adaptation to unseen platforms within milliseconds via recurrent hidden layers"],
+  ["humanrl","a causal transformer 'can use to adapt its behavior in-context, without updating its weights' (S4; transformer-history variant, judgement logged)"]],
  "Command a motion, observe what actually happened: the mismatch is exactly the evidence a system identifier needs. A recurrent state accumulates that evidence over a few control steps and becomes an implicit, continuously-updated estimate of the vehicle — identification as a side effect of remembering.",
  "h_t=f_\\phi(h_{t-1},o_t,a_{t-1}),\\qquad a_t\\sim\\pi_\\phi(\\cdot\\,|\\,o_t,h_t)",
  ["meta-imitation-multi-platform","tiny-policy-architecture"]],
 ["teacher-student-distillation","distill","Teacher–student distillation",
  "Distil privileged or per-variant teachers into one deployable student policy.",
- [["raptor","distils 1,000 specialist teachers into a single 2,084-parameter student"]],
+ [["raptor","distils 1,000 specialist teachers into a single 2,084-parameter student"],
+  ["humanrl","RL + KL objective toward a state-based teacher, weighting annealed to zero (S4)"],
+  ["soccer","'the skills are distilled into a single 1v1 agent' (S4)"],
+  ["xparkour","phase-2 supervised distillation of the privileged policy into a deployable one (S4)"],
+  ["hover","'We perform policy distillation using the DAgger framework' — privileged oracle to student (S4)"]],
  "Teachers can cheat in simulation — privileged state, unlimited compute, one vehicle each. The student cannot. Distillation transfers the teachers' competence into a policy restricted to what the real robot will actually have.",
  "\\min_\\phi\\;\\mathbb{E}\\big[\\,D_{\\mathrm{KL}}\\big(\\pi_{\\text{teacher}}(\\cdot\\,|\\,s^{\\text{priv}})\\,\\Vert\\,\\pi_\\phi(\\cdot\\,|\\,o)\\big)\\big]",
  ["meta-imitation-multi-platform","asymmetric-actor-critic"]],
 ["curriculum-learning","distill","Curriculum learning",
  "Staged task difficulty keeps fast training stable.",
  [["flysec","uses a curriculum as part of its 18-second training recipe"],
-  ["attn","robots are 'upgraded to harder terrain levels upon success' (S5-verified)"]],
+  ["attn","robots are 'upgraded to harder terrain levels upon success' (S5-verified)"],
+  ["anymal","goal-distance curriculum: targets start close, then move further away (S4)"],
+  ["him","terrain level increases at 80% of linear tracking reward (S4)"],
+  ["host","assistive pull-force magnitude decreases as the robot holds target height (S4)"],
+  ["xparkour","terrains promote/demote automatically on traversal success (S4)"]],
  "Ask a fresh policy to do the hard task and it thrashes; reward is too sparse to learn from. Start where reward is dense, harden the task as competence grows, and the policy is never asked a question it has no hope of answering.",
  null,["custom-high-performance-simulator","end-to-end-rl"]],
 ["imitation-learning-sim","algo","Imitation learning in simulation",
@@ -485,7 +603,7 @@ const METHODS=[
  ["photorealistic-nerf-sim","teacher-student-distillation"]],
 ["end-to-end-rl","algo","End-to-end reinforcement learning",
  "Model-free RL from observations to low-level commands, with no hand-built controller in the loop.",
- [["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"],["attn","trains the map-conditioned locomotion policies end-to-end with RL"],["wheeled","its three zero-shot policies are trained with RL in Isaac Lab"],["pixels","asymmetric actor-critic RL from abstracted observations to thrust and body rates"],["simpleflight","'PPO-based training framework' (verbatim)"]],
+ [["raptor","RL trains each of its 1,000 teachers"],["monorace","a neural network computes guidance and control jointly"],["flysec","RL to direct RPM commands"],["e2efly","its simulator supports RL training end to end"],["attn","trains the map-conditioned locomotion policies end-to-end with RL"],["wheeled","its three zero-shot policies are trained with RL in Isaac Lab"],["pixels","asymmetric actor-critic RL from abstracted observations to thrust and body rates"],["simpleflight","'PPO-based training framework' (verbatim)"],["anymal","modified PPO with a hybrid Gaussian + categorical actor trains the navigation policy (S4)"],["humanrl","'We use the proximal policy optimization (PPO) algorithm for training RL policies' (S4)"],["soccer","MPO, an off-policy actor-critic RL algorithm, trains the skills (S4)"],["abs","PPO across 1,280 parallel Isaac Gym environments (S4)"],["him","PPO optimizes the policy network (S4)"],["host","PPO adopted 'because of its stability and efficiency' (S4)"],["aerialgym","trains and zero-shot-deploys depth-based navigation RL policies (S4)"],["xparkour","'a single neural net policy operating directly from a camera image, trained... with large-scale RL' (S4)"],["hover","PPO maximizes the oracle's cumulative discounted reward (S4)"]],
  "Cascaded controllers encode decades of assumptions — and their limits. Letting one network map observations straight to motor commands removes every hand-tuned layer, at the price that the sim-to-real gap now has nowhere to hide. The most-used method in the extracted set: 8 of 10 papers.",
  "J(\\pi)=\\mathbb{E}_{\\tau\\sim\\pi}\\Big[\\sum_{t}\\gamma^{t}\\,r(s_t,a_t)\\Big]",
  ["asymmetric-actor-critic","direct-motor-command-control","curriculum-learning"]],
@@ -498,7 +616,8 @@ const METHODS=[
  ["end-to-end-rl","teacher-student-distillation"]],
 ["tiny-policy-architecture","algo","Tiny policy architecture",
  "Deliberately minimal networks: less overfitting, trivial onboard compute.",
- [["raptor","3 layers, 2,084 parameters"]],
+ [["raptor","3 layers, 2,084 parameters"],
+  ["soccer","'all neural network computations were run on the CPU' of the robot — no GPU, no accelerator (S4)"]],
  "A network too small to memorize its training distribution is forced to learn structure instead — and 2,084 parameters fit on any flight controller ever made. Capacity restraint doubles as a regularizer and a deployment strategy.",
  null,["in-context-adaptation-recurrent","microcontroller-deployment"]],
 ["neural-pose-estimation-kalman","input","Neural pose estimation + Kalman",
@@ -515,7 +634,11 @@ const METHODS=[
  ["neural-pose-estimation-kalman","system-identification"]],
 ["training-time-sensor-abstraction","input","Training-time sensor abstraction",
  "Train the policy against a cheap geometric abstraction of the sensor (gate inner edges) instead of rendered images; swap in a learned detector at deployment. The first NEW method the corpus forced into the registry since seeding (batch 2).",
- [["pixels","gate inner edges serve as 'sensor abstraction' during training, avoiding image rendering entirely"]],
+ [["pixels","gate inner edges serve as 'sensor abstraction' during training, avoiding image rendering entirely"],
+  ["anymal","a 2.5D elevation map is the interface between perception and locomotion (S4)"],
+  ["abs","exteroception abstracted to 'the distances that 11 rays travel from the robot to obstacles' (S4)"],
+  ["xparkour","privileged scandots at training, depth camera at deployment (S4)"],
+  ["soccer","an abstract game-state vector (agent, ball, opponent) substitutes for onboard perception (S4)"]],
  "Rendering photorealistic images for every training step is expensive and imports the pixel-level sim-to-real gap into training itself. If a compact abstraction carries the task-relevant information, train on the abstraction — cheap and gap-free — and let a separately trained detector produce it from real pixels at deployment.",
  null,
  ["self-attention-sensor-fusion","gate-segmentation-model-fusion","neural-pose-estimation-kalman"]],
@@ -527,7 +650,8 @@ const METHODS=[
  ["neural-pose-estimation-kalman"]],
 ["direct-motor-command-control","deploy","Direct motor-command control",
  "The network outputs motor or RPM commands directly, bypassing inner-loop controllers.",
- [["monorace","sends motor commands directly at 500 Hz"],["flysec","controls motor RPM directly"]],
+ [["monorace","sends motor commands directly at 500 Hz"],["flysec","controls motor RPM directly"],
+  ["aerialgym","motor-level RPM/thrust interfaces with a first-order motor model (S4)"]],
  "Every controller layer between the policy and the motors adds latency and hides dynamics the policy could have exploited. Going direct is the highest-authority, highest-risk interface: nothing softens the policy's mistakes, and nothing dilutes its skill.",
  "a_t=\\pi(o_t)\\in\\mathbb{R}^{4}\\quad\\text{(one command per motor)}",
  ["end-to-end-rl","microcontroller-deployment"]],
@@ -547,16 +671,81 @@ const METHODS=[
  "Integration faults — timing, units, message ordering, saturations — live between the software and the hardware, exactly where pure simulation cannot see. HIL runs the real electronics against simulated physics, catching those faults while a crash still costs nothing. This project's I2.5 rung.",
  null,["sim-to-sim-validation"]],
 ["latency-compensation","latency","Latency compensation",
- "Model or compensate the sensing-to-actuation delay explicitly. Two S5 passes grew this count from 1 to 6: delay handling is the quiet constant of deployed systems, and delays are named remaining-gap causes in RAPTOR and FalconGym.",
+ "Model or compensate the sensing-to-actuation delay explicitly. Two S5 passes grew this count from 1 to 6: delay handling is the quiet constant of deployed systems, and delays are named remaining-gap causes in RAPTOR and FalconGym. Batch 3 (S4, S5 pending) takes it to 10 of 20 — the second most-used method in the corpus.",
  [["e2efly","'step-response alignment method' for communication and motor delays (S5-verified)"],
   ["raptor","'overlaying a simple accelerometer integral... grounded through an exponential decay' against velocity-feedback delay (S5-verified)"],
   ["monorace","temporal synchronization and delay compensation between camera and IMU (S5-verified)"],
   ["flysec","action history in the observation + rotor delay as a first-order low-pass filter (S5-verified)"],
   ["diffphys","'control latency' explicitly calibrated into the differentiable simulation (S5-verified)"],
-  ["pixels","a 'history of three past actions' in the actor observation (S5-verified; smoothing variant, judgement logged)"]],
+  ["pixels","a 'history of three past actions' in the actor observation (S5-verified; smoothing variant, judgement logged)"],
+  ["soccer","'exponential action filter to remove high frequency components' (S4; smoothing variant, judgement logged)"],
+  ["him","'the system delay' randomized during training (S4)"],
+  ["host","'Control delay: U(0, 100) ms' randomized in training (S4)"],
+  ["xparkour","'Enforce constant depth latency of 0.08s' in sim to match onboard timing (S4)"]],
  "By the time the policy acts on a measurement, the world has moved on by the loop delay d. A policy trained on instant feedback learns corrections that arrive too late and destabilize. Give it the delayed observation plus its own recent actions, and it can implicitly predict the present before acting.",
  "o_t=\\big(z_{t-d},\\,a_{t-d},\\dots,a_{t-1}\\big)",
- ["direct-motor-command-control","sensor-noise-modelling"]]
+ ["direct-motor-command-control","sensor-noise-modelling"]],
+/* ---- batch-3 additions (S4, S5 pending) · eleven new canonical methods, families unchanged ·
+   merge judgements: docs/s4-batch3-2026-07-12.md ---- */
+["hierarchical-skill-navigation","algo","Hierarchical skill navigation",
+ "A high-level navigation policy selects which pre-trained low-level locomotion skill to activate and issues intermediate commands, while the skill policies stay frozen — a slow planner (5 Hz) stacked over fast controllers (50 Hz).",
+ [["anymal","'the navigation module guides the locomotion module in the environment by selecting which skill to activate' (S4)"]],
+ "Instead of asking one network to both plan a route and place every footstep, the problem is cut in two. First a small library of specialists is trained — walk, jump, climb, crouch — and then frozen solid. A separate navigator learns a much simpler job: look at the world, pick a specialist, and tell it where to go. The navigator never has to relearn motor control, and the specialists never have to understand the map.",
+ null,["end-to-end-rl","curriculum-learning","training-time-sensor-abstraction"]],
+["learned-terrain-reconstruction","input","Learned terrain reconstruction",
+ "A learned perception network rebuilds the terrain around the robot — occupancy plus a latent belief — from raw point clouds, using a multi-resolution encoder-decoder that feeds its previous output back in as input.",
+ [["anymal","'a multi-resolution scheme ... the previous output is transformed into the current frame and concatenated with the measurement' (S4)"]],
+ "Depth sensors hand the robot a noisy, partial pile of points; this method trains a network to turn that pile back into a coherent little model of the terrain. Two networks work at different scales — one coarse and wide, one fine and close — and the last reconstruction is fed back in, so the memory of what was just seen fills today's blind spots. The catch, which the authors state: memory can hallucinate structure in blind spots that is not there.",
+ null,["training-time-sensor-abstraction","sensor-noise-modelling","in-context-adaptation-recurrent"]],
+["domain-randomization-environment","rand","Domain randomization (environment)",
+ "During training the geometry of the world itself is randomized — obstacle dimensions, terrain types, start positions and postures, even the perceived geometry — so the policy never sees the same environment twice.",
+ [["anymal","'The dimensions of the individual obstacles and the target's and robot's initial position are randomized' (S4)"],
+  ["abs","'illusion' overwrites observed ray distances with random values, robustifying against unseen geometry (S4)"],
+  ["host","'we design 4 terrains to diversify the starting postures' (S4)"]],
+ "Dynamics randomization jiggles the robot's body; environment randomization jiggles the world. Every episode the obstacles change size, the terrain changes shape, the robot wakes up somewhere new — so the policy cannot memorise one course and is forced to learn the skill underneath. It is the same insurance policy as dynamics randomization, aimed at geometry instead of physics.",
+ null,["domain-randomization-dynamics","curriculum-learning","sensor-noise-modelling"]],
+["external-disturbance-training","rand","External disturbance training",
+ "The training simulator actively shoves the robot: random forces, torques and pushes are injected mid-episode so the policy learns recovery as part of normal behaviour rather than as an emergency. Registered in batch 3; the two earlier members were carried in on their S5-record quotes (a batch-2 under-registration, corrected visibly).",
+ [["soccer","'perturbations during training in simulation enabled good-quality transfer' (S4)"],
+  ["flysec","'random force/torque disturbances per episode' (S5 record, 10 Jul 2026)"],
+  ["attn","'disturbance injection (artificial pushes, map-scan drift)' (S5 record, 11 Jul 2026)"]],
+ "A policy that has only ever moved through calm conditions falls over at the first real gust or bump. Here the simulator plays the bully: it shoves, drags and knocks the robot mid-episode, with random strength and timing, thousands of times. Recovery stops being a special case and becomes a reflex. It is the difference between learning to ride a bike in an empty car park and learning with a friend who keeps pushing your shoulder.",
+ null,["domain-randomization-dynamics","curriculum-learning","sensor-noise-modelling"]],
+["self-play-training","distill","Self-play training",
+ "After skills are distilled into a single agent, the agent trains by playing against itself, so the opposition's skill automatically scales with its own.",
+ [["soccer","'the skills are distilled into a single 1v1 agent, and the agent is trained via self-play' (S4)"]],
+ "Where do you find a sparring partner who is always exactly as good as you? You play yourself. In self-play the opponent in every training match is the agent's own self, so each new trick the agent discovers is immediately met by an opponent who knows it too. The curriculum builds itself — nobody has to script harder and harder opponents. The known catch, which the authors admit, is stability: chasing your own tail can make learning wobble.",
+ null,["curriculum-learning","teacher-student-distillation","end-to-end-rl"]],
+["reach-avoid-safety-shielding","algo","Reach-avoid safety shielding",
+ "A learned control-theoretic reach-avoid value network scores how dangerous the current state is; past a threshold, control switches from the agile policy to a recovery policy whose command is chosen by constrained optimization to restore safety while still progressing.",
+ [["abs","'The policy switch in ABS is governed by a learned control-theoretic reach-avoid value network, which also guides the recovery policy' (S4)"]],
+ "Fast policies and safe policies want different things, so this method stops asking one network to be both. An agile policy runs the show while a learned safety value — rooted in reach-avoid control theory — quietly watches every state. The moment the value says a collision is brewing, a recovery policy grabs the controls, steers back to safety, and hands the wheel back. The shield is exactly what lets the main policy sprint: there is a guard rail, so it never has to be timid.",
+ null,["end-to-end-rl","training-time-sensor-abstraction","domain-randomization-dynamics"]],
+["hybrid-internal-model-estimation","adapt","Hybrid internal model estimation",
+ "Treats everything the robot cannot sense — terrain, friction, pushes — as a disturbance and estimates it from the robot's own response: a history-conditioned network produces explicit velocity (regressed to simulator ground truth) plus an implicit latent trained contrastively against the successor state.",
+ [["him","'sequential history observations to extract the hybrid internal embedding that consists of the robot's velocity and the implicit response' (S4)"]],
+ "You cannot see the wind, but you can feel what it does to you. HIM leans on that classical control idea: instead of trying to observe the outside world, watch how the robot's own body responds and infer what must be pushing it. Half the estimate is literal — the robot's velocity, learned against simulator ground truth. The other half is a free-form latent trained so it lines up with where the robot actually ends up next: the future state itself is the supervision, so there is no teacher network to train first.",
+ null,["in-context-adaptation-recurrent","system-identification","teacher-student-distillation"]],
+["hybrid-modelbased-learned-control","algo","Hybrid model-based + learned control",
+ "A classical model-based planner (trajectory optimization) proposes reference motions during training, and a neural policy is trained in simulation to track those optimized footholds — pairing planner precision with learned robustness.",
+ [["dtc","'we propose a hybrid control architecture that combines the advantages of both worlds' (S4-lite, abstract depth — full text at acquisition)"]],
+ "Model-based optimizers are precise but brittle: they nail the footstep right up until the ground is slippery and the model lies. Learned policies are tough but sloppy about exact placement. This pattern keeps both: the optimizer proposes exactly where to step, and a learned tracker — trained under simulated mess — does whatever it takes to get there.",
+ null,["end-to-end-rl","imitation-learning-sim"]],
+["multi-critic-rl","algo","Multi-critic RL",
+ "Reward terms are split into groups (task, style, regularization, post-task), each with its own critic; each critic's advantage is normalized on its own scale before the results are combined, instead of one critic valuing a single summed reward.",
+ [["host","single-critic ablation 'deteriorates significantly across all terrains, achieving zero success rates' (S4)"]],
+ "When you sum many reward terms into one number, the big terms drown the small ones and a single value network has to make sense of the noise. Multi-critic RL gives each reward family its own judge, lets every judge score on its own scale, and only then combines the votes. In HoST the ablation is blunt: collapse it back to one critic and the humanoid never manages to stand up at all.",
+ null,["end-to-end-rl","asymmetric-actor-critic","curriculum-learning"]],
+["rma-latent-adaptation","adapt","RMA-style latent adaptation",
+ "An adaptation module is trained to estimate environment properties as a latent vector from the robot's observation history, so the deployed policy adapts online without privileged sensors. Extreme Parkour uses the Regularized Online Adaptation (ROA) variant of this RMA-family mechanism.",
+ [["xparkour","'We use regularized online adaptation (ROA) to train an adaptation module to estimate environment properties' (S4)"]],
+ "The policy trains alongside a small companion network whose only job is to guess the things you cannot measure — friction, payload, motor wear — from how the recent past actually felt. In the RMA family that guess is a compact latent vector the policy consumes like an extra sense. ROA regularizes the latent while training it online together with the policy, so on the real robot the module keeps re-estimating the world every step: adaptation with no test-time learning at all.",
+ null,["in-context-adaptation-recurrent","teacher-student-distillation","system-identification"]],
+["multi-mode-command-masking","algo","Multi-mode command masking",
+ "One student policy is distilled to obey many command types by masking the command vector during training: a one-hot mode mask selects which command family is active and a sparsity mask drawn from Bernoulli(0.5) hides random components, so a single network learns every control mode.",
+ [["hover","'Every bit of the mode and sparsity binary mask is from a Bernoulli distribution B(0.5)' (S4)"]],
+ "Rather than training one controller per control mode — joint angles, root velocity, keypoint positions — HOVER trains one network and randomly hides parts of the command from it. Every rollout flips coins over which command bits the student is allowed to see, so it must behave sensibly under every combination. At deployment you choose a mode simply by choosing a mask: the same weights serve more than 15 modes on the real robot.",
+ null,["teacher-student-distillation","meta-imitation-multi-platform","imitation-learning-sim"]]
 ];
 
 /* ---- open-source starting points per method ----
@@ -644,9 +833,9 @@ function draw(fam){
     return `<button class="card clickable method-card" data-i="${idx}" aria-haspopup="dialog">
       <span class="mc-id">${m[0]}</span>
       <span class="mc-name">${esc(m[2])}</span>
-      <span class="mc-bar" aria-hidden="true"><i style="width:${m[4].length*10}%"></i></span>
+      <span class="mc-bar" aria-hidden="true"><i style="width:${m[4].length*5}%"></i></span>
       <span class="mc-foot"><span class="mc-fam">${FAMS[m[1]]}</span>
-      <span class="mc-count">${m[4].length} / 10</span></span></button>`;}).join("");
+      <span class="mc-count">${m[4].length} / 20</span></span></button>`;}).join("");
 }
 draw("");
 chips.addEventListener("click",e=>{const b=e.target.closest(".chip-btn");if(!b)return;
@@ -678,7 +867,7 @@ function openMethod(m){
   document.getElementById("mmRelated").innerHTML=m[7].map(id=>
     `<a href="#" class="mm-rel" data-m="${id}"><code>${id}</code></a>`).join(" · ");
   document.getElementById("mmCount").textContent=
-    `Used by ${m[4].length} of the 10 extracted papers. Count = distinct papers, not mentions; recomputed after every batch. "What it is" and the evidence lines are grounded in the papers' arXiv pages; the intuition is our explanation and the mathematics is a canonical concept form (notation ours), both labelled as such.`;
+    `Used by ${m[4].length} of the 20 extracted papers. Count = distinct papers, not mentions; recomputed after every batch. Batch-1/2 evidence lines are S5-verified; batch-3 lines are tagged (S4) with the S5 cross-check pending. "What it is" and the evidence lines are grounded in the papers' arXiv pages; the intuition is our explanation and the mathematics is a canonical concept form (notation ours), both labelled as such.`;
   back.classList.add("open");modal.classList.add("open");
   document.getElementById("mmClose").focus();
 }
@@ -833,7 +1022,9 @@ const STACK=[
      (18 s), attn=mechanical leg, wheeled=car, pixels=eye (no state estimation),
      diffphys=apple (Newton), simpleflight=test tube (the ablation study) */
   const PAPER_ICON={falcongym:"📷",raptor:"🦅",monorace:"🏁",e2efly:"🔁",flysec:"⏱️",
-    attn:"🦿",wheeled:"🚗",pixels:"👁️",diffphys:"🍎",simpleflight:"🧪"};
+    attn:"🦿",wheeled:"🚗",pixels:"👁️",diffphys:"🍎",simpleflight:"🧪",
+    anymal:"🧗",humanrl:"🚶",soccer:"⚽",abs:"🛡️",him:"🧭",dtc:"🎯",host:"🧍",
+    aerialgym:"🏟️",xparkour:"🤸",hover:"🕹️"};
   const rgba=(hex,a)=>{const v=parseInt(hex.slice(1),16);
     return `rgba(${v>>16&255},${v>>8&255},${v&255},${a})`;};
   function themeColors(){const s=getComputedStyle(document.body);
@@ -1009,9 +1200,9 @@ const STACK=[
     let type,body;
     if(n.type==="paper"){type="annotated paper · click to open its page";
       body=PAPER_INFO[n.id.slice(2)]||"";}
-    else if(n.type==="method"){type="method · "+FAMS[n.m[1]]+" · "+n.count+" of 10 papers · click for the deep-dive";
+    else if(n.type==="method"){type="method · "+FAMS[n.m[1]]+" · "+n.count+" of 20 papers · click for the deep-dive";
       body=n.m[3].length>140?n.m[3].slice(0,137)+"…":n.m[3];}
-    else if(n.type==="stack"){type=n.f.short+" · used by "+n.count+" of 10 · click for the evidence";
+    else if(n.type==="stack"){type=n.f.short+" · used by "+n.count+" of the 10 S5-verified · click for the evidence";
       body=(n.it.g?n.it.g+". ":"")+"Used by: "+n.it.m.map(([p])=>PAPERS[p][1].split(" (")[0]).join(", ")+".";}
     else{type="method family · click to filter the registry";
       body=METHODS.filter(m=>m[1]===n.id.slice(2)).length+" methods in this family.";}
@@ -1042,7 +1233,17 @@ const STACK=[
     wheeled:"UW · CoRL 2025 · Isaac Lab to low-cost RC cars, three zero-shot policies",
     pixels:"UZH-RPG · RSS 2024 · pixels to commands, no state estimator, 40 km/h at 2 g",
     diffphys:"SJTU · Nature MI 2025 · point-mass differentiable physics, 90% vs 60% SOTA, $21 computer",
-    simpleflight:"Tsinghua · RA-L · the five-factor ablation, 50% tracking-error reduction"};
+    simpleflight:"Tsinghua · RA-L · the five-factor ablation, 50% tracking-error reduction",
+    anymal:"ETH-RSL · 2024 · perception + navigation + 5 frozen skills; boxes and 1 m gaps at up to 2 m/s (S4, S5 pending)",
+    humanrl:"Berkeley · 2024 · causal transformer over history, in-context adaptation (S4, S5 pending)",
+    soccer:"DeepMind · 2024 · distillation + self-play, CPU-only onboard compute (S4, S5 pending)",
+    abs:"CMU LeCAR · RSS 2024 · agile policy + learned reach-avoid shield (S4, S5 pending)",
+    him:"Shanghai AI Lab + SJTU · 2024 · hybrid internal model estimated from the robot's own response (S4, S5 pending)",
+    dtc:"ETH-RSL · 2024 · TO planner + learned tracker (abstract-only depth; S5 pending)",
+    host:"Shanghai AI Lab · RSS 2025 · standing up across postures via multi-critic RL (S4, S5 pending)",
+    aerialgym:"NTNU-ARL · RA-L accepted · purpose-built GPU-parallel aerial sim + zero-shot depth navigation (S4, S5 pending)",
+    xparkour:"CMU · 2024 · one depth camera to joint targets, ROA adaptation (S4, S5 pending)",
+    hover:"NVIDIA GEAR · ICRA 2025 · 15+ control modes via command masking; the paper never says 'zero-shot' (S4, S5 pending)"};
   const nodeModal=document.getElementById("nodeModal");
   function closeNode(){nodeModal.classList.remove("open");back.classList.remove("open");}
   function openNode(n){
@@ -1080,7 +1281,7 @@ const STACK=[
           inf=document.getElementById("nnInfo"),lk=document.getElementById("nnLinks"),
           go=document.getElementById("nnGo");
     t.textContent=f.name;ti.textContent=it.n;
-    inf.textContent=`Used by ${it.m.length} of the 10 extracted papers. ${it.g?it.g+". ":""}Count = distinct papers; the quotes below come from the paper pages and the S5 records (docs/shared-stack.md).`;
+    inf.textContent=`Used by ${it.m.length} of the 10 S5-verified papers (batch 3 joins after its S5 pass). ${it.g?it.g+". ":""}Count = distinct papers; the quotes below come from the paper pages and the S5 records (docs/shared-stack.md).`;
     lk.innerHTML=it.m.map(([p,ev])=>`<a href="${PAPERS[p][0]}">${esc(PAPERS[p][1])}</a> — ${esc(ev)}`).join("<br>");
     if(from==="graph"){go.textContent="See it in the shared stack →";go.href="#stack";
       go.onclick=()=>{closeNode();};}

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extreme parkour with legged robots · annotated</title>
+<meta name="description" content="Annotated reading of Extreme Parkour (Cheng, Shi, Agarwal & Pathak): one depth-camera RL policy, trained entirely in simulation, makes a Unitree A1 jump a 0.5 m box, cross a 0.8 m gap and handstand.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../system.html">System</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="crumbs"><a href="../index.html">Overview</a> / <a href="../index.html#papers">Annotated papers</a> / <span>Extreme Parkour</span></p>
+  <p class="eyebrow">Annotated paper · 19 of 20 · corpus rank #19</p>
+  <h1>Extreme parkour with legged robots</h1>
+  <p class="authors">Xuxin Cheng, Kexin Shi, Ananye Agarwal &amp; Deepak Pathak</p>
+  <div class="meta-line">
+    CMU (Pathak) per corpus manifest — institution not printed on the fetched arXiv pages <span class="sep">·</span>
+    ICRA 2024 per corpus manifest (to confirm; not stated as journal-ref on arXiv) <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2309.14341" rel="noopener">arXiv:2309.14341</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 83 = 20+25+20+10+8</span>
+    <span class="badge pending">S4 · S5 pending</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        A single neural-net policy, trained end-to-end in simulation with large-scale RL and seeing only a
+        front-facing depth camera, makes a low-cost <b>Unitree A1</b> quadruped do extreme parkour: a high jump
+        onto a <b>0.5&nbsp;m</b> box (twice its hip height), a long jump across a <b>0.8&nbsp;m</b> gap (twice its
+        foot separation), handstands, and runs across tilted ramps. The recipe is a two-phase teacher–student
+        distillation — a privileged "scandots" policy trained with inner-product rewards and regularised online
+        adaptation, distilled via DAgger into a convnet-GRU depth policy — trained on a single RTX&nbsp;3090 in
+        under <b>20 hours</b> and run onboard a Jetson NX at 50&nbsp;Hz.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        Parkour asks a robot for exactly what cheap hardware is worst at: precisely timed, dynamic whole-body
+        motion, launched from what a noisy camera says about an obstacle. The platform here is deliberately
+        modest — a Unitree A1 whose thigh joint stands 26&nbsp;cm off the ground with a 40&nbsp;cm body, a
+        RealSense depth camera that delivers frames at an unsteady 10±2&nbsp;Hz, and what the paper calls "imprecise sensing and actuation".
+      </p>
+      <p>
+        The authors' claim is that none of this has to be fixed in hardware:
+        <em>"a single neural net policy operating directly from a camera image, trained in simulation with
+        large-scale RL, can overcome imprecise sensing and actuation to output highly precise control behavior
+        end-to-end"</em> (abstract). The interesting question for this reading list is <em>how</em> a
+        simulation-only training pipeline absorbs those imprecisions — and how much of that machinery is
+        platform-independent.
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 244" role="img" aria-label="Extreme Parkour pipeline: parkour terrains with an automatic curriculum feed a phase-1 scandots RL policy with a ROA adaptation module; DAgger distils it into a convnet-GRU depth policy with MTS direction estimation; deployed on a Unitree A1 with a RealSense D435 and Jetson NX.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="8" y="28" width="150" height="96" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="83" y="50" text-anchor="middle" font-weight="700">Parkour terrains</text>
+            <text x="83" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">tilted ramps · gaps</text>
+            <text x="83" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">hurdles · high steps</text>
+            <text x="83" y="99" text-anchor="middle" font-size="10.5" fill="#78716c">auto-curriculum: promote</text>
+            <text x="83" y="113" text-anchor="middle" font-size="10.5" fill="#78716c">if &gt; half traversed</text>
+
+            <rect x="188" y="28" width="160" height="96" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="268" y="50" text-anchor="middle" font-weight="700">Phase 1 · scandots policy</text>
+            <text x="268" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">inputs: x · m · d̂ · W · v^cmd</text>
+            <text x="268" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">rewards: inner-product</text>
+            <text x="268" y="95" text-anchor="middle" font-size="10.5" fill="#78716c">tracking · edge clearance</text>
+            <text x="268" y="109" text-anchor="middle" font-size="10.5" fill="#78716c">· stylized (handstand)</text>
+
+            <rect x="378" y="28" width="150" height="96" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="453" y="50" text-anchor="middle" font-weight="700" fill="#1e3a8a">Phase 2 · depth policy</text>
+            <text x="453" y="67" text-anchor="middle" font-size="10.5">convnet-GRU backbone</text>
+            <text x="453" y="81" text-anchor="middle" font-size="10.5">replaces scandots</text>
+            <text x="453" y="99" text-anchor="middle" font-size="10.5" fill="#78716c">DAgger vs phase-1 actions</text>
+            <text x="453" y="113" text-anchor="middle" font-size="10.5" fill="#78716c">MTS direction estimate</text>
+
+            <rect x="558" y="28" width="134" height="96" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="625" y="50" text-anchor="middle" font-weight="700">Unitree A1</text>
+            <text x="625" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">D435 depth · 10±2 Hz</text>
+            <text x="625" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">backbone 10 Hz</text>
+            <text x="625" y="95" text-anchor="middle" font-size="10.5" fill="#78716c">policy 50 Hz · Jetson NX</text>
+            <text x="625" y="109" text-anchor="middle" font-size="10.5" fill="#78716c">UDP · 0.08 s latency</text>
+
+            <line x1="158" y1="76" x2="184" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="348" y1="76" x2="374" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="528" y1="76" x2="554" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="171" y="66" text-anchor="middle" font-size="10" fill="#78716c">RL</text>
+            <text x="361" y="66" text-anchor="middle" font-size="10" fill="#78716c">distil</text>
+            <text x="541" y="66" text-anchor="middle" font-size="10" fill="#78716c">deploy</text>
+
+            <rect x="188" y="144" width="160" height="40" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="268" y="161" text-anchor="middle" font-size="10.5" font-weight="700">ROA adaptation module</text>
+            <text x="268" y="176" text-anchor="middle" font-size="10.5" fill="#78716c">estimates env. properties</text>
+            <line x1="268" y1="140" x2="268" y2="128" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <text x="625" y="161" text-anchor="middle" font-size="10.5" fill="#44403c" font-weight="700">skills</text>
+            <text x="625" y="176" text-anchor="middle" font-size="10.5" fill="#78716c">0.5 m high jump · 0.8 m gap</text>
+            <text x="625" y="190" text-anchor="middle" font-size="10.5" fill="#78716c">handstand · tilted ramps</text>
+
+            <line x1="8" y1="210" x2="540" y2="210" stroke="#e7e5e4" stroke-width="1"/>
+            <line x1="552" y1="210" x2="692" y2="210" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="274" y="230" text-anchor="middle" font-size="10.5" fill="#78716c">simulation (single RTX 3090, &lt; 20 h)</text>
+            <text x="622" y="230" text-anchor="middle" font-size="10.5" fill="#78716c">reality</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The two-phase pipeline. Every label — terrain types, policy inputs, reward
+          names, ROA, DAgger, MTS, the sensing/compute rates and the skill numbers — is taken from the paper's
+          Secs 3.2–3.3 and 4.1 (arXiv full text); the layout is ours. The paper does not name its simulator, so
+          the left band deliberately does not either.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 Phase 1 — RL from privileged scandots</h3>
+      <p>
+        The first policy is trained with model-free RL in simulation with access to information the real robot
+        will never have. It <em>"takes as input, the proprioception x, scandots m, target heading d̂, walking
+        flag W and commanded speed v<sup>cmd</sup>"</em> (Sec&nbsp;3.2). Terrain difficulty is handled by an
+        automatic curriculum: <em>"robots are first initialized in easy levels. They are promoted to harder ones
+        if they traverse more than half the length, and demoted to an easier one if they travel less than half
+        the expected distance"</em> (Sec&nbsp;3.2). Alongside the policy, <em>"regularized online adaptation
+        (ROA)"</em> trains <em>"an adaptation module to estimate environment properties"</em> from observation
+        history.
+      </p>
+      <div class="concept">
+        <span class="c-label">Concept · scandots as a training-time sensor abstraction (ours)</span>
+        <p>"Scandots" — in this literature, a grid of terrain-height samples queried around the robot — are a
+        perfect sensor that only exists in simulation: noiseless, dense, and independent of camera pose. Training
+        the first policy on scandots decouples <em>learning what to do about terrain</em> from <em>learning to
+        see terrain</em>, and leaves a clean supervision target for the later vision policy. ROA sits in the
+        same lineage as RMA's latent adaptation: a module that recovers unobserved environment properties from
+        how recent observations respond to recent actions.</p>
+      </div>
+
+      <h3>3.2 Reward design by inner products</h3>
+      <p>
+        The paper's stated contribution here is <em>"a simple yet effective inner-product reward design principle
+        for general robot base motion"</em> (introduction). Velocity tracking rewards the projection of the body
+        velocity onto the target direction, capped at the commanded speed (the paper's Eq.&nbsp;2):
+      </p>
+      <div class="math-block">
+        $$ r_{tracking} = \min\!\left(\langle \mathbf{v},\, \hat{\mathbf{d}}_w \rangle,\; v^{cmd}\right) $$
+        <div class="eq-note">The paper's Eq. (2), Sec 3.1. Our gloss: \(\mathbf{v}\) is the body velocity,
+          \(\hat{\mathbf{d}}_w\) the target direction, \(v^{cmd}\) the commanded speed.</div>
+      </div>
+      <p>
+        Foot placement near terrain edges is penalised (Eq.&nbsp;3), and a "stylized" reward gates the handstand
+        behaviour on a binary switch (Eq.&nbsp;4):
+      </p>
+      <div class="math-block">
+        $$ r_{clearance} = -\sum_{i=0}^{4} c_i \cdot M[p_i], \qquad
+           r_{stylized} = W \cdot \left[0.5 \cdot \langle \hat{\mathbf{v}}_{fwd},\, \hat{\mathbf{c}} \rangle + 0.5\right]^2 $$
+        <div class="eq-note">The paper's Eqs. (3) and (4), Sec 3.1. Our gloss: \(c_i=1\) if foot \(i\) contacts
+          the ground and \(M[p_i]=1\) iff point \(p_i\) lies within 5&nbsp;cm of a terrain edge;
+          \(\hat{\mathbf{v}}_{fwd}\) is the robot's forward unit vector, \(\hat{\mathbf{c}}\) the desired-direction
+          unit vector, and \(W\) a binary on/off switch.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why inner-product rewards travel well (ours)</span>
+        <p>An inner-product tracking term has almost nothing platform-specific in it: it never references legs,
+        gaits or joint targets, only "move the base along this direction, up to this speed". That is why the same
+        scalar can drive a jump, a ramp run and a handstand once the direction and the \(W\) switch change — and
+        why it is a candidate template for base-motion rewards on entirely different vehicle classes.</p>
+      </div>
+
+      <h3>3.3 Phase 2 — distilling to a deployable depth policy</h3>
+      <p>
+        The phase-1 policy consumes scandots and a ground-truth heading, neither of which exists on the real
+        robot, so <em>"we use supervised learning to obtain a deployable policy which automatically estimates
+        these quantities"</em> (Sec&nbsp;3.3). Concretely, <em>"we replace the scandots input to the base policy
+        with a convnet-GRU pipeline that accepts depth"</em>, and the network <em>"is trained using DAgger, with
+        ground truth actions from the phase 1 policy"</em>. The target direction is recovered with a
+        mixture-of-teacher-student (MTS) scheme; the paper's switching rule is
+        <code>obs_θ = {θ_pred if |θ_pred − d̂_w| &lt; 0.6; d̂_w otherwise}</code> — the student's own predicted
+        direction is used only while it stays close to the ground truth, which prevents its errors from dragging
+        training off-distribution.
+      </p>
+      <div class="concept">
+        <span class="c-label">Concept · why the depth branch needs a GRU (ours)</span>
+        <p>The camera delivers frames at roughly 10&nbsp;Hz while the policy acts at 50&nbsp;Hz, and any single
+        depth image is noisy and partially occluded by the robot's own pitch. A recurrent encoder lets the policy
+        integrate obstacle geometry over time and keep acting on its memory of the terrain between frames — the
+        depth-side analogue of what ROA's history-based module does for dynamics.</p>
+      </div>
+
+      <h3>3.4 The deployment stack</h3>
+      <p>
+        On the robot, <em>"the Intel RealSense D435 inside the head of the robot … captures images at
+        10±2&nbsp;Hz"</em>; images are downsampled to 58×87. <em>"We run both depth backbone (10Hz) and the base
+        policy (50Hz) on the Jetson NX and communicate via UDP"</em> (Sec&nbsp;4.1). The timing trick worth
+        remembering: the pipeline <em>"enforce[s] constant depth latency of 0.08s"</em>, so simulation trains
+        against the same fixed sensor delay the real loop will exhibit — latency is treated as a modelled
+        property, not a nuisance. Two honesty notes from the S4 pass: the fetched text never names the simulator,
+        and the RL algorithm is described only as model-free RL (PPO is cited in the bibliography but never
+        stated as the algorithm used), so neither is asserted here.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        The headline results are athletic feats scaled against the robot's own geometry, plus an unusually
+        concrete training and deployment budget:
+      </p>
+      <div class="table-wrap"><table>
+        <caption>Every quantitative claim captured at S4 from the arXiv full text (Secs 4.1–4.3); the fetched
+          text reports skills and budgets rather than per-obstacle success percentages.</caption>
+        <thead><tr><th>Item</th><th>Reported figure (source section)</th></tr></thead>
+        <tbody>
+          <tr><td>High jump</td><td>onto a gym box <b>0.5&nbsp;m</b> high — "twice the height of its hip joint" (4.2.1)</td></tr>
+          <tr><td>Long jump</td><td>across a gap <b>0.8&nbsp;m</b> wide — "twice the separation between its front and rear feet" (4.2.2)</td></tr>
+          <tr><td>Handstand</td><td>"seamlessly transition between walking on four and its front two legs" (4.2.3)</td></tr>
+          <tr><td>Robot geometry</td><td>Unitree A1, 12 joints; thigh-joint standing height 26&nbsp;cm, body length 40&nbsp;cm (4.1)</td></tr>
+          <tr><td>Training cost</td><td>"a single 3090 GPU in less than 20 hours" (4.1)</td></tr>
+          <tr><td>Onboard rates</td><td>depth backbone 10&nbsp;Hz · base policy 50&nbsp;Hz on Jetson NX, over UDP; camera 10±2&nbsp;Hz; depth latency fixed at 0.08&nbsp;s (4.1)</td></tr>
+          <tr><td>Simulation evaluation protocol</td><td>"spawn 256 robots at the beginning of the course and record the mean x-displacement" (4.3.1)</td></tr>
+        </tbody>
+      </table></div>
+      <p>
+        A labelling note, per the LAW: the paper never uses the phrase "zero-shot". The badge on this page is our
+        judgement at S4 — both training phases run entirely in simulation and the deployed policy operates
+        directly from the onboard camera, with no fine-tuning step reported in the fetched text.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors (S4, from the arXiv full text, 12 Jul 2026):</b> the material here is
+          genuinely thin — the fetched text has <em>no dedicated Limitations or Conclusion section</em>. The only
+          forward-looking statement is one sentence in the brief Discussion (Sec&nbsp;5), which we paraphrase:
+          the robot is an expert at moving around the world but should also be able to manipulate objects, and a
+          promising research direction is extending the same basic approach to mobile manipulators. No explicit
+          failure-case or quantitative-limitation analysis appears in the fetched pages.</li>
+        <li><b>Our open questions (ours):</b> with no stated simulator, no named RL algorithm and no
+          domain-randomisation table in the fetched text, how reproducible is the sim-to-real recipe from the
+          paper alone? How far does the fixed 0.08&nbsp;s latency assumption hold when the camera itself varies
+          at 10±2&nbsp;Hz? And where is the failure envelope — the text scales the feats against robot geometry
+          (2× hip height, 2× foot separation) but reports no success rates at those extremes.</li>
+      </ul>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          This is a quadruped paper, and the platform mismatch is real: nothing here about contact scheduling,
+          foot clearance or handstands maps onto an X500&nbsp;V2 airframe. Our judgement is that four mechanisms
+          nonetheless transfer almost directly. First, the inner-product reward principle
+          (\(\min(\langle\mathbf{v},\hat{\mathbf{d}}\rangle, v^{cmd})\)) is a clean, tuning-light template for
+          UAV velocity- and heading-command tracking. Second, the two-phase distillation — privileged sim policy
+          → onboard depth policy via DAgger — is the same recipe one would use to distil a privileged simulated
+          UAV policy into an Orin-Nano vision policy. Third, enforcing a constant sensor latency in simulation
+          (0.08&nbsp;s here, to match a ~10&nbsp;Hz RealSense) is exactly the timing trick a depth camera +
+          Orin&nbsp;Nano loop needs. Fourth, the whole system trains in simulation on one RTX&nbsp;3090 in under
+          20 hours and runs at 50&nbsp;Hz on a Jetson-class device — a concrete compute-and-latency budget
+          analogue for our deployment target. The caveat cuts the other way: with the simulator unnamed, no
+          randomisation table and no limitations section, the robustness recipe must be inferred, not copied.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>teacher-student-distillation</code></a> ·
+        <a href="../index.html#methods"><code>curriculum-learning</code></a> ·
+        <a href="../index.html#methods"><code>latency-compensation</code></a> ·
+        <a href="../index.html#methods"><code>training-time-sensor-abstraction</code></a> ·
+        <a href="../index.html#methods"><code>rma-latent-adaptation</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4</b> — built from the paper's arXiv full text (HTML, fetched 12 July 2026), with
+        clearly-labelled concept reconstructions. Every quote was re-checked against the source by an independent
+        verification agent the same day (record: docs/s4-batch3-2026-07-12.md). Promoted to <b>verified</b> only
+        after the NotebookLM five-question cross-check (S5) — pending for batch 3.
+      </div>
+      <div class="cite">@misc{cheng2023extremeparkour,
+  title={Extreme Parkour with Legged Robots},
+  author={Cheng, Xuxin and Shi, Kexin and Agarwal, Ananye and Pathak, Deepak},
+  year={2023},
+  eprint={2309.14341},
+  archivePrefix={arXiv},
+  primaryClass={cs.RO},
+  note={Website and videos at https://extreme-parkour.github.io/},
+  doi={10.48550/arXiv.2309.14341},
+  url={https://arxiv.org/abs/2309.14341}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="aerialgym-2025.html"><span class="dir">← Previous</span>Aerial Gym Simulator: GPU-parallel aerial robotics</a>
+      <a href="hover-2024.html" style="text-align:right"><span class="dir">Next →</span>HOVER: one whole-body controller for many humanoid modes</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="falcongym-2025.html">01 · FalconGym</a>
+      <a href="raptor-2026.html">02 · RAPTOR</a>
+      <a href="monorace-2026.html">03 · MonoRace</a>
+      <a href="e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="attention-legged-2025.html">06 · Attention Legged</a>
+      <a href="wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="pixels-2024.html">08 · Flight from Pixels</a>
+      <a href="diffphys-2025.html">09 · Newton's Laws</a>
+      <a href="simpleflight-2024.html">10 · SimpleFlight</a>
+      <a href="anymal-parkour-2024.html">11 · ANYmal Parkour</a>
+      <a href="humanoid-rl-2024.html">12 · Humanoid RL</a>
+      <a href="soccer-2024.html">13 · Soccer Skills</a>
+      <a href="agile-but-safe-2024.html">14 · Agile But Safe</a>
+      <a href="him-2024.html">15 · HIM</a>
+      <a href="dtc-2024.html">16 · DTC</a>
+      <a href="host-2025.html">17 · HoST</a>
+      <a href="aerialgym-2025.html">18 · Aerial Gym</a>
+      <a href="extreme-parkour-2024.html">19 · Extreme Parkour</a>
+      <a href="hover-2024.html">20 · HOVER</a></div>
+    <div><b>Explore</b>
+      <a href="../index.html#graph">Knowledge graph</a>
+      <a href="../index.html#methods">Method registry</a>
+      <a href="../corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="../system.html#pipeline">The pipeline S1–S9</a>
+      <a href="../system.html#counting">Scoring &amp; counting</a>
+      <a href="../system.html#agents">The agents</a>
+      <a href="../system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HoST: humanoid standing-up control across diverse postures · annotated</title>
+<meta name="description" content="Annotated reading of HoST (Huang et al., RSS 2025): PPO with four critics, a pull-force curriculum and smoothness regularisation stands a real Unitree G1 up from diverse postures with no sim-to-real adaptation.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../system.html">System</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="crumbs"><a href="../index.html">Overview</a> / <a href="../index.html#papers">Annotated papers</a> / <span>HoST</span></p>
+  <p class="eyebrow">Annotated paper · 17 of 20 · corpus rank #17</p>
+  <h1>HoST: humanoid standing-up control across diverse postures</h1>
+  <p class="authors">Tao Huang, Junli Ren, Huayi Wang, Zirui Wang, Qingwei Ben, Muning Wen, Xiao Chen, Jianan Li &amp; Jiangmiao Pang</p>
+  <div class="meta-line">
+    Shanghai AI Lab (per corpus manifest; institution not stated on the fetched arXiv pages) <span class="sep">·</span>
+    RSS 2025 (arXiv comments: “Accepted to RSS 2025, 12 pages”) <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2502.08378" rel="noopener">arXiv:2502.08378</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 84 = 25+25+20+8+6</span>
+    <span class="badge pending">S4 · S5 pending</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        HoST teaches a <b>23-DoF Unitree G1 humanoid</b> to stand up from diverse starting postures using
+        reinforcement learning alone. It trains with PPO in Isaac Gym (<b>4,096 parallel environments</b>)
+        using a <b>multi-critic architecture</b> over four reward groups (task, style, regularization,
+        post-task), a <b>vertical pull-force curriculum</b> for exploration, and four terrain types (ground,
+        platform, wall, slope) to diversify postures. An action rescaler that implicitly bounds motion speed
+        and L2C2 smoothness regularisation keep the motion deployable, and domain randomisation (mass, CoM
+        offset, gains, friction, 0–100&nbsp;ms control delay) bridges to reality. The proprioception-only
+        policy is deployed directly on the real G1 — no predefined trajectories, no sim-to-real adaptation —
+        standing up indoors and outdoors and carrying payloads up to <b>12&nbsp;kg</b>.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        A humanoid robot that falls — or is deployed lying down — must stand up before it can do anything
+        else, and it may find itself supine on flat ground, slumped against a wall, or draped over a
+        platform. A single controller has to work across all of those starting postures, on real hardware,
+        without a motion-capture rig telling it where its limbs are.
+      </p>
+      <p>
+        The classical route is to track a predefined standing-up trajectory, but a fixed trajectory assumes a
+        fixed starting posture. HoST's claim is that posture-adaptive standing-up can be learned end-to-end:
+        in the authors' words, real-world posture-adaptive motions are achieved
+        <em>“without relying on predefined trajectories or sim-to-real adaptation techniques”</em>. The
+        difficulty is threefold: exploration (random actions almost never discover a complete stand-up),
+        reward design (getting up, looking natural and staying smooth are competing objectives at very
+        different scales), and deployability (a policy that oscillates in simulation snaps real actuators).
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 178" role="img" aria-label="HoST pipeline: Isaac Gym with 4096 parallel environments and four terrains; a 50 Hz proprioception-only policy with 5-step history outputting PD-target deltas scaled by beta; PPO with four critics over task, style, regularization and post-task rewards plus a decaying pull-force curriculum; L2C2 smoothness and domain randomisation; direct deployment on the real Unitree G1.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="8" y="30" width="128" height="92" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="72" y="50" text-anchor="middle" font-weight="700">Isaac Gym</text>
+            <text x="72" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">4,096 parallel envs</text>
+            <text x="72" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">Unitree G1 · 23 DoF</text>
+            <text x="72" y="95" text-anchor="middle" font-size="10.5" fill="#78716c">4 terrains: ground ·</text>
+            <text x="72" y="109" text-anchor="middle" font-size="10.5" fill="#78716c">platform · wall · slope</text>
+
+            <rect x="150" y="30" width="128" height="92" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="214" y="50" text-anchor="middle" font-weight="700">Policy · 50 Hz</text>
+            <text x="214" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">proprioception only</text>
+            <text x="214" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">+ previous 5 states</text>
+            <text x="214" y="95" text-anchor="middle" font-size="10.5" fill="#78716c">outputs PD-target</text>
+            <text x="214" y="109" text-anchor="middle" font-size="10.5" fill="#78716c">deltas · scaled by β</text>
+
+            <rect x="292" y="30" width="132" height="92" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="358" y="50" text-anchor="middle" font-weight="700">PPO · 4 critics</text>
+            <text x="358" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">task · style · regu ·</text>
+            <text x="358" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">post-task rewards</text>
+            <text x="358" y="95" text-anchor="middle" font-size="10.5" fill="#78716c">normalised advantages,</text>
+            <text x="358" y="109" text-anchor="middle" font-size="10.5" fill="#78716c">weighted sum</text>
+
+            <rect x="438" y="30" width="128" height="92" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="502" y="50" text-anchor="middle" font-weight="700">Robustness</text>
+            <text x="502" y="67" text-anchor="middle" font-size="10.5" fill="#78716c">L2C2 smoothness on</text>
+            <text x="502" y="81" text-anchor="middle" font-size="10.5" fill="#78716c">actor + all critics</text>
+            <text x="502" y="95" text-anchor="middle" font-size="10" fill="#78716c">DR: mass · CoM · gains ·</text>
+            <text x="502" y="109" text-anchor="middle" font-size="10" fill="#78716c">friction · delay 0–100 ms</text>
+
+            <rect x="580" y="30" width="112" height="92" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="636" y="50" text-anchor="middle" font-weight="700" fill="#1e3a8a">Real G1</text>
+            <text x="636" y="67" text-anchor="middle" font-size="10.5" fill="#44403c">direct transfer,</text>
+            <text x="636" y="81" text-anchor="middle" font-size="10.5" fill="#44403c">no adaptation</text>
+            <text x="636" y="95" text-anchor="middle" font-size="10.5" fill="#44403c">50 Hz · 500 Hz PD</text>
+            <text x="636" y="109" text-anchor="middle" font-size="10.5" fill="#78716c">12 kg payload</text>
+
+            <line x1="136" y1="76" x2="146" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="278" y1="76" x2="288" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="424" y1="76" x2="434" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="566" y1="76" x2="576" y2="76" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <text x="358" y="140" text-anchor="middle" font-size="10.5" fill="#78716c">exploration: upward pull force on the base, decaying as the robot holds a target height · β decays too</text>
+            <line x1="8" y1="156" x2="566" y2="156" stroke="#e7e5e4" stroke-width="1"/>
+            <line x1="580" y1="156" x2="692" y2="156" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="287" y="172" text-anchor="middle" font-size="10.5" fill="#78716c">simulation</text>
+            <text x="636" y="172" text-anchor="middle" font-size="10.5" fill="#78716c">reality · zero-shot</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The HoST pipeline, redrawn from the stages the paper describes
+          (Sections III–IV of the arXiv full text). All numbers and labels are from the paper; the layout
+          is ours. Everything left of the green line happens in simulation; the policy crosses to the real
+          Unitree G1 unchanged.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 Proprioception in, PD targets out</h3>
+      <p>
+        The policy sees only what the real robot can sense: base angular velocity, roll and pitch, joint
+        positions and velocities, its last action, and the action-rescale factor β — no motion capture, no
+        vision. Because standing up is contact-rich and the G1 has no dedicated contact sensors, the authors
+        <em>“implicitly enhance contact detection by feeding the policy with the previous five states”</em>
+        (Section III-1). The output is a set of PD position targets tracked by a joint-level PD controller —
+        the paper gives the standard torque law
+        <span class="nowrap">τ<sub>t</sub> = K<sub>p</sub>(p<sup>d</sup><sub>t</sub> − p<sub>t</sub>) − K<sub>d</sub>ṗ<sub>t</sub></span>,
+        “where Kp and Kd represent the stiffness and damping coefficients” (Section III-2). The policy runs
+        at 50&nbsp;Hz; the PD loop runs at 200&nbsp;Hz in simulation and 500&nbsp;Hz on the real robot.
+      </p>
+
+      <h3>3.2 Four reward groups, four critics</h3>
+      <p>
+        Standing up mixes objectives that live at very different scales, so the reward is split into four
+        groups — in the paper's words, <em>“(1) task reward r<sup>task</sup> … (2) style reward
+        r<sup>style</sup> … (3) regularization reward r<sup>regu</sup> … and (4) post-task reward
+        r<sup>post</sup>”</em> (Section IV-B) — combined as a weighted sum:
+      </p>
+      <div class="math-block">
+        $$ r_t = w^{\text{task}} r_t^{\text{task}} + w^{\text{style}} r_t^{\text{style}} + w^{\text{regu}} r_t^{\text{regu}} + w^{\text{post}} r_t^{\text{post}} $$
+        <div class="eq-note">The paper's overall reward (Section IV-B): a weighted sum over the four reward
+          groups.</div>
+      </div>
+      <p>
+        Rather than hand one critic the whole sum, HoST trains one critic per group and aggregates their GAE
+        advantages after normalising each:
+      </p>
+      <div class="math-block">
+        $$ A = \sum_i w^i \cdot \frac{A_{\phi_i} - \mu_{A_{\phi_i}}}{\sigma_{A_{\phi_i}}} $$
+        <div class="eq-note">The paper's advantage aggregation (Section IV-B): each critic's GAE advantage
+          is normalised, then weighted-summed.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why several critics beat one value head (ours)</span>
+        <p>A single critic must regress the sum of four reward streams whose magnitudes and time profiles
+        differ wildly — a sparse task bonus, a dense style shaping term, small regularisation penalties, a
+        post-task term that only matters once standing. Whichever stream is largest dominates the value
+        target, and the others effectively vanish from the gradient. Giving each group its own critic and
+        normalising the advantages puts every objective on the same footing before the weights \(w^i\) decide
+        their influence — the ablation in Section&nbsp;5 shows how much this matters. PPO is used underneath
+        “because of its stability and efficiency in large-scale parallel training”.</p>
+      </div>
+
+      <h3>3.3 Exploration: a pull-force curriculum and four terrains</h3>
+      <p>
+        Random exploration essentially never assembles a complete stand-up, so training scaffolds it: an
+        upward force is applied to the robot's base — in the paper's words, <em>“we apply an upward force F
+        on the robot base … The force magnitude decreases progressively as the robot can maintain a target
+        height”</em> (Section IV-C). Posture diversity comes from the environment rather than from reference
+        motions: <em>“we design 4 terrains to diversify the starting postures: (1) ground that is flat, (2)
+        platform that supports the trunk of robot, (3) wall that supports the trunk … and (4) slope”</em>
+        (Section IV-E1).
+      </p>
+      <div class="concept">
+        <span class="c-label">Concept · curriculum as a steadying hand (ours)</span>
+        <p>The pull force works like an adult steadying a toddler: early on it holds the trunk up so the
+        policy experiences the upright part of the task at all and reward flows; as competence grows the help
+        decays to zero, leaving a policy that stands unaided. It is curriculum learning applied to the
+        <em>physics</em> rather than to the task specification — the environment itself gets harder.</p>
+      </div>
+
+      <h3>3.4 Deployable motion: action rescaler β and L2C2 smoothness</h3>
+      <p>
+        Two mechanisms keep the learned motion safe for real actuators. First, <em>“we introduce an action
+        rescaler beta to scale the action output, implicitly controlling the bound of the maximal torques on
+        each actuator”</em> (Section IV-D1) — β shrinks over training, implicitly bounding motion speed.
+        Second, the L2C2 smoothness regulariser is extended to the multi-critic setting: <em>“This method
+        applies regularization to both the actor-network and critics”</em> (Section IV-D2):
+      </p>
+      <div class="math-block">
+        $$ \mathcal{L}_{\text{L2C2}} = \lambda_\pi D(\pi_\theta(s_t), \pi_\theta(\bar{s}_t)) + \lambda_V \sum_i D(V_{\phi_i}(s_t), V_{\phi_i}(\bar{s}_t)) $$
+        <div class="eq-note">The paper's L2C2 loss (Section IV-D2). Our reading of the symbols:
+          \(\bar{s}_t\) is a perturbed neighbour of \(s_t\), so penalising the divergence \(D\) between
+          outputs at nearby states makes both the actor and every critic locally smooth.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why smoothness is a sim-to-real mechanism (ours)</span>
+        <p>An RL policy left to its own devices exploits the simulator with high-frequency bang-bang actions
+        that a real gearbox cannot track and that excite unmodelled dynamics. Making the policy's output (and
+        its critics' value estimates) vary slowly with the state removes the incentive for such chatter at
+        the source, which is cheaper and more principled than low-pass filtering the actions afterwards.</p>
+      </div>
+
+      <h3>3.5 Sim-to-real: randomise the dynamics, then just deploy</h3>
+      <p>
+        The transfer story is deliberately plain: <em>“we employ domain randomization [48] to bridge the
+        physical gap between simulation and reality”</em> (Section IV-E2). Table&nbsp;II of the paper
+        randomises trunk mass, base CoM offset, link mass, friction, restitution, P/D gains, torque offset,
+        motor strength, initial joint angles — and, notably for anyone deploying on latency-prone onboard
+        compute, a control delay drawn from <em>“U(0, 100) ms”</em>. There is no adaptation module, no
+        online system identification, no fine-tuning: the learned policies
+        <em>“are directly deployed on the Unitree G1 humanoid robot”</em>.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        The evidence base carried through extraction is deployment facts plus ablation directions. The
+        paper's per-terrain success-rate tables (Tables III–IV) were seen by the fetch summariser but did not
+        carry clean verbatim quotes, so — per the platform's law — those percentages are <b>not reproduced
+        here</b> and await the S5 cross-check.
+      </p>
+      <div class="table-wrap"><table>
+        <caption>What the paper demonstrates, restricted to facts with verbatim support in the S4 extraction
+          (arXiv full text, fetched 12 July 2026).</caption>
+        <thead><tr><th>Finding</th><th>Verbatim basis (paper section)</th></tr></thead>
+        <tbody>
+          <tr><td>Direct real-world deployment, no adaptation layer</td>
+              <td>“the learned control policies are directly deployed on the Unitree G1 humanoid robot” (VI-A)</td></tr>
+          <tr><td>Payload robustness up to 12&nbsp;kg</td>
+              <td>“payloads up to 12kg, twice the mass of the humanoid robot's trunk” (VI-C)</td></tr>
+          <tr><td>Push recovery</td>
+              <td>“recovery from very large external forces without fully falling down” (VI-C)</td></tr>
+          <tr><td>Control rates on the real robot</td>
+              <td>policy at 50&nbsp;Hz; “The PD controller operates at 200 Hz in simulation and 500 Hz on the real robot” (IV-F)</td></tr>
+          <tr><td>Ablation: single critic instead of four</td>
+              <td>“achieving zero success rates. This highlights the importance of multiple critics” (V-B)</td></tr>
+          <tr><td>Ablation: no force curriculum</td>
+              <td>“the robot fails to stand up on all terrains except the platform” (V-B)</td></tr>
+          <tr><td>Ablation: no smoothness regularisation</td>
+              <td>“Motion oscillations are observed in all scenes … often leading to standing-up failures” (IV-D / Table IV)</td></tr>
+          <tr><td>Residual sim-to-real gap identified</td>
+              <td>“a notable discrepancy between simulated and real-world joint velocities, suggesting a gap in joint torques” (VI-B)</td></tr>
+        </tbody>
+      </table></div>
+      <p>
+        The zero-shot claim, verbatim: <em>“Real-world posture-adaptive motions are well achieved through our
+        proposed RL-based method, without relying on predefined trajectories or sim-to-real adaptation
+        techniques.”</em> Training used Isaac Gym with 4,096 parallel environments and the 23-DoF Unitree G1;
+        training compute, the onboard deployment computer and firmware are not stated on the fetched pages.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors (S4, from the arXiv full text, 12 Jul 2026):</b> proprioception alone
+          sufficed for many postures but caused some failures in outdoor tests, motivating environment
+          perception (Section VIII); jointly training supine and prone starting postures degraded performance
+          due to interference between sampled rollouts (Section VIII); integration of the standing-up
+          controller with existing full humanoid systems is not demonstrated (Section VIII); and the
+          simulated-versus-real joint-velocity discrepancy indicates a joint-torque gap, calling for more
+          accurate actuator modelling (Section VI-B).</li>
+        <li><b>Our open questions</b> (ours): how sensitive the method is to the four reward-group weights
+          \(w^i\) and how much per-task tuning they need; training compute and the onboard deployment
+          computer are not stated, so the recipe's cost is unknown; and whether the pull-force curriculum has
+          an analogue outside contact-rich tasks — for a UAV, an assistive-force curriculum during aggressive
+          recovery manoeuvres is an untested idea, not a claim.</li>
+      </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s4-batch3-2026-07-12.md" rel="noopener">docs/s4-batch3-2026-07-12.md</a></p>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          Honest caveat first: this is a 23-DoF legged humanoid, not a UAV, and its central task —
+          contact-rich standing-up — has no direct aerial equivalent, so the headline result does not
+          transfer. What transfers are the mechanisms. The Isaac Gym + domain-randomisation + direct-deploy
+          recipe with an explicit <b>0–100&nbsp;ms control-delay randomisation</b> is a concrete
+          latency-robustness pattern for onboard Orin Nano inference on this project's X500&nbsp;V2. The
+          <b>L2C2 smoothness regularisation</b> and the <b>action-rescaler speed bound</b> are directly
+          reusable for keeping zero-shot policies non-oscillatory on real actuators — the ablation showing
+          oscillation-induced real-world failures is exactly the failure mode a quadrotor policy must avoid.
+          And the <b>multi-critic reward decomposition</b> is a useful design whenever a UAV task mixes
+          competing objectives (tracking vs. smoothness vs. safety). The force curriculum is
+          posture-specific and the least relevant piece here.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>domain-randomization-dynamics</code></a> ·
+        <a href="../index.html#methods"><code>curriculum-learning</code></a> ·
+        <a href="../index.html#methods"><code>latency-compensation</code></a> ·
+        <a href="../index.html#methods"><code>domain-randomization-environment</code></a> ·
+        <a href="../index.html#methods"><code>multi-critic-rl</code></a>
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4</b> — built from the paper's arXiv full text (HTML, fetched 12 July 2026),
+        with clearly-labelled concept reconstructions. Every quote was re-checked against the source by an
+        independent verification agent the same day (record: docs/s4-batch3-2026-07-12.md). Promoted to
+        <b>verified</b> only after the NotebookLM five-question cross-check (S5) — pending for batch 3.
+      </div>
+      <div class="cite">@misc{huang2025learninghumanoidstandingup,
+  title        = {Learning Humanoid Standing-up Control across Diverse Postures},
+  author       = {Tao Huang and Junli Ren and Huayi Wang and Zirui Wang and Qingwei Ben and Muning Wen and Xiao Chen and Jianan Li and Jiangmiao Pang},
+  year         = {2025},
+  eprint       = {2502.08378},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.RO},
+  note         = {Accepted to RSS 2025},
+  url          = {https://arxiv.org/abs/2502.08378}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="dtc-2024.html"><span class="dir">← Previous</span>DTC: deep tracking control</a>
+      <a href="aerialgym-2025.html" style="text-align:right"><span class="dir">Next →</span>Aerial Gym Simulator: GPU-parallel aerial robotics</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="falcongym-2025.html">01 · FalconGym</a>
+      <a href="raptor-2026.html">02 · RAPTOR</a>
+      <a href="monorace-2026.html">03 · MonoRace</a>
+      <a href="e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="attention-legged-2025.html">06 · Attention Legged</a>
+      <a href="wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="pixels-2024.html">08 · Flight from Pixels</a>
+      <a href="diffphys-2025.html">09 · Newton's Laws</a>
+      <a href="simpleflight-2024.html">10 · SimpleFlight</a>
+      <a href="anymal-parkour-2024.html">11 · ANYmal Parkour</a>
+      <a href="humanoid-rl-2024.html">12 · Humanoid RL</a>
+      <a href="soccer-2024.html">13 · Soccer Skills</a>
+      <a href="agile-but-safe-2024.html">14 · Agile But Safe</a>
+      <a href="him-2024.html">15 · HIM</a>
+      <a href="dtc-2024.html">16 · DTC</a>
+      <a href="host-2025.html">17 · HoST</a>
+      <a href="aerialgym-2025.html">18 · Aerial Gym</a>
+      <a href="extreme-parkour-2024.html">19 · Extreme Parkour</a>
+      <a href="hover-2024.html">20 · HOVER</a></div>
+    <div><b>Explore</b>
+      <a href="../index.html#graph">Knowledge graph</a>
+      <a href="../index.html#methods">Method registry</a>
+      <a href="../corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="../system.html#pipeline">The pipeline S1–S9</a>
+      <a href="../system.html#counting">Scoring &amp; counting</a>
+      <a href="../system.html#agents">The agents</a>
+      <a href="../system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>

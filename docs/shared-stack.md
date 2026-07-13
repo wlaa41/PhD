@@ -1,5 +1,9 @@
-# The Shared Stack · tools and platforms across the ten extracted papers
+# The Shared Stack · tools and platforms across the ten S5-verified papers (ranks 01–10)
 ## Derived 12 July 2026 · feeds the site's "Shared stack" stripe and the graph's stack lens
+
+Standing rule: a paper joins this registry only after its S5 pass. Batch 3 (ranks 11–20) was S4-extracted on
+12 Jul 2026 (record: docs/s4-batch3-2026-07-12.md) and is therefore NOT counted here yet; its stack facts are
+recorded per-paper on its site pages and join these tables when batch-3 S5 passes.
 
 Derivation: every item below is grounded in the ten paper pages (site/papers/) and the two S5 verification
 records (docs/s5-notebooklm-2026-07-10.md, docs/s5-notebooklm-2026-07-11.md); nothing was taken from model

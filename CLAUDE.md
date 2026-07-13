@@ -16,19 +16,24 @@ later by the Phase 0 prompt in the README — it does not exist yet.
    Before ANY rewrite/redesign, diff against docs/site-content-inventory.md; removals must be named in commit
    messages. Full rewrites migrate content BY CHECKLIST, never by selection. Silent drops are defects.
 
-## Status snapshot · 10 July 2026 (update this block when it changes)
+## Status snapshot · 13 July 2026 (update this block when it changes)
 
 - Corpus: 70 candidates seeded, scored (rubric R+H+Z+V+A); **Gate 1 (corpus lock) is PENDING — it is the
-  owner's decision alone**; extraction ran ahead on the top ten with the owner's knowledge.
-- Extracted & annotated: 10 papers (site/papers/), **ALL S5-verified** — records:
-  docs/s5-notebooklm-2026-07-10.md (batch 1) and docs/s5-notebooklm-2026-07-11.md (batch 2). Batch-2 S5
-  named SimpleFlight's five factors (actor input = rotation matrix + velocity; critic time vector;
-  smoothness reward; SysID crucial + DR selective; larger batches) and applied 2 offboard-compute
-  corrections (pixels: ground-station PC; simpleflight-Crazyflie: offboard + OptiTrack).
-- Method registry: 23 canonical methods in 9 families (families are FIXED — the owner likes them as they are;
-  methods may be added as the corpus demands, with merge judgements logged). Top counts after both S5 passes:
-  end-to-end-rl 8/10, **domain-randomization 8/10**, **system-identification 7/10**, latency-compensation
-  6/10 (latency remains the emerging gap candidate — fits the owner's RoboMaster EP 80–120 ms testbed).
+  owner's decision alone**; extraction ran ahead on the top twenty with the owner's knowledge (batch 3 was
+  the owner's explicit instruction, 12 Jul).
+- Extracted & annotated: **20 papers** (site/papers/ ×20). Ranks 01–10 **ALL S5-verified** — records:
+  docs/s5-notebooklm-2026-07-10.md (batch 1) and docs/s5-notebooklm-2026-07-11.md (batch 2; SimpleFlight's
+  five factors; 2 offboard-compute corrections). Ranks 11–20 (batch 3) **S4-extracted 12 Jul 2026, S5
+  PENDING** — record docs/s4-batch3-2026-07-12.md; all six starred arXiv ids confirmed; DTC is
+  abstract-only (no arXiv HTML — needs its PDF at S3); HOVER and ANYmal Parkour never use the literal term
+  "zero-shot" (asterisked badges with wording notes, fly-in-seconds precedent). NEXT STEP: S5 batch 3 in
+  notebook d336f22d, five questions per source in isolation.
+- Method registry: **34 canonical methods in 9 families** (families are FIXED — the owner likes them as they
+  are; batch 3 added 11 new methods with merge judgements logged in the s4 record). Top counts /20:
+  end-to-end-rl 17, **domain-randomization-dynamics 14**, **latency-compensation 10** (latency remains the
+  emerging gap candidate — fits the owner's RoboMaster EP 80–120 ms testbed), system-identification 8.
+  Batch-3 evidence lines are tagged (S4) until S5; the shared-stack stripe/lens still counts ONLY the ten
+  S5-verified papers and says so.
   Cross-corpus finding: "zero-shot ≠ onboard" — falcongym, pixels and simpleflight-Crazyflie all compute
   OFFBOARD; monorace, raptor, diffphys, fly-seconds run onboard. A live analysis axis for the gap study.
 - NotebookLM: notebook id d336f22d (owner's Google account) is the standing S5 second reader.
@@ -93,5 +98,6 @@ docs/corpus-candidates.md + docs/corpus-acquisition.md (the 70, scores, links, d
 docs/s5-notebooklm-2026-07-10.md + docs/s5-notebooklm-2026-07-11.md (verification records) ·
 docs/shared-stack.md (tools/platforms across the ten papers; source of the stack stripe + stack lens) ·
 docs/site-content-inventory.md (anti-drop manifest) · site/index.html · site/system.html · site/corpus.html ·
-site/papers/*.html ×10 · archive/transfer-hub-v1.html (superseded dashboard hub — contains the
+docs/s4-batch3-2026-07-12.md (batch-3 extraction record) ·
+site/papers/*.html ×20 · archive/transfer-hub-v1.html (superseded dashboard hub — contains the
 pending-decision charts).

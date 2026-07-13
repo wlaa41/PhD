@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real-world humanoid locomotion with reinforcement learning · annotated</title>
+<meta name="description" content="Annotated reading of Radosavovic et al. (arXiv 2303.03381): a 1.4M-parameter causal transformer, trained with PPO in Isaac Gym, walks the real Digit humanoid zero-shot and adapts in-context without weight updates.">
+<script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathOnPage()"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="../index.html">Zero-Shot<span>UAV</span></a>
+    <nav aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../system.html">System</a>
+      <a href="../corpus.html">Corpus</a>
+    </nav>
+    <div class="mh-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/wlaa41/PhD" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<div class="article-head">
+  <p class="crumbs"><a href="../index.html">Overview</a> / <a href="../index.html#papers">Annotated papers</a> / <span>Humanoid RL</span></p>
+  <p class="eyebrow">Annotated paper · 12 of 20 · corpus rank #12</p>
+  <h1>Real-world humanoid locomotion with reinforcement learning</h1>
+  <p class="authors">Ilija Radosavovic, Tete Xiao, Bike Zhang, Trevor Darrell, Jitendra Malik &amp; Koushil Sreenath</p>
+  <div class="meta-line">
+    Berkeley, per corpus manifest (affiliation not stated on the fetched pages) <span class="sep">·</span>
+    arXiv 2303.03381 (no journal reference stated on arXiv; Sci.&nbsp;Robotics 2024 per corpus manifest, to confirm) <span class="sep">·</span>
+    <a href="https://arxiv.org/abs/2303.03381" rel="noopener">arXiv:2303.03381</a>
+    <span class="badge zero">zero-shot</span>
+    <span class="badge">triage score 88 = 20+25+20+15+8</span>
+    <span class="badge pending">S4 · S5 pending</span>
+  </div>
+</div>
+
+<div class="article-grid">
+  <aside class="toc" aria-label="Contents">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#approach">The approach at a glance</a></li>
+      <li><a href="#method">The method, in detail</a></li>
+      <li><a href="#results">Results on real hardware</a></li>
+      <li><a href="#limits">Limitations &amp; open questions</a></li>
+      <li><a href="#relevance">Relevance to this PhD</a></li>
+      <li><a href="#cite">Provenance &amp; citation</a></li>
+    </ol>
+  </aside>
+
+  <article>
+    <section id="tldr">
+      <div class="abstract">
+        <span class="abs-label">TL;DR</span>
+        A causal transformer with <b>1.4M parameters</b>, reading a window of the last <b>16</b>
+        observation–action pairs, walks the real <b>Digit humanoid</b> using only joint encoders and an
+        IMU. It is trained entirely in the Isaac Gym simulator — model-free PPO over "an ensemble of
+        randomized environments", with a KL pull towards a state-based teacher that is annealed to zero —
+        and then deployed "to the real world zero-shot", the 50&nbsp;Hz network commanding a 1&nbsp;kHz
+        joint PD controller. The policy adapts to terrain and disturbances in-context, "without updating
+        its weights"; over a week of full-day outdoor testing the authors observed no falls.
+      </div>
+    </section>
+
+    <section id="problem">
+      <h2>1 · The problem</h2>
+      <p class="lead-p">
+        A bipedal humanoid is a high-dimensional, contact-rich, permanently-falling machine: every step is
+        a controlled recovery, and the effective dynamics change with each surface, slope and shove. The
+        question this paper poses is whether one learned controller — trained wholly in simulation, sensing
+        nothing but its own joints and an IMU — can walk a real humanoid through ordinary human environments.
+      </p>
+      <p>
+        Two constraints make the question hard. First, the controller is <em>blind</em>: it receives joint
+        encoder and IMU readings only, so terrain and disturbances must be inferred from how the body
+        responds rather than seen in advance. Second, the transfer is <em>zero-shot</em> — in the authors'
+        words, "we train our model with large-scale model-free reinforcement learning on an ensemble of
+        randomized environments in simulation and deploy it to the real world zero-shot". Nothing is tuned,
+        identified or fine-tuned on the physical robot. What carries the policy across the gap is the claim
+        at the heart of the paper: a history of observation–action pairs contains the evidence "a powerful
+        transformer model can use to adapt its behavior in-context, without updating its weights".
+      </p>
+    </section>
+
+    <section id="approach">
+      <h2>2 · The approach at a glance</h2>
+      <figure>
+        <svg viewBox="0 0 700 200" role="img" aria-label="Pipeline: the Digit humanoid modelled in Isaac Gym feeds an ensemble of randomised environments; a 1.4M-parameter causal transformer with context window 16 is trained with PPO plus an annealed teacher KL term on four A100 GPUs, then deployed zero-shot on the real Digit at 50 Hz over a 1 kHz PD controller using joint encoders and IMU only.">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#a8a29e"/>
+            </marker>
+          </defs>
+          <g font-family="Atkinson Hyperlegible,system-ui,sans-serif" font-size="12" fill="#44403c">
+            <rect x="8" y="36" width="118" height="68" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="67" y="58" text-anchor="middle" font-weight="700">Digit in Isaac Gym</text>
+            <text x="67" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">rigid-body + contact</text>
+            <text x="67" y="90" text-anchor="middle" font-size="10.5" fill="#78716c">dynamics modelled</text>
+
+            <rect x="146" y="36" width="128" height="68" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="210" y="55" text-anchor="middle" font-weight="700">Randomised ensemble</text>
+            <text x="210" y="72" text-anchor="middle" font-size="10.5" fill="#78716c">dynamics · control · physics</text>
+            <text x="210" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">terrain · obs noise + delay</text>
+
+            <rect x="294" y="28" width="140" height="84" rx="4" fill="#eff4fe" stroke="#1a56db"/>
+            <text x="364" y="49" text-anchor="middle" font-weight="700" fill="#1e3a8a">Causal transformer</text>
+            <text x="364" y="66" text-anchor="middle" font-size="10.5">1.4M params · context 16</text>
+            <text x="364" y="81" text-anchor="middle" font-size="10.5">4 blocks · 192-dim · 4 heads</text>
+            <text x="364" y="96" text-anchor="middle" font-size="10.5" fill="#78716c">obs–action history → action</text>
+
+            <rect x="454" y="36" width="118" height="68" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="513" y="55" text-anchor="middle" font-weight="700">PPO + teacher KL</text>
+            <text x="513" y="72" text-anchor="middle" font-size="10.5" fill="#78716c">λ annealed to zero</text>
+            <text x="513" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">4 × A100 · 1000s of envs</text>
+
+            <rect x="592" y="36" width="100" height="68" rx="4" fill="#ffffff" stroke="#d6d3d1"/>
+            <text x="642" y="55" text-anchor="middle" font-weight="700">Real Digit</text>
+            <text x="642" y="72" text-anchor="middle" font-size="10.5" fill="#78716c">50 Hz over 1 kHz PD</text>
+            <text x="642" y="86" text-anchor="middle" font-size="10.5" fill="#78716c">encoders + IMU only</text>
+
+            <line x1="126" y1="70" x2="142" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="274" y1="70" x2="290" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="434" y1="70" x2="450" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="572" y1="70" x2="588" y2="70" stroke="#a8a29e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+            <line x1="8" y1="126" x2="572" y2="126" stroke="#e7e5e4" stroke-width="1"/>
+            <line x1="584" y1="126" x2="692" y2="126" stroke="#bbe3c8" stroke-width="2"/>
+            <text x="290" y="142" text-anchor="middle" font-size="10.5" fill="#78716c">simulation</text>
+            <text x="638" y="142" text-anchor="middle" font-size="10.5" fill="#78716c">reality · zero-shot</text>
+            <text x="638" y="156" text-anchor="middle" font-size="10.5" fill="#78716c">in-context adaptation, no weight updates</text>
+
+            <line x1="8" y1="168" x2="692" y2="168" stroke="#e7e5e4" stroke-width="1"/>
+            <text x="350" y="185" text-anchor="middle" font-size="10" fill="#78716c">Stated limitations: two sides' motors do not produce identical trajectories · commanded velocity not perfectly tracked · can still fall under excessive disturbance</text>
+          </g>
+        </svg>
+        <figcaption><b>Figure 1.</b> The training-to-deployment pipeline. Every box, number and the
+          limitation strip come from the paper's arXiv full text (12 Jul 2026 fetch); the layout and
+          grouping are ours.</figcaption>
+      </figure>
+    </section>
+
+    <section id="method">
+      <h2>3 · The method, in detail</h2>
+
+      <h3>3.1 A causal transformer over observation–action history</h3>
+      <p>
+        The policy is not a feed-forward map from the current state to an action. It is a causal transformer
+        that consumes a rolling history of proprioceptive observation–action pairs and predicts the next
+        action. The architecture is deliberately compact: "four blocks, each with embedding dimension of 192
+        and multi-head attention with 4 heads" — "Overall, the model contains 1.4M parameters. We use a
+        context window of 16."
+      </p>
+      <div class="math-block">
+        $$ \mathrm{Attention}(Q,K,V) = \mathrm{softmax}\!\left(\tfrac{QK^{\top}}{\sqrt{d_k}}\right)V $$
+        <div class="eq-note">Notation ours — the standard scaled dot-product self-attention that underlies
+          any causal transformer; this exact equation was not confirmed verbatim in the fetched HTML text.</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why a history window is a system identifier</span>
+        <p>A memoryless policy seeing only the current joint angles cannot tell ice from grass, or a push
+        from a slope — the instantaneous state is ambiguous. A window of (action commanded, motion observed)
+        pairs is not: the discrepancy between what was asked for and what happened is precisely the evidence
+        a classical system identifier would use. Attention over 16 such pairs lets the policy condition its
+        next action on the inferred situation, which is what the authors mean by adapting "in-context,
+        without updating its weights". It is the transformer counterpart of the recurrent-hidden-state trick
+        in RAPTOR and RMA — the same idea, with attention instead of recurrence as the memory mechanism.</p>
+      </div>
+
+      <h3>3.2 Joint optimisation: PPO plus an annealed teacher</h3>
+      <p>
+        Training is model-free reinforcement learning: "We use the proximal policy optimization (PPO)
+        algorithm for training RL policies." But the observation-based policy is not trained alone — the
+        paper adds an imitation term pulling it towards a state-based teacher policy, and optimises the
+        combined loss:
+      </p>
+      <div class="math-block">
+        $$ L(\pi_o) = L_{RL}(\pi_o) + \lambda\, D_{KL}(\pi_o \,\|\, \pi_s) $$
+        <div class="eq-note">The paper's objective: the RL term plus a KL divergence pulling the
+          observation-based policy \(\pi_o\) towards a state-based teacher \(\pi_s\); the weighting factor
+          \(\lambda\) is "gradually annealed to zero over the course of training".</div>
+      </div>
+      <div class="concept">
+        <span class="c-label">Concept · why anneal the teacher away</span>
+        <p>Early in training the teacher — which sees privileged simulator state — provides dense guidance,
+        so the student does not have to discover walking from scratch under partial observability. But a
+        teacher trained on privileged state is not the optimum for a blind policy; annealing \(\lambda\) to
+        zero means the final policy is shaped purely by the RL objective under the observations it will
+        actually have on the robot. Scaffold first, then remove the scaffold. (This reading of the
+        annealing's purpose is ours.)</p>
+      </div>
+
+      <h3>3.3 Randomisation and sensing noise</h3>
+      <p>
+        The "ensemble of randomized environments" varies the "dynamics properties of the robot, control
+        parameters, environment physics" and terrain, and injects "noise and delay to the observations"
+        during training. The policy therefore never trains on one consistent world — it trains on a
+        distribution wide enough that the real Digit, with its real latencies and imperfect sensors, is
+        plausibly one more sample from it.
+      </p>
+
+      <h3>3.4 The stack, from simulator to robot</h3>
+      <p>
+        Simulation and training: "We use the Isaac Gym simulator (?, ?) to model the rigid-body and contact
+        dynamics of the Digit humanoid robot", and the authors "parallelize training across four A100 GPUs
+        and thousands of randomized environments". Deployment: "We run the neural network policy at 50 Hz
+        and the joint PD controller at 1 kHz", with sensing limited to what the platform exposes — "We can
+        get access to joint encoders and IMU information through the API provided by Agility Robotics." The
+        on-robot compute that hosts the 50&nbsp;Hz network is not stated in the fetched text, and no code
+        release is stated either.
+      </p>
+    </section>
+
+    <section id="results">
+      <h2>4 · Results on real hardware</h2>
+      <p>
+        The evidence captured at S4 is comparative and qualitative — settings, disturbances, terrains and
+        one endurance figure. No tracking-error or velocity-error numbers were present in the fetched text,
+        and we say so rather than fill the gap.
+      </p>
+      <div class="table-wrap"><table>
+        <caption>Everything below is verbatim from, or a direct restatement of, the arXiv full text
+          (12 Jul 2026 fetch). Quantitative error metrics were not present in the extraction.</caption>
+        <thead><tr><th>Setting</th><th>Reported outcome</th></tr></thead>
+        <tbody>
+          <tr><td>Simulation, vs manufacturer</td><td>"our controller outperforms the state-of-the-art company controller across three different settings in simulation"</td></tr>
+          <tr><td>Architecture ablation</td><td>"the transformer model outperforms other neural network choices by a considerable margin"</td></tr>
+          <tr><td>Context-length ablation</td><td>"our model benefits from a larger context length in both settings"</td></tr>
+          <tr><td>Indoor disturbances</td><td>"throwing a large yoga ball at the robot, pushing the robot with a wooden stick, and pulling the robot from the back while it is walking forward"</td></tr>
+          <tr><td>Outdoor terrains</td><td>"everyday human environments, plazas, walkways, sidewalks, running tracks, and grass fields"</td></tr>
+          <tr><td>Outdoor endurance</td><td>"Over the course of one week of full-day testing in outdoor environments we did not observe any falls"</td></tr>
+        </tbody>
+      </table></div>
+      <p>
+        All of the real-world results are <b>zero-shot</b>: the policy that walks outdoors is the policy
+        that left the simulator, adapting in-context at run time rather than being tuned on the robot.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2>5 · Limitations &amp; open questions</h2>
+      <ul>
+        <li><b>Stated by the authors (S4, from the arXiv full text, 12 Jul 2026):</b> the learned policy is
+          not perfectly symmetrical — the motors on the two sides of the robot do not produce identical
+          trajectories; the policy does not perfectly track the commanded velocity; and under excessive
+          external disturbances (e.g. a very strong pull on a cable attached to the robot) the robot can
+          still fall.</li>
+        <li><b>Stated future directions (same source):</b> the approach should be easier to scale with
+          additional data and compute, and to incorporate additional input modalities; the authors believe
+          transformers may facilitate future progress in scaling learning approaches for real-world humanoid
+          locomotion.</li>
+        <li><b>Our open questions</b> (ours): how much of the final robustness is owed to the context-16
+          history versus the annealed teacher — the reported ablations cover architecture and context
+          length, not the teacher term; whether contact-driven in-context adaptation carries over to
+          non-contact disturbances such as wind, which is what matters for our platform; and what on-robot
+          compute the 50&nbsp;Hz policy actually requires, since deployment hardware is not stated.</li>
+      </ul>
+      <p class="small">Verification record: <a href="https://github.com/wlaa41/PhD/blob/main/docs/s4-batch3-2026-07-12.md" rel="noopener">docs/s4-batch3-2026-07-12.md</a></p>
+    </section>
+
+    <section id="relevance">
+      <h2>6 · Relevance to this PhD</h2>
+      <div class="relevance">
+        <span class="r-label">Why this paper matters here</span>
+        <p>
+          The platform mismatch is real and worth stating plainly: this is a bipedal humanoid whose hard
+          problem is contact, not a UAV whose hard problem is aerodynamics, and nothing here validates
+          flight. What transfers is the recipe. A compact causal transformer (1.4M parameters) over a
+          proprioceptive observation–action history, trained with model-free PPO plus domain randomisation
+          and an annealed teacher-KL term, then deployed zero-shot with no fine-tuning — that reads like a
+          template for the X500&nbsp;V2 pilot experiment. The key transferable idea is adapting "in-context,
+          without updating its weights": a history-conditioned policy that implicitly system-identifies
+          changing dynamics is exactly the robustness a wind-buffeted quadrotor needs. Practically, a
+          1.4M-parameter transformer at 50&nbsp;Hz is well within the Jetson Orin Nano's budget, so the
+          architecture is directly reusable. The gap for our setup is that this controller is blind (joint
+          encoders + IMU only) — any vision or RoboMaster-EP-style perception fusion would be net-new work
+          this paper does not address.
+        </p>
+      </div>
+      <p class="small">
+        Registry entries used by this paper:
+        <a href="../index.html#methods"><code>end-to-end-rl</code></a> ·
+        <a href="../index.html#methods"><code>domain-randomization-dynamics</code></a> ·
+        <a href="../index.html#methods"><code>sensor-noise-modelling</code></a> ·
+        <a href="../index.html#methods"><code>teacher-student-distillation</code></a> ·
+        <a href="../index.html#methods"><code>in-context-adaptation-recurrent</code></a> <span class="small">(counted under the recurrent id as its transformer-history variant — split-test judgement logged in docs/s4-batch3-2026-07-12.md)</span>
+        — the extraction additionally proposes transformer-specific variants (e.g.
+        <code>in-context-adaptation-transformer</code>), pending registry review, since this paper's memory
+        mechanism is attention rather than recurrence.
+      </p>
+    </section>
+
+    <section id="cite">
+      <h2>7 · Provenance &amp; citation</h2>
+      <div class="provenance">
+        Extraction status: <b>S4</b> — built from the paper's arXiv full text (HTML, fetched 12 July 2026),
+        with clearly-labelled concept reconstructions. Every quote was re-checked against the source by an
+        independent verification agent the same day (record: docs/s4-batch3-2026-07-12.md). Promoted to
+        <b>verified</b> only after the NotebookLM five-question cross-check (S5) — pending for batch 3.
+      </div>
+      <p class="small">Semantic Scholar at extraction time: 387 citations, 14 influential.</p>
+      <div class="cite">@misc{radosavovic2023realworld,
+  title        = {Real-World Humanoid Locomotion with Reinforcement Learning},
+  author       = {Radosavovic, Ilija and Xiao, Tete and Zhang, Bike and Darrell, Trevor and Malik, Jitendra and Sreenath, Koushil},
+  year         = {2023},
+  eprint       = {2303.03381},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.RO},
+  doi          = {10.48550/arXiv.2303.03381},
+  note         = {Project page linked in arXiv comments; later published in Science Robotics (2024) per corpus manifest, no journal-ref on arXiv},
+  url          = {https://arxiv.org/abs/2303.03381}
+}</div>
+    </section>
+
+    <nav class="pager" aria-label="Paper pagination">
+      <a href="anymal-parkour-2024.html"><span class="dir">← Previous</span>ANYmal Parkour: agile navigation for quadrupedal robots</a>
+      <a href="soccer-2024.html" style="text-align:right"><span class="dir">Next →</span>Learning agile soccer skills for a bipedal robot</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-foot">
+  <div class="foot-map" aria-label="Site map">
+    <div><b>Read</b>
+      <a href="falcongym-2025.html">01 · FalconGym</a>
+      <a href="raptor-2026.html">02 · RAPTOR</a>
+      <a href="monorace-2026.html">03 · MonoRace</a>
+      <a href="e2e-fly-2026.html">04 · E2E-Fly</a>
+      <a href="fly-seconds-2024.html">05 · Fly in Seconds</a>
+      <a href="attention-legged-2025.html">06 · Attention Legged</a>
+      <a href="wheeledlab-2025.html">07 · Wheeled Lab</a>
+      <a href="pixels-2024.html">08 · Flight from Pixels</a>
+      <a href="diffphys-2025.html">09 · Newton's Laws</a>
+      <a href="simpleflight-2024.html">10 · SimpleFlight</a>
+      <a href="anymal-parkour-2024.html">11 · ANYmal Parkour</a>
+      <a href="humanoid-rl-2024.html">12 · Humanoid RL</a>
+      <a href="soccer-2024.html">13 · Soccer Skills</a>
+      <a href="agile-but-safe-2024.html">14 · Agile But Safe</a>
+      <a href="him-2024.html">15 · HIM</a>
+      <a href="dtc-2024.html">16 · DTC</a>
+      <a href="host-2025.html">17 · HoST</a>
+      <a href="aerialgym-2025.html">18 · Aerial Gym</a>
+      <a href="extreme-parkour-2024.html">19 · Extreme Parkour</a>
+      <a href="hover-2024.html">20 · HOVER</a></div>
+    <div><b>Explore</b>
+      <a href="../index.html#graph">Knowledge graph</a>
+      <a href="../index.html#methods">Method registry</a>
+      <a href="../corpus.html">Ranked corpus</a></div>
+    <div><b>Understand</b>
+      <a href="../system.html#pipeline">The pipeline S1–S9</a>
+      <a href="../system.html#counting">Scoring &amp; counting</a>
+      <a href="../system.html#agents">The agents</a>
+      <a href="../system.html#law">Verification &amp; the law</a></div>
+    <div><b>Source</b>
+      <a href="https://github.com/wlaa41/PhD" rel="noopener">Repository ↗</a>
+      <a href="https://github.com/wlaa41/PhD/tree/main/docs" rel="noopener">docs/ specifications ↗</a></div>
+  </div>
+  <div class="site-foot-inner">
+    <span class="law">Everything on this platform is quoted or verified; nothing is invented. Unverified items are labelled, never hidden.</span>
+    <span><a href="https://github.com/wlaa41/PhD" rel="noopener">github.com/wlaa41/PhD</a></span>
+  </div>
+</footer>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>

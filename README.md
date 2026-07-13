@@ -8,14 +8,14 @@ the public reading platform they generate.
 **The law of this project: everything published is quoted or verified; nothing is invented. Unverified items
 are labelled, never hidden.**
 
-## Status · 10 July 2026
+## Status · 13 July 2026
 
 | What | State |
 |---|---|
 | Candidate corpus | 70 papers seeded, scored against the fixed rubric; **awaiting Gate 1** (human corpus lock) |
-| Extracted & annotated | **10 papers, all S5-verified** (batches 1–2), each with its own site page (figures, math, provenance, verified limitations) |
-| S5 verification | **Both batches passed** (records: `docs/s5-notebooklm-2026-07-10.md`, `docs/s5-notebooklm-2026-07-11.md`). Batch 2 named SimpleFlight's five factors and applied two offboard-compute corrections; "zero-shot ≠ onboard" identified as a cross-corpus analysis axis |
-| Method registry | 23 canonical methods in 9 families; top counts after both S5 passes: end-to-end RL 8/10, **domain randomization 8/10**, **system identification 7/10** (SimpleFlight ranks it crucial), latency handling 6/10 |
+| Extracted & annotated | **20 papers** (batches 1–3), each with its own site page. Ranks 01–10: S5-verified. Ranks 11–20 (batch 3): **S4-extracted from the arXiv sources (12 Jul 2026), S5 pending**, every page labelled (record: `docs/s4-batch3-2026-07-12.md`) |
+| S5 verification | **Batches 1–2 passed** (records: `docs/s5-notebooklm-2026-07-10.md`, `docs/s5-notebooklm-2026-07-11.md`); batch 2 named SimpleFlight's five factors, applied two offboard-compute corrections, and identified "zero-shot ≠ onboard" as a cross-corpus analysis axis. **Batch 3 pending** — add the nine arXiv HTML full texts (plus the DTC PDF at acquisition) to the notebook and run the five questions per source |
+| Method registry | **34 canonical methods in 9 families** (batch 3 added 11; the families are unchanged). Top counts /20: end-to-end RL 17, domain randomization 14, **latency handling 10**, system identification 8. Batch-3 evidence is tagged (S4) until its S5 pass; the shared-stack registry still counts only the ten S5-verified papers |
 | NotebookLM notebook | Live (notebook `d336f22d`, 5 full-text sources) — the standing S5 instrument; add each batch's papers on arrival |
 | Implementation track (I1–I3) | **Not started** — the 12-week clock has no start date yet |
 
@@ -48,6 +48,10 @@ docs/                         the source of truth (reading order below)
                               corrections, registry actions
   s5-notebooklm-2026-07-11.md batch-2 verification record: five factors named,
                               offboard-compute corrections, registry actions
+  s4-batch3-2026-07-12.md     batch-3 extraction record: id confirmations,
+                              verifier corrections, honesty notes (two papers
+                              never say "zero-shot"; DTC abstract-only),
+                              registry actions (11 new methods, counts /20)
   shared-stack.md             tools/platforms across the ten papers (simulators,
                               algorithms, compute, sensors, firmware, code
                               releases), counts + evidence, derived 12 Jul 2026;
@@ -68,7 +72,7 @@ enable GitHub Pages (Settings → Pages → main) and it serves as-is.
 | `site/index.html` | status cards · annotated-paper card grid (built for 70; only extracted papers get pages) · **knowledge graph** (Obsidian view; node size grows convexly with usage — one-paper leaves draw small, hubs draw large; papers draw as per-paper **icons**, names on hover only; the most-used methods carry an **aura** scaled to popularity; **hover lights paths two hops out** — a family lights its methods and their papers; **full-screen toggle** for corpus growth; **two lenses on one map**: papers↔methods↔families and papers↔shared-stack; hover shows an on-canvas brief with connections; click opens an info card with the page/deep-dive/evidence action) · **shared stack stripe** (7 facet cards from docs/shared-stack.md: simulators, algorithms, training + deployment compute, sensors, firmware, code releases; count bars, evidence modals, "not stated" gaps shown honestly) · **method registry** as clickable cards with usage bars and a sort-by-most-used toggle, opening deep-dive modals (what · intuition · mathematics "notation ours" · S5-verified evidence quotes · related methods · try-it-yourself open-source links, every URL existence-verified and dated) · navigation-map figure · footer site map |
 | `site/system.html` | **the whole system in one clickable map** (two tracks, three gates, registry hub, generated views — press any block to open the card that explains it) · S1–S9 stage cards with verbatim quotes · scoring rubric · method counting & categorization rules · 8 agent cards · registry schemas · I1–I3 · two-track 12-week timeline · the verification law |
 | `site/corpus.html` | 40 ranked candidates with per-paper R+H+Z+V+A breakdowns, strength signals, platform/source/year filters + search; annotated papers linked |
-| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, author-stated limitations, relevance to this PhD, provenance status, BibTeX, prev/next. Batch 1 (S5-verified): `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024`. Batch 2 (S5-verified): `attention-legged-2025`, `wheeledlab-2025`, `pixels-2024`, `diffphys-2025`, `simpleflight-2024` |
+| `site/papers/{id}.html` | one full annotated article per extracted paper: TL;DR, problem, pipeline figure, mathematics, results, author-stated limitations, relevance to this PhD, provenance status, BibTeX, prev/next. Batch 1 (S5-verified): `falcongym-2025`, `raptor-2026`, `monorace-2026`, `e2e-fly-2026`, `fly-seconds-2024`. Batch 2 (S5-verified): `attention-legged-2025`, `wheeledlab-2025`, `pixels-2024`, `diffphys-2025`, `simpleflight-2024`. Batch 3 (S4, S5 pending): `anymal-parkour-2024`, `humanoid-rl-2024`, `soccer-2024`, `agile-but-safe-2024`, `him-2024`, `dtc-2024`, `host-2025`, `aerialgym-2025`, `extreme-parkour-2024`, `hover-2024` |
 
 Design rules that keep the site honest and consistent:
 - Every fact card carries a `.src` source chip naming its file or record; statuses are
